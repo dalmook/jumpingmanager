@@ -1,0 +1,34 @@
+/* =========================
+File: styles.css
+========================= */
+:root{
+  --bg:#0f1115; --card:#161a22; --fg:#e8ebf1; --muted:#9aa3b2;
+  --line:#232838; --btn:#2b6cf6; --ghost:#2a2f3a; --warn:#ffb54a;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family: system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;
+  background:var(--bg); color:var(--fg);
+}
+.app-header{padding:20px 16px; border-bottom:1px solid var(--line)}
+.app-header h1{margin:0 0 6px; font-size:22px}
+.subtitle{margin:0; color:var(--muted); font-size:14px}
+.auth-area{margin-top:10px}
+.auth-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.auth-row input{flex:1; min-width:220px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#0c0e13; color:var(--fg)}
+.auth-row button{padding:10px 14px; border-radius:10px; border:0; background:var(--btn); color:#fff; font-weight:600}
+.auth-row .ghost{background:var(--ghost)}
+.hidden{display:none}
+
+.container{max-width:960px; margin:0 auto; padding:16px}
+.panel{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:16px}
+.panel h2{margin:0 0 12px; font-size:18px}
+.list{display:grid; gap:8px}
+.item{padding:12px; border:1px solid var(--line); border-radius:12px; background:#0c0f16}
+.muted{color:var(--muted)}
+.app-footer{padding:20px 16px; color:var(--muted); text-align:center}
+
+@media (max-width:680px){
+  .auth-row{flex-direction:column; align-items:stretch}
+}
