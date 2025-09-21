@@ -2,7 +2,15 @@
 // File: app.js
 // ==========================
 /* global firebase */
-const firebaseConfig = { /* Firebase 콘솔에서 값 채우기 */ };
+// app.js
+const firebaseConfig = {
+  apiKey: "AIzaSyD9tP0HnP3S8X82NoZXQ5DPwoigoHJ-zfU",
+  authDomain: "jumpingmanager-dcd21.firebaseapp.com",
+  projectId: "jumpingmanager-dcd21",
+  storageBucket: "jumpingmanager-dcd21.firebasestorage.app",
+  messagingSenderId: "286929980468",
+  appId: "G-4CJN8R3XQ4"
+};
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
