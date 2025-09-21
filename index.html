@@ -1,0 +1,53 @@
+<!-- =========================
+File: index.html
+Purpose: GitHub Pages + Firebase 기반 멤버 관리 (관리자/손님 로그인 분리)
+Author: ChatGPT
+========================= -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>멤버 관리 · 스탬프 & 다회권</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Firebase SDK -->
+  <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <h1>멤버 관리</h1>
+    <p class="subtitle">스탬프 10회 → 무료 1회 · 다회권 관리</p>
+    <div id="authArea" class="auth-area">
+      <div id="signedOut" class="auth-row">
+        <input id="loginEmail" type="email" placeholder="이메일 (휴대폰번호@domain.com 가능)" />
+        <input id="loginPass" type="password" placeholder="비밀번호" />
+        <button id="btnLogin">로그인</button>
+        <button id="btnSignup">회원가입</button>
+      </div>
+      <div id="signedIn" class="auth-row hidden">
+        <span id="whoami" class="muted"></span>
+        <button id="btnLogout" class="ghost">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="adminPanel" class="panel hidden">
+      <h2>전체 회원 목록 (관리자 전용)</h2>
+      <div id="allMembers" class="list"></div>
+    </section>
+
+    <section id="memberSelf" class="panel hidden">
+      <h2>내 정보</h2>
+      <div id="selfCard"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="muted">© 멤버 관리 MVP · Firebase + GitHub Pages</div>
+  </footer>
+</body>
+</html>
