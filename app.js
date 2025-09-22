@@ -139,7 +139,9 @@ const btnRegister = $('#btnRegister');
 const memberSelf = $('#memberSelf');
 const selfCard   = $('#selfCard');
 
-// 상세/조작 패널 (관리자)
+const passPresetCustom   = $('#passPresetCustom');
+const passPresetWeekday  = $('#passPresetWeekday');
+
 // 상세/조작 패널 (관리자)
 const memberSection = $('#memberSection');
 const mPhoneTeam = $('#mPhoneTeam');
@@ -740,7 +742,27 @@ btnResetStamp?.addEventListener('click', async()=>{
     const d=(await currentMemberRef.get()).data(); renderMember(d);
   }catch(e){ console.error('resetStamp',e); toast('실패: '+e.message); }
 });
+function ensureExpireDefaultIfEmpty(){
+  const el = document.getElementById('passExpire');
+  if (!el || el.value) return;
+  const d = new Date(); d.setFullYear(d.getFullYear()+1);
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  el.value = `${y}-${m}-${day}`;
+}
 
+passPresetCustom?.addEventListener('click', ()=>{
+  if(passName&&passCount){
+    passName.value='다회권'; passCount.value='1';
+    ensureExpireDefaultIfEmpty();
+  }
+});
+
+passPresetWeekday?.addEventListener('click', ()=>{
+  if(passName&&passCount){
+    passName.value='평일무료권'; passCount.value='1';
+    ensureExpireDefaultIfEmpty();
+  }
+});
 // 13) 다회권 (기존 +/-1)
 passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='10회권'; passCount.value='10'; }});
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; }});
