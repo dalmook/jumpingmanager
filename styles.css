@@ -353,6 +353,35 @@ input,select{
   display:block;   /* 이모지 잘림 방지 */
   margin: 2px;
 }
+/* 손님 화면: 다회권 카드 */
+.pass-card{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:linear-gradient(135deg,#fdfcff,#f4f7ff);
+  box-shadow: var(--shadow);
+  font-size:14px;
+  font-weight:700;
+}
+
+.pass-card .p-name{
+  color:#445;
+  font-weight:900;
+}
+
+.pass-card .p-count{
+  background:#eef3ff;
+  color:#5460b8;
+  font-weight:900;
+  padding:6px 10px;
+  border-radius:12px;
+  min-width:48px;
+  text-align:center;
+}
+
 /* Responsive */
 @media (max-width:1180px){
   .app-shell{ padding: 14px 14px; }
