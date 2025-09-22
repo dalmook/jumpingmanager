@@ -932,9 +932,8 @@ async function loadSelf(user){
 
   const cardEl = document.getElementById('selfCard');
   if(!cardEl) return;
+  
   cardEl.innerHTML = '<div class="muted">불러오는 중…</div>';
-  // QR 코드 크게 생성
-
 
   try{
     const email = user?.email || '';
@@ -975,7 +974,18 @@ async function loadSelf(user){
     
     <p class="stamp-note muted">스탬프 10개를 찍으면 무료 1회 제공!</p>
   `;
-
+    // === 여기 뒤에 QR 코드 생성 추가 ===
+    const qrTarget = document.getElementById('selfBigQR');
+    if(qrTarget){
+      qrTarget.innerHTML = '';
+      new QRCode(qrTarget, {
+        text: phone,       // 회원 고유값 (핸드폰번호/이메일)
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff"
+      });
+    }
   // === QR 코드 생성 (손님별) ===
   try{
     const qrWrap = document.getElementById('selfQR');
