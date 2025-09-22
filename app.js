@@ -814,3 +814,22 @@ async function loadSelf(user){
 }
 
 console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions + self tabs');
+// === 디버그 패널 토글/복사/지우기 ===
+const dbgToggle = byId('__dbgToggle');
+const dbgPanel  = byId('__dbgPanel');
+const dbgClose  = byId('__dbgClose');
+const dbgCopy   = byId('__dbgCopy');
+const dbgClear  = byId('__dbgClear');
+const dbgArea   = byId('__dbgArea');
+
+dbgToggle?.addEventListener('click', ()=> dbgPanel?.classList.toggle('hidden'));
+dbgClose ?.addEventListener('click', ()=> dbgPanel?.classList.add('hidden'));
+dbgCopy  ?.addEventListener('click', async ()=>{
+  try{
+    await navigator.clipboard.writeText(dbgArea?.value || '');
+    toast('디버그 로그를 클립보드에 복사했습니다.');
+  }catch(e){ console.error('dbg copy',e); toast('복사 실패'); }
+});
+dbgClear ?.addEventListener('click', ()=>{
+  if(dbgArea) dbgArea.value='';
+});
