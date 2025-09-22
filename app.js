@@ -414,6 +414,9 @@ function renderMember(d){
 
   if(editName) editName.value = d.name || '';
   if(editTeam) editTeam.value = d.team || '';
+  if(editCar)  editCar.value  = d.car || '';
+  if(editNote) editNote.value = d.note || '';
+
 
   if(stampDots){
     stampDots.innerHTML = '';
