@@ -847,7 +847,7 @@ async function loadSelf(user){
       grid.innerHTML = '';
       const stampCount = d.stamp || 0;
       // 프로젝트 루트에 penguin.png 를 넣어주세요 (경로 바꾸면 아래도 같이)
-      const imgURL = 'penguin.png';
+      const imgURL = './penguin.png';   // 루트 같
 
       for(let i=0;i<10;i++){
         const cell = document.createElement('div');
