@@ -934,17 +934,7 @@ async function loadSelf(user){
   if(!cardEl) return;
   cardEl.innerHTML = '<div class="muted">불러오는 중…</div>';
   // QR 코드 크게 생성
-  const qrTarget = document.getElementById('selfBigQR');
-  if(qrTarget){
-    qrTarget.innerHTML = '';
-    new QRCode(qrTarget, {
-      text: d.phone || user.email || '',
-      width: 180,
-      height: 180,
-      colorDark: "#000000",
-      colorLight: "#ffffff"
-    });
-  }
+
 
   try{
     const email = user?.email || '';
