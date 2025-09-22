@@ -1,69 +1,193 @@
 /* =========================
-File: styles.css
+File: styles.css (Pastel / Cute)
 ========================= */
+
+/* 색 테마 (밝은 파스텔) */
 :root{
-  --bg:#0f1115; --card:#161a22; --fg:#e8ebf1; --muted:#9aa3b2;
-  --line:#232838; --btn:#2b6cf6; --ghost:#2a2f3a; --warn:#ffb54a; --accent:#7be495;
+  --bg:#fff7fb;           /* 아주 연한 핑크 */
+  --card:#ffffff;         /* 카드 바탕 */
+  --fg:#2c2f42;           /* 진한 먹색 텍스트 */
+  --muted:#8c90a3;        /* 연한 회색 텍스트 */
+  --line:#efe8f2;         /* 매우 연한 보더 */
+  --btn:#7b9cff;          /* 파스텔 블루 */
+  --ghost:#f2f4ff;        /* 연보라/블루 고스트 버튼 */
+  --warn:#ffd58c;         /* 파스텔 주황 */
+  --accent:#9be7c4;       /* 파스텔 민트 (스탬프 점등) */
+  --danger:#ff8da1;       /* 파스텔 코랄 */
+  --badge:#ffe3ea;        /* 뱃지 배경 */
+  --badge-fg:#a8485b;     /* 뱃지 글자 */
+  --shadow: 0 6px 18px rgba(125, 80, 200, .14);
+  --radius: 18px;
 }
+
 *{box-sizing:border-box}
 html,body{height:100%}
-body{ margin:0; font-family: system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--fg); }
-.app-header{ padding:20px 16px; border-bottom:1px solid var(--line) }
-.app-header h1{ margin:0 0 6px; font-size:22px }
+body{
+  margin:0; 
+  font-family: ui-rounded, system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;
+  background: var(--bg); color:var(--fg);
+  letter-spacing: .2px;
+}
+
+/* 헤더 */
+.app-header{ 
+  padding:22px 16px; border-bottom:1px solid var(--line); 
+  background:linear-gradient(180deg, #fff9fe 0%, #fff 100%);
+}
+.app-header h1{ margin:0 0 6px; font-size:24px; font-weight:900 }
 .subtitle{ margin:0; color:var(--muted); font-size:14px }
-.auth-area{ margin-top:10px }
+.header-row{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap }
+
+/* 인증 영역 */
+.auth-area{ margin-top:6px }
 .auth-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
-.auth-row input{ flex:1; min-width:220px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#0c0e13; color:var(--fg) }
-.auth-row button{ padding:10px 14px; border-radius:10px; border:0; background:var(--btn); color:#fff; font-weight:600 }
-.auth-row .ghost{ background:var(--ghost) }
+.auth-row input{
+  flex:1; min-width:220px; padding:12px 14px; border-radius:14px; 
+  border:1px solid var(--line); background:#fff; color:var(--fg);
+  box-shadow: var(--shadow);
+}
+.auth-row button{ padding:12px 16px; border-radius:14px; border:0; background:var(--btn); color:#fff; font-weight:800; box-shadow: var(--shadow) }
+.auth-row .ghost{ background:var(--ghost); color:#5460b8 }
 .hidden{ display:none }
-.container{ max-width:980px; margin:0 auto; padding:16px }
-.panel{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:16px 0 }
+
+/* 레이아웃 */
+.container{ max-width:1100px; margin:0 auto; padding:16px }
+.panel{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin:16px 0; box-shadow: var(--shadow) }
 .panel.inner{ margin-top:16px }
-.panel h2{ margin:0 0 12px; font-size:18px }
-.grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px }
-.grid button{ grid-column: span 2 }
-.row{ display:flex; gap:8px; flex-wrap:wrap }
+.panel h2{ margin:0 0 12px; font-size:20px; font-weight:900 }
+
+/* 카드 */
+.card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--radius);
+  padding:14px; box-shadow: var(--shadow);
+}
+.card-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px }
+.card.section{ margin-top:14px }
+
+/* 유틸 그리드/행/간격 */
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
+.grid.two{ grid-template-columns:1fr 1fr }
+.grid.three{ grid-template-columns:repeat(3,1fr) }
+.grid button{ grid-column: span 1 }
+.row{ display:flex; gap:8px; align-items:center }
+.row-between{ display:flex; justify-content:space-between; align-items:center; gap:8px }
+.wrap{ flex-wrap:wrap }
+.gap8{ gap:8px }
 .mt8{ margin-top:8px } .mt16{ margin-top:16px }
+
+/* 관리자 2컬럼 */
+.admin-layout{
+  display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:start;
+}
+.admin-col .card{ height:100% }
+.list-col .card{ position:sticky; top:16px } /* 스크롤해도 검색/목록 고정 느낌 */
+
+/* 리스트 */
 .list{ display:grid; gap:8px; margin-top:8px }
-.item{ padding:12px; border:1px solid var(--line); border-radius:12px; background:#0c0f16; display:flex; justify-content:space-between; align-items:center }
-.list.small .item{ padding:8px; font-size:14px }
+.item{
+  padding:12px 14px; border:1px solid var(--line); border-radius:14px; background:#fff;
+  display:flex; justify-content:space-between; align-items:center;
+  transition:.15s transform ease, .15s box-shadow ease;
+}
+.item:hover{ transform: translateY(-2px); box-shadow: var(--shadow) }
+.list.small .item{ padding:10px; font-size:14px }
+
+/* 멤버 카드 */
 .member-card{ display:flex; flex-direction:column; gap:16px }
+.member-card.compact{ gap:12px }
 .member-head{ display:flex; justify-content:space-between; gap:16px; align-items:flex-start }
-.m-name{ font-size:20px; font-weight:700 }
+.m-name{ font-size:22px; font-weight:900 }
 .muted{ color:var(--muted) }
-.stats{ display:flex; gap:16px; flex-wrap:wrap }
-.stat{ background:#0c0f16; border:1px solid var(--line); border-radius:12px; padding:10px 12px; min-width:120px }
-.stat .label{ color:var(--muted); font-size:12px }
-.stat .value{ font-weight:800; font-size:20px }
+
+/* 통계 배지형 카드 */
+.stats{ display:flex; gap:10px; flex-wrap:wrap }
+.stat{
+  background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; min-width:120px;
+  box-shadow: var(--shadow);
+}
+.stat .label{ color:var(--muted); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px }
+.stat .value{ font-weight:900; font-size:20px }
+
+/* 스탬프 진행 */
 .progress{ padding:6px 0 }
 .dots{ display:grid; grid-template-columns:repeat(10,1fr); gap:6px }
-.dot{ height:14px; border-radius:8px; background:#1c2230; border:1px solid var(--line) }
+.dot{ height:14px; border-radius:999px; background:#f4f6ff; border:1px solid var(--line) }
 .dot.on{ background:var(--accent) }
-button{ padding:10px 12px; border-radius:10px; border:0; background:var(--ghost); color:#fff; font-weight:600 }
-button.primary{ background:var(--btn) }
-button.warning{ background:var(--warn); color:#222 }
-input,select{ padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#0c0e13; color:var(--fg) }
+
+/* 폼/버튼 */
+button{
+  padding:10px 12px; border-radius:12px; border:0; background:var(--ghost); color:#445; font-weight:800;
+  box-shadow: var(--shadow);
+}
+button.primary{ background:var(--btn); color:#fff }
+button.warning{ background:var(--warn); color:#5a4100 }
+button.danger{ background:var(--danger); color:#4a0612 }
+button.small{ padding:8px 10px; border-radius:10px; font-size:13px }
+input,select{
+  padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#fff; color:var(--fg); box-shadow: var(--shadow);
+}
+
+/* 뱃지/칩 */
+.badge{ display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:999px; background:var(--badge); color:var(--badge-fg); font-weight:800; font-size:12px }
+.kv{ display:flex; gap:8px; flex-wrap:wrap }
+.kv .chip{
+  background:#f7f8ff; color:#5a5fa4; border:1px solid var(--line); border-radius:12px;
+  padding:8px 10px; font-weight:700;
+}
+
+/* 위험영역 */
+.danger-zone{ background:#fff2f4; border-color:#ffe1e6 }
+.danger-zone .card-head h3{ color:#a43c51 }
+
+/* 손님 마이페이지 꾸미기 */
+#selfCard.member-card.compact{
+  background: linear-gradient(180deg, #fff 0%, #fff9fe 100%);
+  border:1px solid var(--line); border-radius:var(--radius); padding:14px;
+}
+#selfCard .title{
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+}
+#selfCard .title .name{
+  font-size:20px; font-weight:900;
+}
+#selfCard .title .phone.badge{
+  background:#e8f7ff; color:#175a7a;
+}
+#selfCard .kv{ margin-top:6px }
+#selfCard .stats{ margin-top:6px }
+#selfCard .stats .stat .value{ font-size:18px }
+#selfCard .progress{ margin-top:2px }
+
+/* 푸터 */
 .app-footer{ padding:20px 16px; color:var(--muted); text-align:center }
-/* === Debug Panel === */
+
+/* Debug Panel */
 .dbg-toggle{
   position:fixed; right:12px; bottom:12px; z-index:9999;
-  padding:10px 12px; border:0; border-radius:10px;
-  background:#444; color:#fff; font-weight:600;
-  opacity:.85;
+  padding:10px 12px; border:0; border-radius:12px;
+  background:#8ea2ff; color:#fff; font-weight:800; box-shadow: var(--shadow);
+  opacity:.92;
 }
 .dbg-panel{
   position:fixed; right:12px; bottom:60px; width: min(92vw, 480px); height: 40vh;
-  background:#0c0f16; color:#e8ebf1; border:1px solid #232838; border-radius:12px; 
-  z-index:9999; display:flex; flex-direction:column;
+  background:#fff; color:var(--fg); border:1px solid var(--line); border-radius:12px; 
+  z-index:9999; display:flex; flex-direction:column; box-shadow: var(--shadow);
 }
 .dbg-panel.hidden{ display:none; }
-.dbg-head{ display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border-bottom:1px solid #232838; }
-.dbg-head button{ margin-left:6px; padding:6px 10px; border:0; border-radius:8px; background:#2b6cf6; color:#fff; }
+.dbg-head{ display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border-bottom:1px solid var(--line); }
+.dbg-head button{ margin-left:6px; padding:6px 10px; border:0; border-radius:10px; background:#7b9cff; color:#fff; }
 #__dbgArea{
-  flex:1; width:100%; background:#0b0d13; color:#e8ebf1;
+  flex:1; width:100%; background:#f6f7ff; color:#2c2f42;
   border:0; padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px;
   outline:none; resize:none; line-height:1.4;
 }
 
-@media (max-width:680px){ .auth-row{ flex-direction:column; align-items:stretch } .grid{ grid-template-columns:1fr } }
+/* 반응형 */
+@media (max-width:980px){
+  .admin-layout{ grid-template-columns:1fr; }
+  .list-col .card{ position:relative; top:auto }
+}
+@media (max-width:680px){
+  .auth-row{ flex-direction:column; align-items:stretch }
+  .grid, .grid.two, .grid.three{ grid-template-columns:1fr }
+}
