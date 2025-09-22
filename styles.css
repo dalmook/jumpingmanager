@@ -289,7 +289,6 @@ input,select{
 @media (max-width: 380px){
   #selfDots.dots{ gap:2px; }
 }
-}
 @media (max-width: 1024px){
   .quick-register .grid.three{ grid-template-columns: repeat(2, 1fr); }
 }
