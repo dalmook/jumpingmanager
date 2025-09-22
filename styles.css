@@ -242,6 +242,12 @@ input,select{
 @media (max-width: 380px){
   .dots{ gap:2px; }
 }
+@media (max-width: 1024px){
+  .quick-register .grid.three{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 680px){
+  .quick-register .grid.three{ grid-template-columns: 1fr; }
+}
 
 
 
