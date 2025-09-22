@@ -349,7 +349,7 @@ input,select{
 
 /* Debug */
 .dbg-toggle{
-  position:fixed; right:12px; bottom:calc(12px + var(--safe-bottom,0px)); z-index:9999;
+  position:fixed; right: calc(16px + 56px + 12px); bottom: calc(16px + var(--safe-bottom, 0px)); z-index:9999;
   padding:10px 12px; border:0; border-radius:12px; background:#8ea2ff; color:#fff; font-weight:800; box-shadow: var(--shadow);
   opacity:.92;
 }
@@ -361,6 +361,13 @@ input,select{
 .dbg-panel.hidden{ display:none; }
 .dbg-head{ display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border-bottom:1px solid var(--line); }
 .dbg-head button{ margin-left:6px; padding:6px 10px; border:0; border-radius:10px; background:#7b9cff; color:#fff; }
+/* 화면이 아주 좁을 땐 세로로 쌓이게: 디버그 버튼을 FAB 위로 올림 */
+@media (max-width: 480px){
+  .dbg-toggle{
+    right: 16px;
+    bottom: calc(16px + 56px + 12px + var(--safe-bottom, 0px));
+  }
+}
 #__dbgArea{
   flex:1; width:100%; background:#f6f7ff; color:#2c2f42;
   border:0; padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px;
