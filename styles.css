@@ -229,6 +229,46 @@ input,select{
   border-top:1px solid var(--line); padding:16px;
 }
 
+/* 손님 요약 박스 */
+.summary-box{
+  display:flex; justify-content:space-between; align-items:flex-start;
+  gap:12px; padding:12px 12px; border:1px solid var(--line); border-radius:14px; background:#fff; box-shadow: var(--shadow);
+}
+.summary-title{ font-size:18px; font-weight:900 }
+.summary-sub{ font-size:13px }
+.summary-right{ text-align:right }
+.summary-badge{
+  display:inline-block; padding:8px 12px; border-radius:12px; background:#eef3ff; color:#5460b8; font-weight:900;
+}
+.summary-sub-mini{ font-size:12px; margin-top:6px }
+
+/* 팽귄 도장 격자 (2행×5열) */
+.stamp-grid{
+  margin-top:14px;
+  display:grid; grid-template-columns: repeat(5, 1fr); gap:14px;
+}
+.stamp-slot{
+  aspect-ratio:1/1; border-radius:50%;
+  display:block; background:#fff; position:relative;
+  border:2px dashed #ccd3f1;
+}
+.stamp-slot.filled{
+  border:2px solid transparent;
+  background:
+    radial-gradient(closest-side, #ffffff 70%, transparent 71%) center/100% 100% no-repeat,
+    var(--stamp-url) center/60% 60% no-repeat,
+    #ffffff;
+  box-shadow: var(--shadow);
+}
+.stamp-slot.empty{
+  background: radial-gradient(closest-side, #fafbff 70%, transparent 71%) center/100% 100% no-repeat;
+}
+
+.stamp-note{ margin:10px 2px 0; font-size:12px }
+@media (max-width:480px){
+  .stamp-grid{ gap:10px }
+}
+
 /* iOS bottom Tabbar */
 .tabbar{
   position:sticky; bottom:0; z-index:5;
