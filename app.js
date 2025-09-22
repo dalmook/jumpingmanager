@@ -407,6 +407,8 @@ async function openMember(id){
 function renderMember(d){
   if(!d) return;
   if(mPhoneTeam) mPhoneTeam.textContent = `${fmtPhone(d.phone)} · ${d.team||'-'}`;
+  if(mCar)       mCar.textContent  = d.car  || '-';
+  if(mNote)      mNote.textContent = d.note || '-';
   if(mStamp)     mStamp.textContent = d.stamp || 0;
   if(mFree)      mFree.textContent  = d.freeCredits || 0;
   if(mFreeWk)    mFreeWk.textContent = d.freeWeekday || 0;  // 추가
