@@ -679,6 +679,7 @@ function renderStageInputs(stages = {}) {
                value="${cur}" data-stage="${name}" />
       </div>
     `;
+
     frag.appendChild(row);
   });
 
