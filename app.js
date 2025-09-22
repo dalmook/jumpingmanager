@@ -980,8 +980,8 @@ async function loadSelf(user){
       qrTarget.innerHTML = '';
       new QRCode(qrTarget, {
         text: phone,       // 회원 고유값 (핸드폰번호/이메일)
-        width: 160,
-        height: 160,
+        width: 120,
+        height: 120,
         colorDark: "#000000",
         colorLight: "#ffffff"
       });
