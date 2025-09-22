@@ -1238,13 +1238,16 @@ async function loadSelf(user){
     const qrTarget = document.getElementById('selfBigQR');
     if(qrTarget){
       qrTarget.innerHTML = '';
+      const stampURL = `${window.location.origin}${window.location.pathname}?stamp=${encodeURIComponent(phone)}`;
+      
       new QRCode(qrTarget, {
-        text: phone,       // 회원 고유값 (핸드폰번호/이메일)
+        text: stampURL,       // ← 절대 URL을 QR에 넣기
         width: 120,
         height: 120,
         colorDark: "#000000",
         colorLight: "#ffffff"
       });
+
     }
 
 // 팽귄 도장 격자 (2행×5열)
