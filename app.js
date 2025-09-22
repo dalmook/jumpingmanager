@@ -714,16 +714,19 @@ async function loadSelf(user){
       <div class="progress"><div id="selfDots" class="dots"></div></div>
     `;
 
-    // 스탬프 점
+    // 스탬프 도장 표현 (이모지/아이콘)
     const dots = document.getElementById('selfDots');
     if(dots){
       dots.innerHTML='';
       for(let i=0;i<10;i++){
-        const dot=document.createElement('div');
-        dot.className = 'dot' + (i < (d.stamp||0) ? ' on':'');
-        dots.appendChild(dot);
+        const span=document.createElement('span');
+        span.className='stamp' + (i < (d.stamp||0) ? ' on':'');
+        // 채워진 칸은 도장 ✅, 비어있는 칸은 ◻️ 같은 걸로 표현
+        span.textContent = (i < (d.stamp||0)) ? '❤️' : '🤍';
+        dots.appendChild(span);
       }
     }
+
 
     // 다회권 목록
     if(selfPassList){
