@@ -194,8 +194,11 @@
               <div class="row wrap gap8">
                 <input id="passName"  placeholder="권종명 (예: 10회권)" />
                 <input id="passCount" type="number" min="1" step="1" value="1" class="w110" />
+                <!-- ✅ 추가: 만료일(선택) -->
+                <input id="passExpire" type="date" class="w110" placeholder="만료일(선택)" />
                 <button id="btnAddPass" class="btn primary">권종 추가</button>
               </div>
+
               <div class="row wrap gap8 mt8">
                 <select id="passSelect"></select>
                 <button id="btnUsePass" class="btn">선택권 -1</button>
