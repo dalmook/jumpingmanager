@@ -135,27 +135,57 @@ auth.onAuthStateChanged(async(user)=>{
 });
 
 // 6) 로그인/가입/로그아웃
-btnLogin?.addEventListener('click', async()=>{
-  const email = byId('loginEmail')?.value?.trim();
-  const pass  = byId('loginPass')?.value?.trim();
-  if(!email || !pass) return toast('이메일/비밀번호 입력');
-  try{ await auth.signInWithEmailAndPassword(email, pass); toast('로그인 성공'); }
-  catch(e){ console.error('login', e); toast('로그인 실패: '+e.message); }
+btnLogin?.addEventListener("click", async () => {
+  const phoneRaw = byId("loginEmail")?.value?.trim();
+  const pass = byId("loginPass")?.value?.trim();
+  const phone = normPhone(phoneRaw || "");
+  if (!phone || !pass) return toast("휴대폰번호와 비밀번호를 입력하세요.");
+
+  // 휴대폰 → 내부용 이메일로 변환
+  const email = `${phone}@local`;
+
+  await __dbgTry("login", () => auth.signInWithEmailAndPassword(email, pass));
+  toast("로그인 성공");
 });
-btnSignup?.addEventListener('click', async()=>{
-  const email = byId('loginEmail')?.value?.trim();
-  const pass  = byId('loginPass')?.value?.trim();
-  if(!email || !pass) return toast('이메일/비밀번호 입력');
-  try{
-    await auth.createUserWithEmailAndPassword(email, pass);
-    const id = email; // 이메일 DocID (초기 가입 버전)
-    await db.collection('members').doc(id).set({
-      name:'', phone: email.replace(/@.*/, ''), team:'', stamp:0, freeCredits:0, passes:{}, totalVisits:0,
-      createdAt: ts(), updatedAt: ts()
+
+btnSignup?.addEventListener("click", async () => {
+  const phoneRaw = byId("loginEmail")?.value?.trim();
+  const pass = byId("loginPass")?.value?.trim();
+  const phone = normPhone(phoneRaw || "");
+  if (!phone || !pass) return toast("휴대폰번호와 비밀번호를 입력하세요.");
+
+  // 휴대폰 → 내부용 이메일로 변환
+  const email = `${phone}@local`;
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+
+  await __dbgTry("signup", async () => {
+    // 1) Auth 계정 생성 (email/password)
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    console.log("signup uid", cred.user?.uid);
+
+    // 2) 회원 문서 생성/보장: members/{phone}
+    const ref = db.collection("members").doc(phone);
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) {
+        tx.set(ref, {
+          name: "",
+          phone,           // 전화번호 저장
+          team: "",
+          stamp: 0,
+          freeCredits: 0,
+          passes: {},
+          totalVisits: 0,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
     });
-    toast('회원가입 완료');
-  }catch(e){ console.error('signup',e); toast('회원가입 실패: '+e.message); }
+  });
+
+  toast("회원가입 완료");
 });
+
 btnLogout?.addEventListener('click', async()=>{ try{ await auth.signOut(); toast('로그아웃'); }catch(e){ console.error('logout',e); }});
 
 // 7) 관리자: 전체 목록/검색
