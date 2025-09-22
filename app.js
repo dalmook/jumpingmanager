@@ -825,21 +825,22 @@ async function loadSelf(user){
 
     // 요약 카드
     cardEl.innerHTML = `
-      <div class="title">
-        <div class="name">${d.name||'-'}</div>
-        <span class="phone badge">${fmtPhone(d.phone)}</span>
+// 요약 박스 + 도장 격자(2행×5열)
+    cardEl.innerHTML = `
+      <div class="summary-box">
+        <div class="summary-left">
+          <div class="summary-title">${d.name || '-'}</div>
+          <div class="summary-sub muted">${fmtPhone(d.phone)} · ${d.team || '-'}</div>
+        </div>
+        <div class="summary-right">
+          <div class="summary-badge">스탬프 ${d.stamp || 0}/10</div>
+          <div class="summary-sub-mini muted">무료 ${d.freeCredits||0} · 평일 ${d.freeWeekday||0} · 슬러시 ${d.freeSlush||0}</div>
+        </div>
       </div>
-      <div class="kv">
-        <span class="chip">팀 · ${d.team||'-'}</span>
-      </div>
-      <div class="stats">
-        <div class="stat"><div class="label">스탬프(10)</div><div class="value">${d.stamp||0}</div></div>
-        <div class="stat"><div class="label">무료권</div><div class="value">${d.freeCredits||0}</div></div>
-        <div class="stat"><div class="label">평일무료권</div><div class="value">${d.freeWeekday||0}</div></div>  <!-- 추가 -->
-        <div class="stat"><div class="label">슬러시 무료권</div><div class="value">${d.freeSlush||0}</div></div>   <!-- 추가 -->
-        <div class="stat"><div class="label">다회권</div><div class="value">${totalPasses}</div></div>
-      </div>
-      <div class="progress"><div id="selfDots" class="dots"></div></div>
+
+      <div id="selfStampGrid" class="stamp-grid"></div>
+
+      <p class="stamp-note muted">스탬프 10개를 찍으면 무료 1회 제공!</p>
     `;
 
     // 스탬프 도장 표현 (이모지/아이콘)
