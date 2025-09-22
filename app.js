@@ -94,7 +94,9 @@ const selfCard   = $('#selfCard');
 // 상세/조작 패널 (관리자)
 const memberSection = $('#memberSection');
 const mPhoneTeam = $('#mPhoneTeam');
-const mStamp = $('#mStamp');
+const mCar       = $('#mCar');     // 차량번호 표시
+const mNote      = $('#mNote');    // 비고 표시
+const mStamp = $('#mStamp');;
 const mFree  = $('#mFree');
 const mFreeWk = $('#mFreeWk');   // 추가
 const mFreeSl = $('#mFreeSl');   // 추가
