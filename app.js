@@ -63,7 +63,7 @@ const sumPass = (passes)=> Object.values(passes||{}).reduce((a,b)=>a+(b||0),0);
 })();
 
 // 3) 권한(간단)
-const adminEmails = ["chosungmook@naver.com"];
+const adminEmails = ["01041668764@phone.local"];
 
 // 4) DOM 참조
 // 인증/공통
