@@ -936,8 +936,21 @@ async function loadSelf(user){
     
       <div id="selfStampGrid" class="stamp-grid"></div>
     
-      <p class="stamp-note muted">스탬프 10개를 찍으면 무료 1회 제공!</p>
-    `;
+    <p class="stamp-note muted">스탬프 10개를 찍으면 무료 1회 제공!</p>
+  `;
+
+  // === QR 코드 생성 (손님별) ===
+  try{
+    const qrWrap = document.getElementById('selfQR');
+    if(qrWrap){
+      qrWrap.innerHTML = ''; // 초기화
+      // 관리자 단말에서 이 QR을 스캔하면 같은 사이트로 이동하며 ?stamp=휴대폰 파라미터 포함
+      const base = window.location.origin + window.location.pathname;
+      const stampUrl = `${base}?stamp=${encodeURIComponent(d.phone||'')}`;
+      new QRCode(qrWrap, { text: stampUrl, width: 72, height: 72 });
+    }
+  }catch(e){ console.warn('qr gen', e); }
+
 
 
 // 팽귄 도장 격자 (2행×5열)
