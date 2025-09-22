@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#ffffff" />
   <title>점핑배틀 화성병점점</title>
+
   <link rel="stylesheet" href="styles.css" />
 
   <!-- Firebase SDK -->
@@ -27,8 +28,8 @@
         </div>
         <div class="auth-area">
           <div id="signedOut" class="auth-row">
-            <input id="loginEmail" type="text" inputmode="text"
-                   placeholder="휴대폰 01012345678" />
+            <!-- 관리자: 이메일, 손님: 휴대폰 01012345678 (문구 그대로 유지) -->
+            <input id="loginEmail" type="text" inputmode="text" placeholder="휴대폰 01012345678" />
             <input id="loginPass" type="password" placeholder="비밀번호" />
             <button id="btnLogin" class="btn primary">로그인</button>
             <button id="btnSignup" class="btn ghost">회원가입</button>
@@ -46,7 +47,7 @@
 
   <main class="app-shell">
     <!-- ========================= -->
-    <!-- 관리자 화면 (탭 아이템 1) -->
+    <!-- 관리자 화면 -->
     <!-- ========================= -->
     <section id="adminPanel" class="panel hidden">
       <div class="card glass">
@@ -83,8 +84,8 @@
           <div id="adminList" class="list mt8" aria-live="polite"></div>
         </aside>
 
-        <!-- 우: 상세 -->
-        <section class="card glass" id="memberSection" class="hidden">
+        <!-- 우: 상세 (⚠️ 중복 class 속성 수정: hidden은 같은 class에 포함) -->
+        <section id="memberSection" class="card glass hidden">
           <div class="section-head">
             <h2>회원 상세</h2>
           </div>
@@ -95,13 +96,13 @@
                 <div class="m-name">-</div>
                 <div id="mPhoneTeam" class="muted">-</div>
               </div>
-                <div class="stats">
-                  <div class="stat pill"><div class="label">스탬프(10)</div><div id="mStamp" class="value">0</div></div>
-                  <div class="stat pill"><div class="label">무료권</div><div id="mFree" class="value">0</div></div>
-                  <div class="stat pill"><div class="label">평일무료권</div><div id="mFreeWk" class="value">0</div></div>  <!-- 추가 -->
-                  <div class="stat pill"><div class="label">슬러시 무료권</div><div id="mFreeSl" class="value">0</div></div> <!-- 추가 -->
-                  <div class="stat pill"><div class="label">다회권 잔여</div><div id="mPassTotal" class="value">0</div></div>
-                </div>
+              <div class="stats">
+                <div class="stat pill"><div class="label">스탬프(10)</div><div id="mStamp" class="value">0</div></div>
+                <div class="stat pill"><div class="label">무료권</div><div id="mFree" class="value">0</div></div>
+                <div class="stat pill"><div class="label">평일무료권</div><div id="mFreeWk" class="value">0</div></div>
+                <div class="stat pill"><div class="label">슬러시 무료권</div><div id="mFreeSl" class="value">0</div></div>
+                <div class="stat pill"><div class="label">다회권 잔여</div><div id="mPassTotal" class="value">0</div></div>
+              </div>
             </div>
 
             <div class="progress">
@@ -124,11 +125,15 @@
             <!-- 스탬프/무료권 -->
             <div class="section-card">
               <h3>스탬프 / 무료권</h3>
+
+              <!-- 단일 버튼(+1, 무료1회 사용, 0으로) -->
               <div class="row wrap gap8">
                 <button id="btnAddVisit" class="btn primary">방문 +1</button>
-                <button id="btnUseFree" class="btn warn">무료 1회 사용</button>
+                <button id="btnUseFree"  class="btn warn">무료 1회 사용</button>
                 <button id="btnResetStamp" class="btn ghost">스탬프 0</button>
               </div>
+
+              <!-- N 증감: 스탬프/무료권 -->
               <div class="row wrap gap8 mt8">
                 <div class="row gap8">
                   <input id="stampDelta" type="number" min="1" step="1" value="1" class="w110" />
@@ -139,6 +144,24 @@
                   <input id="freeDelta" type="number" min="1" step="1" value="1" class="w110" />
                   <button id="btnAddFreeN" class="btn primary">무료권 +N</button>
                   <button id="btnSubFreeN" class="btn ghost">무료권 -N</button>
+                </div>
+              </div>
+
+              <!-- ✅ 추가: 평일무료권 N 증감 -->
+              <div class="row wrap gap8 mt8">
+                <div class="row gap8">
+                  <input id="freeWkDelta" type="number" min="1" step="1" value="1" class="w110" />
+                  <button id="btnAddFreeWkN" class="btn primary">평일무료권 +N</button>
+                  <button id="btnSubFreeWkN" class="btn ghost">평일무료권 -N</button>
+                </div>
+              </div>
+
+              <!-- ✅ 추가: 슬러시 무료권 N 증감 -->
+              <div class="row wrap gap8 mt8">
+                <div class="row gap8">
+                  <input id="freeSlDelta" type="number" min="1" step="1" value="1" class="w110" />
+                  <button id="btnAddFreeSlN" class="btn primary">슬러시 무료권 +N</button>
+                  <button id="btnSubFreeSlN" class="btn ghost">슬러시 무료권 -N</button>
                 </div>
               </div>
             </div>
@@ -154,7 +177,7 @@
                 </div>
               </div>
               <div class="row wrap gap8">
-                <input id="passName" placeholder="권종명 (예: 10회권)" />
+                <input id="passName"  placeholder="권종명 (예: 10회권)" />
                 <input id="passCount" type="number" min="1" step="1" value="1" class="w110" />
                 <button id="btnAddPass" class="btn primary">권종 추가</button>
               </div>
@@ -191,14 +214,15 @@
         </section>
       </div>
 
-      <!-- 플로팅 단축(FAB) - 모바일/태블릿에서만 노출 -->
+      <!-- 플로팅 단축(FAB) -->
       <div class="fab-area">
-        <button id="fabAddVisit" class="fab" title="방문 +1" onclick="document.getElementById('btnAddVisit')?.click()">＋</button>
+        <button id="fabAddVisit" class="fab" title="방문 +1"
+                onclick="document.getElementById('btnAddVisit')?.click()">＋</button>
       </div>
     </section>
 
     <!-- ========================= -->
-    <!-- 손님 화면 (탭 아이템 2) -->
+    <!-- 손님 화면 -->
     <!-- ========================= -->
     <section id="memberSelf" class="panel hidden">
       <div class="card ios-card">
@@ -206,20 +230,20 @@
           <div class="title-main">나의 이용 현황</div>
           <div class="mini-pill">LIVE</div>
         </div>
-    
+
         <!-- 탭 콘텐츠 -->
         <div class="self-tabs">
           <div id="selfTab-summary" class="tabpane active">
             <div id="selfCard" class="member-card compact"></div>
           </div>
-    
+
           <div id="selfTab-passes" class="tabpane">
             <div class="section-card">
               <h3>보유 다회권</h3>
               <div id="selfPassList" class="list small"></div>
             </div>
           </div>
-    
+
           <div id="selfTab-logs" class="tabpane">
             <div class="section-card">
               <h3>최근 이용 로그</h3>
@@ -227,7 +251,7 @@
             </div>
           </div>
         </div>
-    
+
         <!-- iOS 스타일 탭바 -->
         <nav class="tabbar">
           <button type="button" class="tab on" data-tab="summary">
@@ -242,7 +266,6 @@
         </nav>
       </div>
     </section>
-
   </main>
 
   <!-- 디버그 패널 -->
