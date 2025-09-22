@@ -92,8 +92,23 @@ const memberSelf = $('#memberSelf');
 const selfCard   = $('#selfCard');
 
 // 상세/조작 패널 (관리자)
+// 상세/조작 패널 (관리자)
 const memberSection = $('#memberSection');
 const mPhoneTeam = $('#mPhoneTeam');
+
+// === 스테이지 정의/DOM ===
+const STAGE_TOTALS = {
+  '베이직':21, '이지':21, '노말':19, '하드':17, '챌린저':15,
+  '여름':22, '우주':21,
+};
+const stageOrder = ['베이직','이지','노말','하드','챌린저','여름','우주'];
+
+const stageList      = $('#stageList');        // 관리자 입력용 컨테이너
+const btnSaveStages  = $('#btnSaveStages');    // 관리자 저장 버튼
+
+const btnViewStages  = $('#btnViewStages');    // 손님 ‘기록 보기’
+const selfStageList  = $('#selfStageList');    // 손님 카드 리스트
+
 const mCar       = $('#mCar');     // 차량번호 표시
 const mNote      = $('#mNote');    // 비고 표시
 const mStamp = $('#mStamp');;
