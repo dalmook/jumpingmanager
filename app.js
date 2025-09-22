@@ -843,16 +843,22 @@ async function loadSelf(user){
       <p class="stamp-note muted">스탬프 10개를 찍으면 무료 1회 제공!</p>
     `;
 
-    // 스탬프 도장 표현 (이모지/아이콘)
-    const dots = document.getElementById('selfDots');
-    if(dots){
-      dots.innerHTML='';
+// 팽귄 도장 격자 (2행×5열)
+    const grid = document.getElementById('selfStampGrid');
+    if(grid){
+      grid.innerHTML = '';
+      const stampCount = d.stamp || 0;
+      // 프로젝트 루트에 penguin.png 를 넣어주세요 (경로 바꾸면 아래도 같이)
+      const imgURL = 'penguin.png';
+
       for(let i=0;i<10;i++){
-        const span=document.createElement('span');
-        span.className='stamp' + (i < (d.stamp||0) ? ' on':'');
-        // 채워진 칸은 도장 ✅, 비어있는 칸은 ◻️ 같은 걸로 표현
-        span.textContent = (i < (d.stamp||0)) ? '❤️' : '🤍';
-        dots.appendChild(span);
+        const cell = document.createElement('div');
+        cell.className = 'stamp-slot' + (i < stampCount ? ' filled' : ' empty');
+        if(i < stampCount){
+          // 채워진 칸: 팽귄 얼굴
+          cell.style.setProperty('--stamp-url', `url("${imgURL}")`);
+        }
+        grid.appendChild(cell);
       }
     }
 
