@@ -1,5 +1,5 @@
 // ==========================
-// File: app.js (관리자 편집/조작 + 휴대폰 회원가입/로그인 + 검색/목록 + 상세조작 + N증감 + 삭제)
+// File: app.js (관리자 편집/조작 + 휴대폰 회원가입/로그인 + 검색/목록 + N증감 + 삭제 + 손님 탭)
 // ==========================
 /* global firebase */
 
@@ -22,7 +22,7 @@ const byId = (id)=>document.getElementById(id);
 const toast = (m)=> alert(m);
 const ts = ()=> firebase.firestore.FieldValue.serverTimestamp();
 
-// 도메인에 점(.) 포함 필수
+// 도메인(점 포함 필수)
 const PHONE_DOMAIN = 'phone.local';
 
 // +82 → 0, 숫자만
@@ -87,11 +87,11 @@ const regPhone = $('#regPhone');
 const regTeam  = $('#regTeam');
 const btnRegister = $('#btnRegister');
 
-// 손님 마이페이지
+// 손님 마이페이지 (요약 카드)
 const memberSelf = $('#memberSelf');
 const selfCard   = $('#selfCard');
 
-// 상세/조작 패널
+// 상세/조작 패널 (관리자)
 const memberSection = $('#memberSection');
 const mPhoneTeam = $('#mPhoneTeam');
 const mStamp = $('#mStamp');
@@ -136,6 +136,16 @@ const btnDeletePass  = $('#btnDeletePass');
 
 const btnDeleteMember = $('#btnDeleteMember');
 
+// --- 손님 탭 전환용 ---
+const selfTabsBar   = document.querySelector('#memberSelf .tabbar');
+const selfTabPanes  = {
+  summary: document.getElementById('selfTab-summary'),
+  passes : document.getElementById('selfTab-passes'),
+  logs   : document.getElementById('selfTab-logs'),
+};
+const selfPassList  = document.getElementById('selfPassList');
+const selfLogList   = document.getElementById('selfLogList');
+
 // 상태
 let isAdmin = false;
 let currentMemberRef = null; // 현재 편집 중 회원 ref
@@ -150,6 +160,15 @@ auth.onAuthStateChanged(async(user)=>{
     isAdmin = adminEmails.includes(user.email || '');
     adminPanel?.classList.toggle('hidden', !isAdmin);
     memberSelf?.classList.toggle('hidden', isAdmin);
+
+    // 손님 탭 전환 바인딩(1회)
+    selfTabsBar?.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.tab');
+      if(!btn) return;
+      const key = btn.dataset.tab;
+      if(!key) return;
+      activateSelfTab(key);
+    });
 
     try{
       if(isAdmin){
@@ -262,7 +281,6 @@ async function loadAllMembers(){
       const div = document.createElement('div');
       div.className = 'item';
       div.textContent = `${d.name||'-'} · ${fmtPhone(d.phone||'')} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0} · 팀:${d.team||'-'}`;
-
       div.dataset.id = doc.id;
       div.style.cursor = 'pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
@@ -499,8 +517,6 @@ btnRefundPass?.addEventListener('click', async()=>{
 });
 
 // 14) === N개 증감 & 권종 삭제 & 회원 삭제 ===
-
-// 숫자 파싱 유틸
 function parsePosInt(el, def = 1) {
   const n = parseInt(el?.value ?? def, 10);
   return Number.isFinite(n) && n > 0 ? n : def;
@@ -644,28 +660,118 @@ btnDeleteMember?.addEventListener('click', async () => {
   } catch (e) { console.error('delete member', e); toast('삭제 실패: ' + e.message); }
 });
 
-// 15) 손님 마이페이지
+// 15) 손님 탭 전환 & 마이페이지 로딩
+function activateSelfTab(key){
+  // 탭 버튼 on/off
+  selfTabsBar?.querySelectorAll('.tab').forEach(btn=>{
+    btn.classList.toggle('on', btn.dataset.tab === key);
+  });
+  // 패널 show/hide
+  Object.entries(selfTabPanes).forEach(([k,el])=>{
+    el?.classList.toggle('active', k === key);
+  });
+}
+
 async function loadSelf(user){
-  if(!selfCard) return;
-  selfCard.innerHTML = '<div class="muted">불러오는 중…</div>';
+  // 기본 탭: 요약
+  activateSelfTab('summary');
+
+  const cardEl = document.getElementById('selfCard');
+  if(!cardEl) return;
+  cardEl.innerHTML = '<div class="muted">불러오는 중…</div>';
+
   try{
     const email = user?.email || '';
     const m = email.match(/^(\d{9,12})@phone\.local$/);
     const phone = m ? m[1] : email.replace(/@.*/, '');
+
+    // 내 기본 정보
     let snap = await db.collection('members').doc(phone).get();
     if(!snap.exists) snap = await db.collection('members').doc(email).get();
-    if(!snap.exists){ selfCard.innerHTML = '<div class="muted">회원 정보 없음</div>'; return; }
-
+    if(!snap.exists){
+      cardEl.innerHTML = '<div class="muted">회원 정보 없음</div>';
+      if(selfPassList) selfPassList.innerHTML = '';
+      if(selfLogList)  selfLogList.innerHTML  = '';
+      return;
+    }
     const d = snap.data() || {};
-    const passStr = Object.entries(d.passes||{}).map(([k,v])=>`${k}:${v}`).join(', ') || '-';
-    selfCard.innerHTML = `
-      <div><b>${d.name||'-'}</b> (${fmtPhone(d.phone)})</div>
-      <div>팀: ${d.team||'-'}</div>
-      <div>스탬프: ${d.stamp||0}/10</div>
-      <div>무료권: ${d.freeCredits||0}</div>
-      <div>다회권: ${passStr}</div>
+    const totalPasses = Object.values(d.passes||{}).reduce((a,b)=>a+(b||0),0);
+
+    // 요약 카드
+    cardEl.innerHTML = `
+      <div class="title">
+        <div class="name">${d.name||'-'}</div>
+        <span class="phone badge">${fmtPhone(d.phone)}</span>
+      </div>
+      <div class="kv">
+        <span class="chip">팀 · ${d.team||'-'}</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="label">스탬프(10)</div><div class="value">${d.stamp||0}</div></div>
+        <div class="stat"><div class="label">무료권</div><div class="value">${d.freeCredits||0}</div></div>
+        <div class="stat"><div class="label">다회권</div><div class="value">${totalPasses}</div></div>
+      </div>
+      <div class="progress"><div id="selfDots" class="dots"></div></div>
     `;
-  }catch(e){ console.error('loadSelf',e); selfCard.innerHTML = '로드 실패: '+e.message; }
+
+    // 스탬프 점
+    const dots = document.getElementById('selfDots');
+    if(dots){
+      dots.innerHTML='';
+      for(let i=0;i<10;i++){
+        const dot=document.createElement('div');
+        dot.className = 'dot' + (i < (d.stamp||0) ? ' on':'');
+        dots.appendChild(dot);
+      }
+    }
+
+    // 다회권 목록
+    if(selfPassList){
+      const frag=document.createDocumentFragment();
+      const passes = Object.entries(d.passes||{});
+      if(passes.length===0){
+        selfPassList.innerHTML = '<div class="muted">보유한 다회권이 없습니다</div>';
+      }else{
+        passes.forEach(([k,v])=>{
+          const row=document.createElement('div');
+          row.className='item';
+          row.textContent=`${k} · 잔여 ${v}`;
+          frag.appendChild(row);
+        });
+        selfPassList.innerHTML=''; selfPassList.appendChild(frag);
+      }
+    }
+
+    // 최근 로그 (권한 허용 시)
+    if(selfLogList){
+      try{
+        const qs = await db.collection('members').doc(phone).collection('logs')
+                      .orderBy('at','desc').limit(20).get();
+        if(qs.empty){
+          selfLogList.innerHTML = '<div class="muted">최근 로그가 없습니다</div>';
+        }else{
+          const frag=document.createDocumentFragment();
+          qs.forEach(doc=>{
+            const v=doc.data()||{};
+            const row=document.createElement('div');
+            row.className='item';
+            const when = v.at?.toDate?.()?.toLocaleString?.() || '';
+            row.textContent = `${(v.type||'').toUpperCase()} · ${when}`;
+            frag.appendChild(row);
+          });
+          selfLogList.innerHTML=''; selfLogList.appendChild(frag);
+        }
+      }catch(_e){
+        selfLogList.innerHTML = '<div class="muted">로그 열람 권한이 없습니다</div>';
+      }
+    }
+
+  }catch(e){
+    console.error('loadSelf', e);
+    cardEl.innerHTML = '로드 실패: '+e.message;
+    if(selfPassList) selfPassList.innerHTML = '';
+    if(selfLogList)  selfLogList.innerHTML  = '';
+  }
 }
 
-console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions');
+console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions + self tabs');
