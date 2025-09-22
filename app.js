@@ -209,6 +209,10 @@ auth.onAuthStateChanged(async(user)=>{
     isAdmin = adminEmails.includes(user.email || '');
     adminPanel?.classList.toggle('hidden', !isAdmin);
     memberSelf?.classList.toggle('hidden', isAdmin);
+    // 디버그 버튼/패널: 관리자만 표시
+    dbgToggle?.classList.toggle('hidden', !isAdmin);
+    dbgPanel ?.classList.add('hidden');   // 열려 있었다면 닫아두기
+
 
     // 손님 탭 전환 바인딩(1회)
     selfTabsBar?.addEventListener('click', (e)=>{
