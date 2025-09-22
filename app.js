@@ -1,5 +1,5 @@
 // ==========================
-// File: app.js (관리자 편집/조작 포함 풀버전)
+// File: app.js (관리자 편집/조작 + 휴대폰 회원가입/로그인 + 검색/목록 + 상세조작)
 // ==========================
 /* global firebase */
 
@@ -8,9 +8,9 @@ const firebaseConfig = {
   apiKey: "AIzaSyD9tP0HnP3S8X82NoZXQ5DPwoigoHJ-zfU",
   authDomain: "jumpingmanager-dcd21.firebaseapp.com",
   projectId: "jumpingmanager-dcd21",
-  storageBucket: "jumpingmanager-dcd21.firebasestorage.app",
+  storageBucket: "jumpingmanager-dcd21.firebasestorage.app", // (참고) 일반적으로 appspot.com
   messagingSenderId: "286929980468",
-  appId: "G-4CJN8R3XQ4"
+  appId: "G-4CJN8R3XQ4" // (참고) 보통 appId는 1:… 형식, 이 값은 measurementId 형식
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -20,31 +20,30 @@ const db   = firebase.firestore();
 const $ = (s)=>document.querySelector(s);
 const byId = (id)=>document.getElementById(id);
 const toast = (m)=> alert(m);
-// 🔧 휴대폰 → 내부 이메일 변환 설정 (도메인에 점이 있어야 함)
-const PHONE_DOMAIN = 'phone.local'; // 예: phone.local, app.internal 등
+const ts = ()=> firebase.firestore.FieldValue.serverTimestamp();
+
+// 🔧 휴대폰 → 내부 이메일 변환 설정(도메인에 점이 있어야 함)
+const PHONE_DOMAIN = 'phone.local';
 
 // 🔧 휴대폰 정규화(+82 → 0, 숫자만)
 function canonPhone(s){
-  let d = (s||'').replace(/\D/g,'');      // 숫자만
-  if (d.startsWith('82')) {               // +82 / 82로 시작하면 국내형으로 변환
+  let d = (s||'').replace(/\D/g,'');     // 숫자만
+  if (d.startsWith('82')) {
     if (d.startsWith('8210')) d = '0' + d.slice(2); // 8210xxxx → 010xxxx
-    else d = d.replace(/^82/, '0');       // 그 외 82 → 0
+    else d = d.replace(/^82/, '0');
   }
   return d;
 }
-
 const isPhoneInput = (s)=> /^\d{9,12}$/.test(canonPhone(s||""));
 const toEmailFromPhone = (p)=> `${canonPhone(p)}@${PHONE_DOMAIN}`;
 
-
 const fmtPhone = (p)=> {
-  const s = normPhone(p);
+  const s = canonPhone(p);
   if (s.length===11) return `${s.slice(0,3)}-${s.slice(3,7)}-${s.slice(7)}`;
   if (s.length===10) return `${s.slice(0,3)}-${s.slice(3,6)}-${s.slice(6)}`;
   return s||"-";
 };
 const sumPass = (passes)=> Object.values(passes||{}).reduce((a,b)=>a+(b||0),0);
-const ts = ()=> firebase.firestore.FieldValue.serverTimestamp();
 
 // 디버그 패널 연동(있으면 로그 노출)
 (function(){
@@ -80,7 +79,7 @@ const adminList  = $('#adminList');
 const searchPhone= $('#searchPhone');
 const btnSearch  = $('#btnSearch');
 const btnLoadAll = $('#btnLoadAll');
-// 회원 등록(간단 등록 UI가 있다면)
+// 회원 등록(간단 등록 UI)
 const regName  = $('#regName');
 const regPhone = $('#regPhone');
 const regTeam  = $('#regTeam');
@@ -150,14 +149,13 @@ auth.onAuthStateChanged(async(user)=>{
   }
 });
 
-// 로그인: 관리자(이메일) / 손님(휴대폰) 지원
+// 6) 로그인: 관리자(이메일) / 손님(휴대폰) 지원
 btnLogin?.addEventListener("click", async () => {
   const idRaw = byId("loginEmail")?.value?.trim();
   const pass = byId("loginPass")?.value?.trim();
   if (!idRaw || !pass) return toast("아이디(이메일/휴대폰)와 비밀번호를 입력하세요.");
 
   let emailForAuth = null;
-
   const looksLikeEmail = idRaw.includes("@");
   const isAdminEmailTyped = adminEmails.includes(idRaw);
 
@@ -165,7 +163,7 @@ btnLogin?.addEventListener("click", async () => {
     // 관리자: 이메일 그대로 사용
     emailForAuth = idRaw;
   } else if (isPhoneInput(idRaw)) {
-    // 손님: 휴대폰 → 내부 이메일로
+    // 손님: 휴대폰 → 내부 이메일
     emailForAuth = toEmailFromPhone(idRaw);
   } else {
     return toast("로그인: 관리자=이메일, 손님=휴대폰번호(숫자만) 입력");
@@ -180,9 +178,7 @@ btnLogin?.addEventListener("click", async () => {
   }
 });
 
-
-
-// 회원가입: 휴대폰번호 + 비밀번호
+// 7) 회원가입: 휴대폰번호 + 비밀번호
 btnSignup?.addEventListener("click", async () => {
   const phoneRaw = byId("loginEmail")?.value?.trim();
   const pass = byId("loginPass")?.value?.trim();
@@ -192,7 +188,7 @@ btnSignup?.addEventListener("click", async () => {
   if (!pass) return toast("회원가입: 비밀번호를 입력하세요.");
 
   const email = toEmailFromPhone(phone); // 예: 01012345678@phone.local
-  const now = firebase.firestore.FieldValue.serverTimestamp();
+  const now = ts();
 
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
@@ -224,11 +220,12 @@ btnSignup?.addEventListener("click", async () => {
   }
 });
 
+// 8) 로그아웃
+btnLogout?.addEventListener('click', async()=>{
+  try{ await auth.signOut(); toast('로그아웃'); }catch(e){ console.error('logout',e); }
+});
 
-
-btnLogout?.addEventListener('click', async()=>{ try{ await auth.signOut(); toast('로그아웃'); }catch(e){ console.error('logout',e); }});
-
-// 7) 관리자: 전체 목록/검색
+// 9) 관리자: 전체 목록/검색
 btnLoadAll?.addEventListener('click', loadAllMembers);
 btnSearch?.addEventListener('click', searchMembers);
 searchPhone?.addEventListener('keyup', (e)=>{ if(e.key==='Enter') searchMembers(); });
@@ -247,7 +244,7 @@ async function loadAllMembers(){
       const d = doc.data() || {};
       const div = document.createElement('div');
       div.className = 'item';
-      div.textContent = `${d.name||'-'} · ${d.phone||''} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0}`;
+      div.textContent = `${d.name||'-'} · ${fmtPhone(d.phone||'')} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0}`;
       div.dataset.id = doc.id;
       div.style.cursor = 'pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
@@ -257,10 +254,11 @@ async function loadAllMembers(){
     adminList.appendChild(frag);
   }catch(e){ console.error('loadAllMembers',e); adminList.innerHTML = '로드 실패: '+e.message; }
 }
+
 async function searchMembers(){
   if(!adminList) return;
   const qRaw = (searchPhone?.value||'').trim();
-  const q = qRaw.replace(/\D/g,'');
+  const q = canonPhone(qRaw);
   if(!q) return loadAllMembers();
 
   adminList.innerHTML = '<div class="muted">검색 중…</div>';
@@ -275,7 +273,7 @@ async function searchMembers(){
       }
     }else{
       const qs = await db.collection('members').orderBy('phone').limit(500).get();
-      docs = qs.docs.filter(d=>(d.data().phone||'').endsWith(q));
+      docs = qs.docs.filter(d=>(canonPhone(d.data().phone||'')).endsWith(q));
     }
 
     if(!docs.length){ adminList.innerHTML = '<div class="muted">검색 결과 없음</div>'; return; }
@@ -284,7 +282,7 @@ async function searchMembers(){
       const d = doc.data() || {};
       const div = document.createElement('div');
       div.className='item';
-      div.textContent = `${d.name||'-'} · ${d.phone||''} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0}`;
+      div.textContent = `${d.name||'-'} · ${fmtPhone(d.phone||'')} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0}`;
       div.dataset.id = doc.id;
       div.style.cursor='pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
@@ -294,7 +292,7 @@ async function searchMembers(){
   }catch(e){ console.error('searchMembers',e); adminList.innerHTML='검색 실패: '+e.message; }
 }
 
-// 8) 회원 상세 열기/렌더/로그
+// 10) 회원 상세 열기/렌더/로그
 function hideMemberPanel(){ memberSection?.classList.add('hidden'); currentMemberRef=null; }
 
 async function openMember(id){
@@ -306,6 +304,7 @@ async function openMember(id){
   memberSection?.classList.remove('hidden');
   await loadLogs();
 }
+
 function renderMember(d){
   if(!d) return;
   if(mPhoneTeam) mPhoneTeam.textContent = `${fmtPhone(d.phone)} · ${d.team||'-'}`;
@@ -367,7 +366,7 @@ async function loadLogs(){
   logList.appendChild(frag);
 }
 
-// 9) 프로필 저장(이름/팀명)
+// 11) 프로필 저장(이름/팀명)
 btnSaveProfile?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용');
   if(!currentMemberRef) return toast('회원을 먼저 선택');
@@ -382,7 +381,7 @@ btnSaveProfile?.addEventListener('click', async()=>{
   }catch(e){ console.error('saveProfile',e); toast('저장 실패: '+e.message); }
 });
 
-// 10) 스탬프/무료권
+// 12) 스탬프/무료권
 btnAddVisit?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   try{
@@ -422,7 +421,7 @@ btnResetStamp?.addEventListener('click', async()=>{
   }catch(e){ console.error('resetStamp',e); toast('실패: '+e.message); }
 });
 
-// 11) 다회권
+// 13) 다회권
 passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='10회권'; passCount.value='10'; }});
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; }});
 passPreset30?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='30회권'; passCount.value='30'; }});
@@ -481,13 +480,15 @@ btnRefundPass?.addEventListener('click', async()=>{
   }catch(e){ console.error('refundPass',e); toast('실패: '+e.message); }
 });
 
-// 12) 손님 마이페이지
+// 14) 손님 마이페이지
 async function loadSelf(user){
   if(!selfCard) return;
   selfCard.innerHTML = '<div class="muted">불러오는 중…</div>';
   try{
     const email = user?.email || '';
-    const phone = email.replace(/@.*/, '');
+    // 010…@phone.local 형태면 @ 앞부분이 phone
+    const m = email.match(/^(\d{9,12})@phone\.local$/);
+    const phone = m ? m[1] : email.replace(/@.*/, '');
     let snap = await db.collection('members').doc(phone).get();
     if(!snap.exists) snap = await db.collection('members').doc(email).get();
     if(!snap.exists){ selfCard.innerHTML = '<div class="muted">회원 정보 없음</div>'; return; }
@@ -504,5 +505,4 @@ async function loadSelf(user){
   }catch(e){ console.error('loadSelf',e); selfCard.innerHTML = '로드 실패: '+e.message; }
 }
 
-console.log('app.js loaded: admin edit + visits + passes + logs');
-
+console.log('app.js loaded: admin edit + visits + passes + logs (canonPhone 기반)');
