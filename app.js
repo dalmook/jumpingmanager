@@ -537,17 +537,22 @@ function renderMember(d){
   if(passList)  passList.innerHTML='';
   if(passSelect){ passSelect.innerHTML=''; }
   Object.entries(d.passes||{}).forEach(([k,v])=>{
+    const count = (typeof v === 'object' && v) ? (v.count||0) : (v||0);
+    const expStr = (typeof v === 'object' && v) ? (v.exp||null) : null;
+  
     if(passList){
       const item = document.createElement('div');
-      item.className='item'; item.textContent=`${k} · 잔여 ${v}`;
+      item.className='item';
+      item.textContent=`${k} · 잔여 ${count}` + (expStr ? ` · 만료 ${expStr}` : '');
       passList.appendChild(item);
     }
     if(passSelect){
       const opt = document.createElement('option');
-      opt.value=k; opt.textContent=`${k} (잔 ${v})`;
+      opt.value=k; opt.textContent=`${k} (잔 ${count}${expStr? ` · 만료 ${expStr}`:''})`;
       passSelect.appendChild(opt);
     }
   });
+
   renderStageInputs(d.stages || {});
 }
 
