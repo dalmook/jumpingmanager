@@ -838,12 +838,13 @@ async function loadSelf(user){
             🧊 슬러시 <b>${d.freeSlush||0}</b>
           </div>
         </div>
-
-
+      </div>   <!-- ✅ 닫힘 태그 추가 -->
+    
       <div id="selfStampGrid" class="stamp-grid"></div>
-
+    
       <p class="stamp-note muted">스탬프 10개를 찍으면 무료 1회 제공!</p>
     `;
+
 
 // 팽귄 도장 격자 (2행×5열)
     const grid = document.getElementById('selfStampGrid');
