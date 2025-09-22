@@ -261,7 +261,8 @@ async function loadAllMembers(){
       const d = doc.data() || {};
       const div = document.createElement('div');
       div.className = 'item';
-      div.textContent = `${d.name||'-'} · ${fmtPhone(d.phone||'')} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0}`;
+      div.textContent = `${d.name||'-'} · ${fmtPhone(d.phone||'')} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0} · 팀:${d.team||'-'}`;
+
       div.dataset.id = doc.id;
       div.style.cursor = 'pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
@@ -299,7 +300,7 @@ async function searchMembers(){
       const d = doc.data() || {};
       const div = document.createElement('div');
       div.className='item';
-      div.textContent = `${d.name||'-'} · ${fmtPhone(d.phone||'')} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0}`;
+      div.textContent = `${d.name||'-'} · ${fmtPhone(d.phone||'')} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0} · 팀:${d.team||'-'}`;
       div.dataset.id = doc.id;
       div.style.cursor='pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
