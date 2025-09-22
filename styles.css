@@ -110,6 +110,10 @@ body{
 .quick-register .grid.three{
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
+/* 인풋 가로폭 보장 */
+.quick-register input,
+.quick-register select { width:100%; }
+
 .grid button{ grid-column: span 1 }
 .row{ display:flex; gap:8px; align-items:center }
 .wrap{ flex-wrap:wrap }
