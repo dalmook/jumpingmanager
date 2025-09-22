@@ -250,6 +250,41 @@ auth.onAuthStateChanged(async(user)=>{
         await loadSelf(user);
       }
     }catch(e){ console.error('initial', e); }
+        // === QR 스캔 처리: ?stamp=휴대폰 ===
+    try{
+      const params = new URLSearchParams(location.search);
+      const phoneFromQR = params.get('stamp');
+      if(isAdmin && phoneFromQR){
+        await openMember(canonPhone(phoneFromQR));  // 해당 회원 상세 열기
+
+        const nRaw = prompt('적립할 스탬프 개수를 입력하세요', '1');
+        const N = parseInt(nRaw||'0', 10);
+        if(Number.isFinite(N) && N>0 && currentMemberRef){
+          await db.runTransaction(async (tx) => {
+            const snap = await tx.get(currentMemberRef);
+            const d = snap.data() || {};
+            const s0 = d.stamp || 0;
+            const total = s0 + N;
+            const addFree = Math.floor(total / 10);
+            const s1 = total % 10;
+            const totalVisits = (d.totalVisits || 0) + N;
+            const freeCredits = (d.freeCredits || 0) + addFree;
+            tx.update(currentMemberRef, {
+              stamp: s1,
+              freeCredits,
+              totalVisits,
+              updatedAt: ts()
+            });
+          });
+          await addLog('stamp_add_n', { n: N, via:'qr' });
+          renderMember((await currentMemberRef.get()).data());
+          toast(`스탬프 ${N}개 적립 완료`);
+        }
+        // 파라미터 제거 (새로고침/뒤로가기 시 재실행 방지)
+        history.replaceState({}, '', window.location.pathname);
+      }
+    }catch(e){ console.warn('qr-stamp', e); }
+
   }else{
     signedOut?.classList.remove('hidden');
     signedIn?.classList.add('hidden');
