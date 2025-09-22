@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>멤버 관리 · 스탬프 & 다회권</title>
   <link rel="stylesheet" href="styles.css" />
+
   <!-- Firebase SDK -->
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
@@ -12,119 +13,200 @@
   <script defer src="app.js"></script>
 </head>
 <body>
+  <!-- 헤더: 로그인/가입 -->
   <header class="app-header">
-    <h1>멤버 관리</h1>
-    <p class="subtitle">스탬프 10회 → 무료 1회 · 다회권 관리</p>
-    <div class="auth-area">
-      <div id="signedOut" class="auth-row">
-        <input id="loginEmail" type="text" placeholder="휴대폰번호(숫자만)" inputmode="numeric" pattern="[0-9]*" />  
-        <input id="loginPass" type="password" placeholder="비밀번호" />
-        <button id="btnLogin">로그인</button>
-        <button id="btnSignup" class="ghost">회원가입</button>
+    <div class="header-row">
+      <div>
+        <h1>멤버 관리</h1>
+        <p class="subtitle">스탬프 10회 → 무료 1회 · 다회권 관리</p>
       </div>
-      <div id="signedIn" class="auth-row hidden">
-        <span id="whoami" class="muted"></span>
-        <button id="btnLogout" class="ghost">로그아웃</button>
+      <div class="auth-area">
+        <div id="signedOut" class="auth-row">
+          <input id="loginEmail" type="text" placeholder="휴대폰번호(숫자만) / 관리자는 이메일" inputmode="text" />
+          <input id="loginPass" type="password" placeholder="비밀번호" />
+          <button id="btnLogin">로그인</button>
+          <button id="btnSignup" class="ghost">회원가입</button>
+        </div>
+        <div id="signedIn" class="auth-row hidden">
+          <span id="whoami" class="muted"></span>
+          <button id="btnLogout" class="ghost">로그아웃</button>
+        </div>
       </div>
     </div>
   </header>
 
   <main class="container">
-    <!-- 관리자 영역 -->
+    <!-- ======================================= -->
+    <!-- 관리자 영역 (좌: 검색/목록 · 우: 상세 편집) -->
+    <!-- ======================================= -->
     <section id="adminPanel" class="panel hidden">
       <h2>운영자 도구</h2>
-      <div class="grid">
-        <input id="regName" placeholder="이름" />
-        <input id="regPhone" placeholder="휴대폰번호" inputmode="numeric" />
-        <input id="regTeam" placeholder="팀명" />
-        <button id="btnRegister" class="primary">회원 등록/수정</button>
-      </div>
-      <h3 class="mt16">회원 검색</h3>
-      <div class="grid">
-        <input id="searchPhone" placeholder="휴대폰 끝 4자리 또는 전체번호" inputmode="numeric" />
-        <button id="btnSearch">검색</button>
-        <button id="btnLoadAll" class="ghost">전체 100명 불러오기</button>
-      </div>
-      <div id="adminList" class="list mt8"></div>
 
-      <!-- 회원 상세 패널 -->
-      <section id="memberSection" class="panel inner hidden">
-        <div class="member-card" id="memberCard">
-          <div class="member-head">
-            <div>
-              <div class="m-name">회원 상세</div>
-              <div id="mPhoneTeam" class="muted">-</div>
-            </div>
-            <div class="stats">
-              <div class="stat"><div class="label">스탬프(10)</div><div id="mStamp" class="value">0</div></div>
-              <div class="stat"><div class="label">무료 이용권</div><div id="mFree" class="value">0</div></div>
-              <div class="stat"><div class="label">다회권 잔여</div><div id="mPassTotal" class="value">0</div></div>
-            </div>
-          </div>
-          <div class="progress"><div id="stampDots" class="dots"></div></div>
-          <h3>기본 정보</h3>
-          <div class="grid">
-            <input id="editName" placeholder="이름" />
-            <input id="editTeam" placeholder="팀명" />
-            <button id="btnSaveProfile" class="primary">프로필 저장</button>
-          </div>
-          <h3>스탬프 / 무료권</h3>
-          <div class="row">
-            <button id="btnAddVisit" class="primary">+1 방문</button>
-            <button id="btnUseFree" class="warning">무료 1회 사용</button>
-            <button id="btnResetStamp" class="ghost">스탬프 0으로</button>
-          </div>
-          <!-- 스탬프 / 무료권 : N개 증감 -->
-          <div class="row">
-            <input id="stampDelta" type="number" min="1" step="1" value="1" style="width:100px" />
-            <button id="btnAddStampN" class="primary">스탬프 +N</button>
-            <button id="btnSubStampN" class="ghost">스탬프 -N</button>
-          
-            <input id="freeDelta" type="number" min="1" step="1" value="1" style="width:100px; margin-left:8px" />
-            <button id="btnAddFreeN" class="primary">무료권 +N</button>
-            <button id="btnSubFreeN" class="ghost">무료권 -N</button>
-          </div>          
-          <h3>다회권</h3>
-          <div class="row">
-            <input id="passName" placeholder="권종명" />
-            <input id="passCount" type="number" min="1" step="1" value="1" />
-            <button id="btnAddPass" class="primary">추가</button>
-          </div>
-          <div class="row">
-            <select id="passSelect"></select>
-            <button id="btnUsePass">선택권 -1</button>
-            <button id="btnRefundPass" class="ghost">선택권 +1</button>
-          </div>
-          <div class="row">
-            <button id="passPreset10" class="ghost">10회권</button>
-            <button id="passPreset20" class="ghost">20회권</button>
-            <button id="passPreset30" class="ghost">30회권</button>
-          </div>
-          
-          <!-- 다회권 : N개 증감 + 권종 삭제 -->
-          <div class="row">
-            <input id="passDelta" type="number" min="1" step="1" value="1" style="width:100px" />
-            <button id="btnUsePassN">선택권 -N</button>
-            <button id="btnRefundPassN" class="ghost">선택권 +N</button>
-            <button id="btnDeletePass" class="warning">선택권 삭제</button>
-          </div>
-          
-          <!-- 회원 삭제 -->
-          <div class="row">
-            <button id="btnDeleteMember" class="danger">회원 삭제</button>
-          </div>          
-          <h3>보유 다회권</h3>
-          <div id="passList" class="list small"></div>
-          <h3>최근 로그</h3>
-          <div id="logList" class="list small"></div>
+      <!-- 빠른 등록/수정 (신규 고객 접수용) -->
+      <div class="card">
+        <div class="card-head">
+          <h3>빠른 회원 등록/수정</h3>
+          <span class="muted">전화번호 기준으로 신규 생성 또는 정보 업데이트</span>
         </div>
-      </section>
+        <div class="grid three">
+          <input id="regName" placeholder="이름" />
+          <input id="regPhone" placeholder="휴대폰번호(숫자만)" inputmode="numeric" />
+          <input id="regTeam" placeholder="팀명" />
+          <button id="btnRegister" class="primary">회원 등록/수정</button>
+        </div>
+      </div>
+
+      <!-- 좌/우 2컬럼 레이아웃 -->
+      <div class="admin-layout">
+        <!-- 좌측: 검색/목록 -->
+        <div class="admin-col list-col">
+          <div class="card">
+            <div class="card-head">
+              <h3>회원 검색</h3>
+              <div class="row gap8">
+                <input id="searchPhone" placeholder="휴대폰 전체 또는 끝 4자리" inputmode="numeric" />
+                <button id="btnSearch">검색</button>
+                <button id="btnLoadAll" class="ghost">전체 100명</button>
+              </div>
+            </div>
+            <div id="adminList" class="list mt8" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- 우측: 상세 패널 -->
+        <div class="admin-col detail-col">
+          <!-- 회원 상세 패널 -->
+          <section id="memberSection" class="panel inner hidden">
+            <div class="member-card" id="memberCard">
+              <!-- 상단 요약 -->
+              <div class="member-head">
+                <div>
+                  <div class="m-name">회원 상세</div>
+                  <div id="mPhoneTeam" class="muted">-</div>
+                </div>
+                <div class="stats">
+                  <div class="stat"><div class="label">스탬프(10)</div><div id="mStamp" class="value">0</div></div>
+                  <div class="stat"><div class="label">무료 이용권</div><div id="mFree" class="value">0</div></div>
+                  <div class="stat"><div class="label">다회권 잔여</div><div id="mPassTotal" class="value">0</div></div>
+                </div>
+              </div>
+
+              <div class="progress"><div id="stampDots" class="dots"></div></div>
+
+              <!-- 정보/프로필 -->
+              <div class="card section">
+                <div class="card-head row-between">
+                  <h3>기본 정보</h3>
+                  <button id="btnSaveProfile" class="primary small">프로필 저장</button>
+                </div>
+                <div class="grid three">
+                  <input id="editName" placeholder="이름" />
+                  <input id="editTeam" placeholder="팀명" />
+                  <input disabled value="전화번호는 목록에서 선택된 문서 키로 고정" />
+                </div>
+              </div>
+
+              <!-- 스탬프/무료권 (빠른 조작 우선, 세부 N증감 아래) -->
+              <div class="card section">
+                <div class="card-head"><h3>스탬프 / 무료권</h3></div>
+
+                <!-- 빠른 조작 -->
+                <div class="row wrap gap8">
+                  <button id="btnAddVisit" class="primary">방문 +1 (10회 → 무료+1)</button>
+                  <button id="btnUseFree" class="warning">무료 1회 사용</button>
+                  <button id="btnResetStamp" class="ghost">스탬프 0으로</button>
+                </div>
+
+                <!-- N개 증감 -->
+                <div class="row wrap gap8 mt8">
+                  <div class="row gap8">
+                    <input id="stampDelta" type="number" min="1" step="1" value="1" style="width:110px" />
+                    <button id="btnAddStampN" class="primary">스탬프 +N</button>
+                    <button id="btnSubStampN" class="ghost">스탬프 -N</button>
+                  </div>
+
+                  <div class="row gap8">
+                    <input id="freeDelta" type="number" min="1" step="1" value="1" style="width:110px" />
+                    <button id="btnAddFreeN" class="primary">무료권 +N</button>
+                    <button id="btnSubFreeN" class="ghost">무료권 -N</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 다회권 -->
+              <div class="card section">
+                <div class="card-head row-between">
+                  <h3>다회권</h3>
+                  <div class="row gap8">
+                    <button id="passPreset10" class="ghost small">10회권</button>
+                    <button id="passPreset20" class="ghost small">20회권</button>
+                    <button id="passPreset30" class="ghost small">30회권</button>
+                  </div>
+                </div>
+
+                <!-- 권종 추가 -->
+                <div class="row wrap gap8">
+                  <input id="passName" placeholder="권종명 (예: 10회권)" />
+                  <input id="passCount" type="number" min="1" step="1" value="1" style="width:110px" />
+                  <button id="btnAddPass" class="primary">권종 추가</button>
+                </div>
+
+                <!-- 권종 선택 후 증감/삭제 -->
+                <div class="row wrap gap8 mt8">
+                  <select id="passSelect"></select>
+                  <button id="btnUsePass">선택권 -1</button>
+                  <button id="btnRefundPass" class="ghost">선택권 +1</button>
+
+                  <input id="passDelta" type="number" min="1" step="1" value="1" style="width:110px; margin-left:8px" />
+                  <button id="btnUsePassN">선택권 -N</button>
+                  <button id="btnRefundPassN" class="ghost">선택권 +N</button>
+                  <button id="btnDeletePass" class="warning">선택권 삭제</button>
+                </div>
+              </div>
+
+              <!-- 보유 다회권 목록 -->
+              <div class="card section">
+                <div class="card-head row-between">
+                  <h3>보유 다회권</h3>
+                  <span class="muted">권종별 잔여 수량</span>
+                </div>
+                <div id="passList" class="list small"></div>
+              </div>
+
+              <!-- 로그 + 위험영역 -->
+              <div class="grid two mt16">
+                <div class="card section">
+                  <div class="card-head"><h3>최근 로그</h3></div>
+                  <div id="logList" class="list small"></div>
+                </div>
+                <div class="card section danger-zone">
+                  <div class="card-head"><h3>위험 작업</h3></div>
+                  <div class="row wrap gap8">
+                    <button id="btnDeleteMember" class="danger">회원 삭제</button>
+                    <span class="muted">* 로그 서브컬렉션은 남습니다</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div> <!-- /detail-col -->
+      </div> <!-- /admin-layout -->
     </section>
 
+    <!-- ================== -->
     <!-- 손님 마이페이지 -->
+    <!-- ================== -->
     <section id="memberSelf" class="panel hidden">
-      <h2>나의 이용 현황</h2>
-      <div id="selfCard" class="member-card"></div>
+      <div class="card">
+        <div class="card-head row-between">
+          <h2>나의 이용 현황</h2>
+          <div class="row gap8">
+            <!-- 필요 시 JS에서 새로고침 버튼 핸들러 연결 가능 -->
+            <button id="btnRefreshSelf" class="ghost small" onclick="location.reload()">새로고침</button>
+          </div>
+        </div>
+        <div id="selfCard" class="member-card compact"></div>
+      </div>
     </section>
   </main>
 
