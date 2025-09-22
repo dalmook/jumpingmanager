@@ -204,28 +204,43 @@
           <div class="title-main">나의 이용 현황</div>
           <div class="mini-pill">LIVE</div>
         </div>
-
-        <div id="selfCard" class="member-card compact">
-          <!-- app.js의 loadSelf()가 내용 채움 -->
+    
+        <!-- 탭 콘텐츠 -->
+        <div class="self-tabs">
+          <div id="selfTab-summary" class="tabpane active">
+            <div id="selfCard" class="member-card compact"></div>
+          </div>
+    
+          <div id="selfTab-passes" class="tabpane">
+            <div class="section-card">
+              <h3>보유 다회권</h3>
+              <div id="selfPassList" class="list small"></div>
+            </div>
+          </div>
+    
+          <div id="selfTab-logs" class="tabpane">
+            <div class="section-card">
+              <h3>최근 이용 로그</h3>
+              <div id="selfLogList" class="list small"></div>
+            </div>
+          </div>
         </div>
-
-        <!-- 하단 iOS 스타일 탭바 (앵커) -->
+    
+        <!-- iOS 스타일 탭바 -->
         <nav class="tabbar">
-          <a href="#selfCard" class="tab on">
-            <span class="ico">🏠</span>
-            <span class="txt">요약</span>
-          </a>
-          <a href="#passList" class="tab">
-            <span class="ico">🎫</span>
-            <span class="txt">다회권</span>
-          </a>
-          <a href="#logList" class="tab">
-            <span class="ico">🧾</span>
-            <span class="txt">로그</span>
-          </a>
+          <button type="button" class="tab on" data-tab="summary">
+            <span class="ico">🏠</span><span class="txt">요약</span>
+          </button>
+          <button type="button" class="tab" data-tab="passes">
+            <span class="ico">🎫</span><span class="txt">다회권</span>
+          </button>
+          <button type="button" class="tab" data-tab="logs">
+            <span class="ico">🧾</span><span class="txt">로그</span>
+          </button>
         </nav>
       </div>
     </section>
+
   </main>
 
   <!-- 디버그 패널 -->
