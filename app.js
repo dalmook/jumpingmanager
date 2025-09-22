@@ -131,6 +131,15 @@ const freeDelta    = $('#freeDelta');
 const btnAddFreeN  = $('#btnAddFreeN');
 const btnSubFreeN  = $('#btnSubFreeN');
 
+const freeWkDelta   = $('#freeWkDelta');     // 추가
+const btnAddFreeWkN = $('#btnAddFreeWkN');   // 추가
+const btnSubFreeWkN = $('#btnSubFreeWkN');   // 추가
+
+const freeSlDelta   = $('#freeSlDelta');     // 추가
+const btnAddFreeSlN = $('#btnAddFreeSlN');   // 추가
+const btnSubFreeSlN = $('#btnSubFreeSlN');   // 추가
+
+
 const passDelta      = $('#passDelta');
 const btnUsePassN    = $('#btnUsePassN');
 const btnRefundPassN = $('#btnRefundPassN');
