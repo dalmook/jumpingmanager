@@ -43,7 +43,43 @@ const fmtPhone = (p)=> {
   if (s.length===10) return `${s.slice(0,3)}-${s.slice(3,6)}-${s.slice(6)}`;
   return s||"-";
 };
-const sumPass = (passes)=> Object.values(passes||{}).reduce((a,b)=>a+(b||0),0);
+// ✅ 교체: 숫자/객체(하위호환) 모두 지원
+const sumPass = (passes) =>
+  Object.values(passes || {}).reduce((acc, v) => {
+    if (typeof v === 'number') return acc + (v || 0);
+    if (v && typeof v === 'object') return acc + (v.count || 0);
+    return acc;
+  }, 0);
+
+// ✅ 추가: 공용 유틸
+function getPassCount(v){ return typeof v==='number' ? (v||0) : (v?.count||0); }
+function setPassCount(oldVal, newCount){
+  // 기존이 숫자면 객체로 승격, 객체면 count만 변경(만료일 유지)
+  if (typeof oldVal === 'number' || oldVal == null) {
+    return { count: newCount };
+  } else {
+    return { ...oldVal, count: newCount };
+  }
+}
+function setPassExpire(oldVal, expireTs){
+  // expireTs: firebase.firestore.Timestamp | null
+  if (typeof oldVal === 'number' || oldVal == null) {
+    return expireTs ? { count: (oldVal||0), expireAt: expireTs } : { count: (oldVal||0) };
+  } else {
+    const next = { ...oldVal };
+    if (expireTs) next.expireAt = expireTs; else delete next.expireAt;
+    return next;
+  }
+}
+function fmtDate(d){
+  try{
+    if(!d) return '-';
+    const dd = d.toDate ? d.toDate() : d; // Firestore Timestamp or Date
+    const y = dd.getFullYear(), m = String(dd.getMonth()+1).padStart(2,'0'), day = String(dd.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }catch{return '-';}
+}
+
 
 // 디버그 패널(있으면 로그 표시)
 (function(){
@@ -533,20 +569,26 @@ function renderMember(d){
   }
 
   // 다회권 목록/선택
-  if(passList)  passList.innerHTML='';
-  if(passSelect){ passSelect.innerHTML=''; }
-  Object.entries(d.passes||{}).forEach(([k,v])=>{
-    if(passList){
-      const item = document.createElement('div');
-      item.className='item'; item.textContent=`${k} · 잔여 ${v}`;
-      passList.appendChild(item);
-    }
-    if(passSelect){
-      const opt = document.createElement('option');
-      opt.value=k; opt.textContent=`${k} (잔 ${v})`;
-      passSelect.appendChild(opt);
-    }
-  });
+// 다회권 목록/선택 (만료일 표기 지원)
+if(passList)  passList.innerHTML='';
+if(passSelect){ passSelect.innerHTML=''; }
+Object.entries(d.passes||{}).forEach(([k,v])=>{
+  const cnt = getPassCount(v);
+  const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
+
+  if(passList){
+    const item = document.createElement('div');
+    item.className='item';
+    item.textContent = exp ? `${k} · 잔여 ${cnt} · 만료 ${exp}` : `${k} · 잔여 ${cnt}`;
+    passList.appendChild(item);
+  }
+  if(passSelect){
+    const opt = document.createElement('option');
+    opt.value=k; opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
+    passSelect.appendChild(opt);
+  }
+});
+
   renderStageInputs(d.stages || {});
 }
 
@@ -669,21 +711,38 @@ btnAddPass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const name=(passName?.value||'').trim();
   const cnt=parseInt(passCount?.value||'1',10);
+  const expireStr = document.getElementById('passExpire')?.value || '';  // ✅ 추가
   if(!name || !(cnt>0)) return toast('권종/수량 확인');
   try{
     await db.runTransaction(async(tx)=>{
       const snap=await tx.get(currentMemberRef);
       const d=snap.data()||{};
       const passes = Object.assign({}, d.passes||{});
-      passes[name] = (passes[name]||0) + cnt;
+
+      // 기존 값
+      const prev = passes[name];
+      // 수량 업데이트 (숫자→객체 승격 포함)
+      const nextCount = getPassCount(prev) + cnt;
+      let nextVal = setPassCount(prev, nextCount);
+
+      // 만료일 지정 시 반영
+      if (expireStr){
+        const dt = new Date(expireStr + 'T23:59:59'); // 해당일 끝까지 유효하게 처리
+        const tsExpire = firebase.firestore.Timestamp.fromDate(dt);
+        nextVal = setPassExpire(nextVal, tsExpire);
+      }
+
+      passes[name] = nextVal;
       tx.update(currentMemberRef, { passes, updatedAt: ts() });
     });
-    await addLog('pass_add', {name, cnt});
+    await addLog('pass_add', {name, cnt, expire: expireStr||null});
     if(passName) passName.value='';
     if(passCount) passCount.value='1';
+    const pe = document.getElementById('passExpire'); if(pe) pe.value=''; // ✅ 만료일 입력 초기화
     const d=(await currentMemberRef.get()).data(); renderMember(d);
   }catch(e){ console.error('addPass',e); toast('실패: '+e.message); }
 });
+
 btnUsePass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const key = passSelect?.value;
@@ -693,15 +752,17 @@ btnUsePass?.addEventListener('click', async()=>{
       const snap=await tx.get(currentMemberRef);
       const d=snap.data()||{};
       const passes = Object.assign({}, d.passes||{});
-      const cur = passes[key]||0;
+      const prev = passes[key];
+      const cur = getPassCount(prev);
       if(cur<=0) throw new Error('잔여 없음');
-      passes[key] = cur - 1;
+      passes[key] = setPassCount(prev, cur - 1);   // ✅ 객체/숫자 모두 지원
       tx.update(currentMemberRef, { passes, updatedAt: ts() });
     });
     await addLog('pass_use', {name:key, cnt:1});
     const d=(await currentMemberRef.get()).data(); renderMember(d);
   }catch(e){ console.error('usePass',e); toast('실패: '+e.message); }
 });
+
 btnRefundPass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const key = passSelect?.value;
@@ -711,7 +772,7 @@ btnRefundPass?.addEventListener('click', async()=>{
       const snap=await tx.get(currentMemberRef);
       const d=snap.data()||{};
       const passes = Object.assign({}, d.passes||{});
-      passes[key] = (passes[key]||0) + 1;
+      passes[key] = setPassCount(passes[key], getPassCount(passes[key]) + 1);
       tx.update(currentMemberRef, { passes, updatedAt: ts() });
     });
     await addLog('pass_refund', {name:key, cnt:1});
@@ -804,9 +865,9 @@ btnUsePassN?.addEventListener('click', async () => {
       const snap = await tx.get(currentMemberRef);
       const d = snap.data() || {};
       const passes = { ...(d.passes || {}) };
-      const cur = passes[key] || 0;
+      const cur = getPassCount(passes[key]);
       if (cur < N) throw new Error('잔여 수량이 부족합니다.');
-      passes[key] = cur - N;
+      passes[key] = setPassCount(passes[key], cur - N);
       tx.update(currentMemberRef, { passes, updatedAt: ts() });
     });
     await addLog('pass_use_n', { name: key, n: N });
@@ -824,7 +885,7 @@ btnRefundPassN?.addEventListener('click', async () => {
       const snap = await tx.get(currentMemberRef);
       const d = snap.data() || {};
       const passes = { ...(d.passes || {}) };
-      passes[key] = (passes[key] || 0) + N;
+      passes[key] = setPassCount(passes[key], getPassCount(passes[key]) + N);
       tx.update(currentMemberRef, { passes, updatedAt: ts() });
     });
     await addLog('pass_add_n', { name: key, n: N });
@@ -1017,11 +1078,14 @@ async function loadSelf(user){
         selfPassList.innerHTML = '<div class="muted">보유한 다회권이 없습니다</div>';
       }else{
         passes.forEach(([k,v])=>{
+          const cnt = getPassCount(v);
+          const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
+        
           const row=document.createElement('div');
           row.className='pass-card';
           row.innerHTML = `
-            <span class="p-name">🎫 ${k}</span>
-            <span class="p-count">${v}</span>
+            <span class="p-name">🎫 ${k}${exp ? ` <span class="muted" style="font-weight:700;font-size:12px;">· 만료 ${exp}</span>` : ''}</span>
+            <span class="p-count">${cnt}</span>
           `;
           frag.appendChild(row);
         });
