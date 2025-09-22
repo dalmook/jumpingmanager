@@ -142,13 +142,11 @@
               <h3>스탬프 / 무료권</h3>
 
               <!-- 단일 버튼(+1, 무료1회 사용, 0으로) -->
-            <div class="row wrap gap8">
-              <input id="passName"  placeholder="권종명 (예: 10회권)" />
-              <input id="passCount" type="number" min="1" step="1" value="1" class="w110" />
-              <input id="passExp" type="date" class="w110" /> <!-- ✅ 만료일 입력 -->
-              <button id="btnAddPass" class="btn primary">권종 추가</button>
-            </div>
-
+              <div class="row wrap gap8">
+                <button id="btnAddVisit" class="btn primary">방문 +1</button>
+                <button id="btnUseFree"  class="btn warn">무료 1회 사용</button>
+                <button id="btnResetStamp" class="btn ghost">스탬프 0</button>
+              </div>
 
               <!-- N 증감: 스탬프/무료권 -->
               <div class="row wrap gap8 mt8">
