@@ -230,32 +230,58 @@ input,select{
 }
 
 /* 손님 요약 박스 */
+/* 손님 요약 박스 */
 .summary-box{
-  display:flex; justify-content:space-between; align-items:flex-start;
-  gap:12px; padding:12px 12px; border:1px solid var(--line); border-radius:14px; background:#fff; box-shadow: var(--shadow);
-}
-.summary-title{ font-size:18px; font-weight:900 }
-.summary-sub{ font-size:13px }
-.summary-right{ text-align:right }
-.summary-badge{
-  display:inline-block; padding:8px 12px; border-radius:12px; background:#eef3ff; color:#5460b8; font-weight:900;
-}
-.summary-sub-mini{ font-size:12px; margin-top:6px }
-.summary-sub-mini.perks{
-  margin-top:4px;
-  font-weight:700;
-  font-size:13px;
-  color:#444;
   display:flex;
-  justify-content:flex-end;   /* 오른쪽 정렬 */
-  gap:12px;                   /* 항목 간격 */
-  white-space:nowrap;          /* 줄바꿈 방지 */
-  flex-wrap:nowrap;            /* 한 줄 고정 */
+  flex-direction:column;   /* 세로 3줄 배치 */
+  gap:4px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  box-shadow: var(--shadow);
 }
-.summary-sub-mini.perks b{
+
+/* 1줄: 이름 + 스탬프 */
+.summary-row.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.summary-row.top .summary-title{
+  font-size:18px;
+  font-weight:900;
+}
+.summary-row.top .summary-badge{
+  padding:6px 10px;
+  border-radius:12px;
+  background:#eef3ff;
+  color:#5460b8;
+  font-weight:900;
+  font-size:14px;
+}
+
+/* 2줄: 전화번호 · 팀명 */
+.summary-row.mid{
+  font-size:13px;
+  color:var(--muted);
+  white-space:nowrap;
+}
+
+/* 3줄: 무료권/평일/슬러시 */
+.summary-row.bottom{
+  display:flex;
+  gap:12px;
+  font-size:13px;
+  font-weight:700;
+  color:#444;
+  white-space:nowrap;
+}
+.summary-row.bottom b{
   color:#6b8bff;
   font-weight:900;
 }
+
 
 
 
