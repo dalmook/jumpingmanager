@@ -139,36 +139,30 @@
 
             <!-- 스탬프/무료권 -->
             <div class="section-card">
-              <div class="section-row">
-                <h3>스탬프 / 무료권 / 다회권</h3>
-              </div>
-            
-              <!-- 빠른 선택 버튼 -->
-              <div class="row gap8 mt8 wrap">
-                <button class="btn ghost small quick-pass" data-name="10회권">10회권</button>
-                <button class="btn ghost small quick-pass" data-name="20회권">20회권</button>
-                <button class="btn ghost small quick-pass" data-name="30회권">30회권</button>
-                <button class="btn ghost small quick-pass" data-name="무료권">무료권</button>
-                <button class="btn ghost small quick-pass" data-name="평일무료권">평일무료권</button>
-                <button class="btn ghost small quick-pass" data-name="슬러시무료권">슬러시무료권</button>
-              </div>
-            
-              <!-- 입력 영역 -->
-              <div class="row wrap gap8 mt8">
-                <input id="passName" placeholder="권종명" />
-                <input id="passCount" type="number" min="1" step="1" value="1" class="w110" />
-                <input id="passExp" type="date" />
-                <button id="btnAddPass" class="btn primary">권종 추가</button>
-              </div>
-            
-              <div class="row wrap gap8 mt8">
-                <select id="passSelect"></select>
-                <button id="btnUsePass" class="btn">선택권 -1</button>
-                <button id="btnRefundPass" class="btn ghost">선택권 +1</button>
-                <button id="btnDeletePass" class="btn danger">선택권 삭제</button>
-              </div>
+              <h3>스탬프 / 무료권</h3>
+
+              <!-- 단일 버튼(+1, 무료1회 사용, 0으로) -->
+            <div class="row wrap gap8">
+              <input id="passName"  placeholder="권종명 (예: 10회권)" />
+              <input id="passCount" type="number" min="1" step="1" value="1" class="w110" />
+              <input id="passExp" type="date" class="w110" /> <!-- ✅ 만료일 입력 -->
+              <button id="btnAddPass" class="btn primary">권종 추가</button>
             </div>
 
+
+              <!-- N 증감: 스탬프/무료권 -->
+              <div class="row wrap gap8 mt8">
+                <div class="row gap8">
+                  <input id="stampDelta" type="number" min="1" step="1" value="1" class="w110" />
+                  <button id="btnAddStampN" class="btn primary">스탬프 +N</button>
+                  <button id="btnSubStampN" class="btn ghost">스탬프 -N</button>
+                </div>
+                <div class="row gap8">
+                  <input id="freeDelta" type="number" min="1" step="1" value="1" class="w110" />
+                  <button id="btnAddFreeN" class="btn primary">무료권 +N</button>
+                  <button id="btnSubFreeN" class="btn ghost">무료권 -N</button>
+                </div>
+              </div>
 
               <!-- ✅ 추가: 평일무료권 N 증감 -->
               <div class="row wrap gap8 mt8">
@@ -188,6 +182,33 @@
                 </div>
               </div>
             </div>
+
+            <!-- 다회권 -->
+            <div class="section-card">
+              <div class="section-row">
+                <h3>다회권</h3>
+                <div class="row gap8">
+                  <button id="passPreset10" class="btn ghost small">10회권</button>
+                  <button id="passPreset20" class="btn ghost small">20회권</button>
+                  <button id="passPreset30" class="btn ghost small">30회권</button>
+                </div>
+              </div>
+              <div class="row wrap gap8">
+                <input id="passName"  placeholder="권종명 (예: 10회권)" />
+                <input id="passCount" type="number" min="1" step="1" value="1" class="w110" />
+                <button id="btnAddPass" class="btn primary">권종 추가</button>
+              </div>
+              <div class="row wrap gap8 mt8">
+                <select id="passSelect"></select>
+                <button id="btnUsePass" class="btn">선택권 -1</button>
+                <button id="btnRefundPass" class="btn ghost">선택권 +1</button>
+                <input id="passDelta" type="number" min="1" step="1" value="1" class="w110" />
+                <button id="btnUsePassN" class="btn">선택권 -N</button>
+                <button id="btnRefundPassN" class="btn ghost">선택권 +N</button>
+                <button id="btnDeletePass" class="btn danger">선택권 삭제</button>
+              </div>
+            </div>
+
             <div class="grid two mt16">
               <div class="section-card">
                 <h3>보유 다회권</h3>
