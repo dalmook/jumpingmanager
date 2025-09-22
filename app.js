@@ -671,37 +671,44 @@ passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; }});
 passPreset30?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='30회권'; passCount.value='30'; }});
 
-btnAddPass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const name=(passName?.value||'').trim();
-  const cnt=parseInt(passCount?.value||'1',10);
-  const expStr = passExp?.value?.trim() || null;     // ✅ yyyy-mm-dd (선택)
-  if(!name || !(cnt>0)) return toast('권종/수량 확인');
-  try{
-    await db.runTransaction(async(tx)=>{
-      const snap=await tx.get(currentMemberRef);
-      const d=snap.data()||{};
-      const passes = Object.assign({}, d.passes||{});
-      const prev = passes[name];
+// =============================
+// 개선된 다회권/무료권/스탬프 로직
+// =============================
 
-      // 구스키마(number)와 신스키마(object) 동시 처리
-      const prevCount = typeof prev === 'object' && prev ? (prev.count||0) : (prev||0);
-      const prevExp   = typeof prev === 'object' && prev ? (prev.exp||null)   : null;
-
-      passes[name] = {
-        count: prevCount + cnt,
-        exp: expStr || prevExp || null
-      };
-
-      tx.update(currentMemberRef, { passes, updatedAt: ts() });
-    });
-
-    await addLog('pass_add', {name, cnt});
-    if(passName) passName.value='';
-    if(passCount) passCount.value='1';
-    const d=(await currentMemberRef.get()).data(); renderMember(d);
-  }catch(e){ console.error('addPass',e); toast('실패: '+e.message); }
+// 빠른 선택 버튼 → 권종명 입력
+document.querySelectorAll('.quick-pass').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.getElementById('passName').value = btn.dataset.name;
+  });
 });
+
+// Firestore 저장 구조 변경
+async function addPass(phone){
+  const name = document.getElementById('passName').value.trim();
+  const count = parseInt(document.getElementById('passCount').value,10);
+  const exp = document.getElementById('passExp').value;
+
+  if(!name || !count) return;
+
+  const docRef = db.collection('members').doc(phone);
+  await db.runTransaction(async tx=>{
+    const snap = await tx.get(docRef);
+    const data = snap.data()||{};
+    let passes = data.passes || [];
+
+    // 새 pass 추가 (만료일 별로 개별 저장)
+    passes.push({name, count, exp});
+    tx.update(docRef, {passes});
+  });
+
+  alert("권종이 추가되었습니다.");
+}
+
+document.getElementById('btnAddPass')?.addEventListener('click', async ()=>{
+  if(!currentMemberPhone) return;
+  await addPass(currentMemberPhone);
+});
+
 btnUsePass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const key = passSelect?.value;
