@@ -141,7 +141,12 @@ body{
 
 /* Progress Dots */
 .progress{ padding:4px 0 }
-.dots{ display:grid; grid-template-columns:repeat(10,1fr); gap:6px }
+.dots{
+  display:flex;
+  justify-content:space-between; /* 10개를 한 줄에 꽉 차게 */
+  align-items:center;
+  gap:4px;                       /* 칸 간격 약간 줄이기 */
+}
 .dot{ height:14px; border-radius:999px; background:#f2f4ff; border:1px solid var(--line) }
 .dot.on{ background:var(--accent) }
 
