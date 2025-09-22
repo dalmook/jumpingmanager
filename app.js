@@ -705,9 +705,11 @@ async function addPass(phone){
 }
 
 document.getElementById('btnAddPass')?.addEventListener('click', async ()=>{
-  if(!currentMemberPhone) return;
-  await addPass(currentMemberPhone);
+  if(!isAdmin) return toast('운영자 전용');
+  if(!currentMemberRef) return toast('회원을 먼저 선택하세요');
+  await addPass(currentMemberRef);
 });
+
 
 btnUsePass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
