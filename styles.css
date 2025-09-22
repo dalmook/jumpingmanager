@@ -142,11 +142,42 @@ body{
 .stat .label{ color:var(--muted); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px }
 .stat .value{ font-weight:900; font-size:20px }
 
-/* Progress Dots */
+/* Progress Dots (FIXED) */
 .progress{ padding:4px 0 }
-.dots{
-.dot{ height:14px; border-radius:999px; background:#f2f4ff; border:1px solid var(--line) }
-.dot.on{ background:var(--accent) }
+
+/* 손님 화면: 하트 줄 */
+#selfDots.dots{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:4px;
+}
+
+/* 관리자 화면: 게이지 바(10칸 grid) */
+#stampDots.dots{
+  display:grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap:6px;
+}
+
+/* 게이지 점(관리자) */
+.dot{
+  width:100%;
+  height:14px;
+  border-radius:8px;
+  background:#f2f4ff;
+  border:1px solid var(--line);
+}
+.dot.on{ background:var(--accent); }
+
+/* 하트(손님) */
+.stamp{
+  font-size: clamp(18px, 5.5vw, 28px);
+  line-height: 1;
+  display:block;
+  margin: 2px;
+}
+
 
   /* 관리자 상세 패널 게이지는 예전처럼 grid */
 #stampDots.dots{
