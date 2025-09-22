@@ -421,6 +421,12 @@ input,select{
   width:120px !important;
   height:120px !important;
 }
+.expired-label{
+  color:#ff4d4d;
+  font-weight:900;
+  margin-left:4px;
+}
+
 
 /* Responsive */
 @media (max-width:1180px){
