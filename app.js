@@ -406,6 +406,55 @@ async function searchMembers(){
   }catch(e){ console.error('searchMembers',e); adminList.innerHTML='검색 실패: '+e.message; }
 }
 
+
+function renderStageInputs(stages = {}) {
+  if (!stageList) return;
+  const frag = document.createDocumentFragment();
+
+  stageOrder.forEach((name) => {
+    const total = STAGE_TOTALS[name] || 0;
+    const cur = Math.max(0, Math.min(total, parseInt(stages[name] ?? 0, 10)));
+
+    const row = document.createElement('div');
+    row.className = 'item';
+    row.innerHTML = `
+      <span>${name} <span class="muted">/ ${total}</span></span>
+      <div class="row">
+        <input type="number" class="w110" min="0" max="${total}" step="1"
+               value="${cur}" data-stage="${name}" />
+      </div>
+    `;
+    frag.appendChild(row);
+  });
+
+  stageList.innerHTML = '';
+  stageList.appendChild(frag);
+}
+
+function renderSelfStages(d = {}) {
+  if (!selfStageList) return;
+  const stages = d.stages || {};
+  const frag = document.createDocumentFragment();
+
+  stageOrder.forEach((name) => {
+    const total = STAGE_TOTALS[name] || 0;
+    if (!total) return;
+    const cur = Math.max(0, Math.min(total, parseInt(stages[name] ?? 0, 10)));
+
+    const card = document.createElement('div');
+    card.className = 'stage-card' + (cur >= total ? ' clear' : '');
+    card.innerHTML = `
+      <span class="s-name">${name}</span>
+      <span class="s-progress">${cur} / ${total}</span>
+    `;
+    frag.appendChild(card);
+  });
+
+  selfStageList.innerHTML = '';
+  selfStageList.appendChild(frag);
+}
+
+
 // 10) 회원 상세/렌더/로그
 function hideMemberPanel(){ memberSection?.classList.add('hidden'); currentMemberRef=null; }
 
@@ -461,6 +510,7 @@ function renderMember(d){
       passSelect.appendChild(opt);
     }
   });
+  renderStageInputs(d.stages || {});
 }
 
 async function addLog(type, extra={}){
@@ -487,6 +537,34 @@ async function loadLogs(){
   logList.innerHTML='';
   logList.appendChild(frag);
 }
+
+
+btnSaveStages?.addEventListener('click', async () => {
+  if (!isAdmin) return toast('운영자 전용');
+  if (!currentMemberRef) return toast('회원을 먼저 선택');
+
+  try {
+    const inputs = stageList?.querySelectorAll('input[data-stage]') || [];
+    const stages = {};
+    inputs.forEach((el) => {
+      const name = el.dataset.stage;
+      const total = STAGE_TOTALS[name] || 0;
+      let val = parseInt(el.value || '0', 10);
+      if (!Number.isFinite(val) || val < 0) val = 0;
+      if (val > total) val = total;
+      stages[name] = val;
+    });
+
+    await currentMemberRef.update({ stages, updatedAt: ts() });
+    await addLog('stages_save', { stages });
+    renderMember((await currentMemberRef.get()).data());
+    toast('스테이지 저장 완료');
+  } catch (e) {
+    console.error('save stages', e);
+    toast('저장 실패: ' + (e?.message || e));
+  }
+});
+
 
 // 11) 프로필 저장(이름/팀명)
 btnSaveProfile?.addEventListener('click', async()=>{
@@ -904,29 +982,21 @@ async function loadSelf(user){
     }
 
 
-    // 최근 로그 (권한 허용 시)
-    if(selfLogList){
-      try{
-        const qs = await db.collection('members').doc(phone).collection('logs')
-                      .orderBy('at','desc').limit(20).get();
-        if(qs.empty){
-          selfLogList.innerHTML = '<div class="muted">최근 로그가 없습니다</div>';
-        }else{
-          const frag=document.createDocumentFragment();
-          qs.forEach(doc=>{
-            const v=doc.data()||{};
-            const row=document.createElement('div');
-            row.className='item';
-            const when = v.at?.toDate?.()?.toLocaleString?.() || '';
-            row.textContent = `${(v.type||'').toUpperCase()} · ${when}`;
-            frag.appendChild(row);
-          });
-          selfLogList.innerHTML=''; selfLogList.appendChild(frag);
+
+    // 손님 화면: 스테이지 기록 보기
+    const btnView = byId('btnViewStages');
+    if (btnView) {
+      btnView.onclick = async () => {
+        try {
+          const snap = await db.collection('members').doc(phone).get();
+          renderSelfStages(snap.data() || {});   // 스테이지 기록 렌더링
+        } catch (e) {
+          console.error('view stages', e);
+          selfStageList.innerHTML = '<div class="muted">기록을 불러올 수 없습니다</div>';
         }
-      }catch(_e){
-        selfLogList.innerHTML = '<div class="muted">로그 열람 권한이 없습니다</div>';
-      }
+      };
     }
+
 
   }catch(e){
     console.error('loadSelf', e);
