@@ -241,6 +241,20 @@ input,select{
   display:inline-block; padding:8px 12px; border-radius:12px; background:#eef3ff; color:#5460b8; font-weight:900;
 }
 .summary-sub-mini{ font-size:12px; margin-top:6px }
+.summary-sub-mini.perks{
+  margin-top:4px;
+  font-weight:700;
+  font-size:13px;
+  color:#444;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.summary-sub-mini.perks b{
+  color:#6b8bff;   /* 파스텔 블루 */
+  font-weight:900;
+}
+
 
 /* 팽귄 도장 격자 (2행×5열) */
 .stamp-grid{
