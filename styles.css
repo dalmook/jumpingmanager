@@ -411,6 +411,16 @@ input,select{
 .stage-card.clear .s-progress::after{
   content:" 🏆✨";
 }
+.big-qr{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px 0;
+}
+.big-qr canvas, .big-qr img{
+  width:200px !important;
+  height:200px !important;
+}
 
 /* Responsive */
 @media (max-width:1180px){
