@@ -418,8 +418,8 @@ input,select{
   padding:20px 0;
 }
 .big-qr canvas, .big-qr img{
-  width:200px !important;
-  height:200px !important;
+  width:160px !important;
+  height:160px !important;
 }
 
 /* Responsive */
