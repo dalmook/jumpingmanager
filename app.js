@@ -177,6 +177,8 @@ const selfPassList  = document.getElementById('selfPassList');
 const selfLogList   = document.getElementById('selfLogList');
 
 
+
+
 // === 빠른 회원 등록/수정 ===
 btnRegister?.addEventListener('click', async ()=>{
   if(!isAdmin) return toast('운영자 전용 기능입니다.');
