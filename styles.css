@@ -106,7 +106,10 @@ body{
 /* Grids */
 .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
 .grid.two{ grid-template-columns:1fr 1fr }
-.grid.three{ grid-template-columns:repeat(3,1fr) }
+/* 빠른 등록/수정 섹션은 칸 폭이 좁아지면 2칸/1칸으로 자동 줄어듦 */
+.quick-register .grid.three{
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
 .grid button{ grid-column: span 1 }
 .row{ display:flex; gap:8px; align-items:center }
 .wrap{ flex-wrap:wrap }
