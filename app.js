@@ -30,7 +30,7 @@ const selfCard = $('#selfCard');
 let isAdmin = false;
 
 // 관리자 이메일 리스트(추후 커스텀 클레임으로 대체 가능)
-const adminEmails = ["admin@example.com"]; // 필요시 추가
+const adminEmails = ["chosungmook@naver.com"]; // 필요시 추가
 
 // Auth 상태 감시
 auth.onAuthStateChanged(async(user)=>{
