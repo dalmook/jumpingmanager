@@ -277,6 +277,8 @@ btnSignup?.addEventListener("click", async () => {
           team: "",
           stamp: 0,
           freeCredits: 0,
+          freeWeekday: 0,   // 추가
+          freeSlush: 0,     // 추가
           passes: {},
           totalVisits: 0,
           createdAt: now,
