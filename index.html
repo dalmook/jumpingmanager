@@ -14,6 +14,7 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body class="ios">
@@ -246,7 +247,7 @@
       <div class="card ios-card">
         <div class="ios-title">
           <div class="title-main">나의 이용 현황</div>
-          <div class="mini-pill">LIVE</div>
+          <div id="selfQR" class="mini-pill" style="padding:0; background:transparent;"></div> <!-- QR 렌더 위치 -->
         </div>
 
         <!-- 탭 콘텐츠 -->
