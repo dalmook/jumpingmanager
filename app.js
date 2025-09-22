@@ -757,35 +757,51 @@ btnAddPass?.addEventListener('click', async()=>{
 });
 
 
+// 다회권 -1
 btnUsePass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  if(!isAdmin) return toast('운영자 전용');
+  if(!currentMemberRef) return toast('회원을 먼저 선택');
 
   const sel = parseSelectedPassKey(); if(!sel) return;
+
   try{
     await db.runTransaction(async(tx)=>{
-      const snap=await tx.get(currentMemberRef);
-      const d=snap.data()||{};
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const nowMs = firebase.firestore.Timestamp.now().toMillis();
 
-      if(sel.kind==='batch'){
-        const passBatches = { ...(d.passBatches||{}) };
+      if(sel.kind === 'batch'){
+        const passBatches = { ...(d.passBatches || {}) };
         const b = passBatches[sel.key];
         if(!b) throw new Error('선택한 배치를 찾을 수 없습니다.');
-        if((b.count||0) <= 0) throw new Error('잔여 없음');
-        passBatches[sel.key] = { ...b, count: (b.count||0) - 1 };
+        if (b.expireAt && b.expireAt.toMillis() < nowMs) throw new Error('만료된 배치입니다.');
+        if((b.count || 0) <= 0) throw new Error('잔여 없음');
+
+        passBatches[sel.key] = { ...b, count: (b.count || 0) - 1 };
         tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
-      }else{ // legacy
-        const passes = { ...(d.passes||{}) };
+
+      } else { // legacy
+        const passes = { ...(d.passes || {}) };
         const prev = passes[sel.key];
+        if (prev && typeof prev === 'object' && prev.expireAt && prev.expireAt.toMillis() < nowMs) {
+          throw new Error('만료된 권종입니다.');
+        }
         const cur = getPassCount(prev);
-        if(cur<=0) throw new Error('잔여 없음');
+        if(cur <= 0) throw new Error('잔여 없음');
+
         passes[sel.key] = setPassCount(prev, cur - 1);
         tx.update(currentMemberRef, { passes, updatedAt: ts() });
       }
     });
-    await addLog('pass_use', { where: sel.kind, key: sel.key, cnt:1 });
+
+    await addLog('pass_use', { where: sel.kind, key: sel.key, cnt: 1 });
     renderMember((await currentMemberRef.get()).data());
-  }catch(e){ console.error('usePass',e); toast('실패: '+e.message); }
+  }catch(e){
+    console.error('usePass -1', e);
+    toast('실패: ' + (e?.message || e));
+  }
 });
+
 
 
 btnRefundPass?.addEventListener('click', async()=>{
@@ -885,56 +901,57 @@ btnSubFreeN?.addEventListener('click', async () => {
 });
 
 // 다회권 -N
-btnUsePass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+btnUsePassN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용');
+  if(!currentMemberRef) return toast('회원을 먼저 선택');
 
   const sel = parseSelectedPassKey(); if(!sel) return;
 
+  const N = parsePosInt(passDelta, 1);
+  if(!(N > 0)) return toast('수량(N)을 확인하세요.');
+
   try{
-    await db.runTransaction(async(tx)=>{
+    await db.runTransaction(async (tx) => {
       const snap = await tx.get(currentMemberRef);
       const d = snap.data() || {};
-      const nowMs = firebase.firestore.Timestamp.now().toMillis();  // ✅ 현재 서버시간 기반 비교
+      const nowMs = firebase.firestore.Timestamp.now().toMillis();
 
-      if(sel.kind === 'batch'){
+      if (sel.kind === 'batch') {
         const passBatches = { ...(d.passBatches || {}) };
         const b = passBatches[sel.key];
-        if(!b) throw new Error('선택한 배치를 찾을 수 없습니다.');
+        if (!b) throw new Error('선택한 배치를 찾을 수 없습니다.');
+        if (b.expireAt && b.expireAt.toMillis() < nowMs) throw new Error('만료된 배치입니다.');
 
-        // ✅ 만료 체크 (expireAt이 있고, 지금보다 이전이면 사용 불가)
-        if (b.expireAt && b.expireAt.toMillis() < nowMs) {
-          throw new Error('만료된 배치입니다.');
-        }
+        const cur = b.count || 0;
+        if (cur < N) throw new Error('잔여 수량이 부족합니다.');
+        passBatches[sel.key] = { ...b, count: cur - N };
 
-        if((b.count || 0) <= 0) throw new Error('잔여 없음');
-        passBatches[sel.key] = { ...b, count: (b.count || 0) - 1 };
         tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
 
       } else { // legacy
         const passes = { ...(d.passes || {}) };
         const prev = passes[sel.key];
-
-        // ✅ 레거시에도 expireAt이 객체에 들어가 있을 수 있으니 방어
         if (prev && typeof prev === 'object' && prev.expireAt && prev.expireAt.toMillis() < nowMs) {
           throw new Error('만료된 권종입니다.');
         }
 
         const cur = getPassCount(prev);
-        if(cur <= 0) throw new Error('잔여 없음');
+        if (cur < N) throw new Error('잔여 수량이 부족합니다.');
 
-        passes[sel.key] = setPassCount(prev, cur - 1);
+        passes[sel.key] = setPassCount(prev, cur - N);
         tx.update(currentMemberRef, { passes, updatedAt: ts() });
       }
     });
 
-    await addLog('pass_use', { where: sel.kind, key: sel.key, cnt: 1 });
+    await addLog('pass_use_n', { where: sel.kind, key: sel.key, n: N });
     renderMember((await currentMemberRef.get()).data());
 
-  } catch(e){
-    console.error('usePass', e);
+  } catch (e) {
+    console.error('usePass -N', e);
     toast('실패: ' + (e?.message || e));
   }
 });
+
 
 
 // 다회권 +N
