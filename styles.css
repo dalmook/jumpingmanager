@@ -222,6 +222,14 @@ input,select{
 .ios-card .ios-title{
   padding: 16px 16px 0; display:flex; justify-content:space-between; align-items:center;
 }
+#selfQR canvas, #selfQR img{
+  display:block;
+  width:72px; height:72px;  /* 위에서 지정한 사이즈와 동일 */
+  border-radius:12px;
+  box-shadow: var(--shadow);
+  background:#fff;
+}
+
 .ios-card .title-main{ font-size:22px; font-weight:900 }
 .mini-pill{ background:#eef3ff; color:#5460b8; border-radius:999px; padding:6px 10px; font-weight:800; font-size:12px }
 #selfCard.member-card.compact{
