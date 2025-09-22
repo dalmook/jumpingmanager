@@ -252,14 +252,15 @@ input,select{
   display:block; background:#fff; position:relative;
   border:2px dashed #ccd3f1;
 }
-.stamp-slot.filled {
+.stamp-slot.filled{
   border:2px solid transparent;
   background:
-    radial-gradient(closest-side, #ffffff 70%, transparent 71%) center/100% 100% no-repeat,
     var(--stamp-url) center/60% 60% no-repeat,
+    radial-gradient(closest-side, transparent 70%, #ffffff 71%) center/100% 100% no-repeat,
     #ffffff;
   box-shadow: var(--shadow);
 }
+
 .stamp-slot.empty{
   background: radial-gradient(closest-side, #fafbff 70%, transparent 71%) center/100% 100% no-repeat;
 }
