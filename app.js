@@ -823,35 +823,40 @@ async function loadSelf(user){
     const d = snap.data() || {};
     const totalPasses = Object.values(d.passes||{}).reduce((a,b)=>a+(b||0),0);
 
-    // 요약 카드
+// 요약 박스 + 도장 격자(2행×5열)
     cardEl.innerHTML = `
-      <div class="title">
-        <div class="name">${d.name||'-'}</div>
-        <span class="phone badge">${fmtPhone(d.phone)}</span>
+      <div class="summary-box">
+        <div class="summary-left">
+          <div class="summary-title">${d.name || '-'}</div>
+          <div class="summary-sub muted">${fmtPhone(d.phone)} · ${d.team || '-'}</div>
+        </div>
+        <div class="summary-right">
+          <div class="summary-badge">스탬프 ${d.stamp || 0}/10</div>
+          <div class="summary-sub-mini muted">무료 ${d.freeCredits||0} · 평일 ${d.freeWeekday||0} · 슬러시 ${d.freeSlush||0}</div>
+        </div>
       </div>
-      <div class="kv">
-        <span class="chip">팀 · ${d.team||'-'}</span>
-      </div>
-      <div class="stats">
-        <div class="stat"><div class="label">스탬프(10)</div><div class="value">${d.stamp||0}</div></div>
-        <div class="stat"><div class="label">무료권</div><div class="value">${d.freeCredits||0}</div></div>
-        <div class="stat"><div class="label">평일무료권</div><div class="value">${d.freeWeekday||0}</div></div>  <!-- 추가 -->
-        <div class="stat"><div class="label">슬러시 무료권</div><div class="value">${d.freeSlush||0}</div></div>   <!-- 추가 -->
-        <div class="stat"><div class="label">다회권</div><div class="value">${totalPasses}</div></div>
-      </div>
-      <div class="progress"><div id="selfDots" class="dots"></div></div>
+
+      <div id="selfStampGrid" class="stamp-grid"></div>
+
+      <p class="stamp-note muted">스탬프 10개를 찍으면 무료 1회 제공!</p>
     `;
 
-    // 스탬프 도장 표현 (이모지/아이콘)
-    const dots = document.getElementById('selfDots');
-    if(dots){
-      dots.innerHTML='';
+// 팽귄 도장 격자 (2행×5열)
+    const grid = document.getElementById('selfStampGrid');
+    if(grid){
+      grid.innerHTML = '';
+      const stampCount = d.stamp || 0;
+      // 프로젝트 루트에 penguin.png 를 넣어주세요 (경로 바꾸면 아래도 같이)
+      const imgURL = 'penguin.png';
+
       for(let i=0;i<10;i++){
-        const span=document.createElement('span');
-        span.className='stamp' + (i < (d.stamp||0) ? ' on':'');
-        // 채워진 칸은 도장 ✅, 비어있는 칸은 ◻️ 같은 걸로 표현
-        span.textContent = (i < (d.stamp||0)) ? '❤️' : '🤍';
-        dots.appendChild(span);
+        const cell = document.createElement('div');
+        cell.className = 'stamp-slot' + (i < stampCount ? ' filled' : ' empty');
+        if(i < stampCount){
+          // 채워진 칸: 팽귄 얼굴
+          cell.style.setProperty('--stamp-url', `url("${imgURL}")`);
+        }
+        grid.appendChild(cell);
       }
     }
 
