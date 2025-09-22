@@ -3,32 +3,46 @@ File: styles.css
 ========================= */
 :root{
   --bg:#0f1115; --card:#161a22; --fg:#e8ebf1; --muted:#9aa3b2;
-  --line:#232838; --btn:#2b6cf6; --ghost:#2a2f3a; --warn:#ffb54a;
+  --line:#232838; --btn:#2b6cf6; --ghost:#2a2f3a; --warn:#ffb54a; --accent:#7be495;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{
-  margin:0; font-family: system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;
-  background:var(--bg); color:var(--fg);
-}
-.app-header{padding:20px 16px; border-bottom:1px solid var(--line)}
-.app-header h1{margin:0 0 6px; font-size:22px}
-.subtitle{margin:0; color:var(--muted); font-size:14px}
-.auth-area{margin-top:10px}
-.auth-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-.auth-row input{flex:1; min-width:220px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#0c0e13; color:var(--fg)}
-.auth-row button{padding:10px 14px; border-radius:10px; border:0; background:var(--btn); color:#fff; font-weight:600}
-.auth-row .ghost{background:var(--ghost)}
-.hidden{display:none}
-
-.container{max-width:960px; margin:0 auto; padding:16px}
-.panel{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:16px}
-.panel h2{margin:0 0 12px; font-size:18px}
-.list{display:grid; gap:8px}
-.item{padding:12px; border:1px solid var(--line); border-radius:12px; background:#0c0f16}
-.muted{color:var(--muted)}
-.app-footer{padding:20px 16px; color:var(--muted); text-align:center}
-
-@media (max-width:680px){
-  .auth-row{flex-direction:column; align-items:stretch}
-}
+body{ margin:0; font-family: system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--fg); }
+.app-header{ padding:20px 16px; border-bottom:1px solid var(--line) }
+.app-header h1{ margin:0 0 6px; font-size:22px }
+.subtitle{ margin:0; color:var(--muted); font-size:14px }
+.auth-area{ margin-top:10px }
+.auth-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+.auth-row input{ flex:1; min-width:220px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#0c0e13; color:var(--fg) }
+.auth-row button{ padding:10px 14px; border-radius:10px; border:0; background:var(--btn); color:#fff; font-weight:600 }
+.auth-row .ghost{ background:var(--ghost) }
+.hidden{ display:none }
+.container{ max-width:980px; margin:0 auto; padding:16px }
+.panel{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:16px 0 }
+.panel.inner{ margin-top:16px }
+.panel h2{ margin:0 0 12px; font-size:18px }
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px }
+.grid button{ grid-column: span 2 }
+.row{ display:flex; gap:8px; flex-wrap:wrap }
+.mt8{ margin-top:8px } .mt16{ margin-top:16px }
+.list{ display:grid; gap:8px; margin-top:8px }
+.item{ padding:12px; border:1px solid var(--line); border-radius:12px; background:#0c0f16; display:flex; justify-content:space-between; align-items:center }
+.list.small .item{ padding:8px; font-size:14px }
+.member-card{ display:flex; flex-direction:column; gap:16px }
+.member-head{ display:flex; justify-content:space-between; gap:16px; align-items:flex-start }
+.m-name{ font-size:20px; font-weight:700 }
+.muted{ color:var(--muted) }
+.stats{ display:flex; gap:16px; flex-wrap:wrap }
+.stat{ background:#0c0f16; border:1px solid var(--line); border-radius:12px; padding:10px 12px; min-width:120px }
+.stat .label{ color:var(--muted); font-size:12px }
+.stat .value{ font-weight:800; font-size:20px }
+.progress{ padding:6px 0 }
+.dots{ display:grid; grid-template-columns:repeat(10,1fr); gap:6px }
+.dot{ height:14px; border-radius:8px; background:#1c2230; border:1px solid var(--line) }
+.dot.on{ background:var(--accent) }
+button{ padding:10px 12px; border-radius:10px; border:0; background:var(--ghost); color:#fff; font-weight:600 }
+button.primary{ background:var(--btn) }
+button.warning{ background:var(--warn); color:#222 }
+input,select{ padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#0c0e13; color:var(--fg) }
+.app-footer{ padding:20px 16px; color:var(--muted); text-align:center }
+@media (max-width:680px){ .auth-row{ flex-direction:column; align-items:stretch } .grid{ grid-template-columns:1fr } }
