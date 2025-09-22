@@ -683,25 +683,23 @@ document.querySelectorAll('.quick-pass').forEach(btn=>{
 });
 
 // Firestore 저장 구조 변경
-async function addPass(phone){
-  const name = document.getElementById('passName').value.trim();
-  const count = parseInt(document.getElementById('passCount').value,10);
-  const exp = document.getElementById('passExp').value;
+async function addPass(docRef){
+  const name = passName?.value.trim();
+  const count = parseInt(passCount?.value,10);
+  const exp = passExp?.value || null;
 
   if(!name || !count) return;
 
-  const docRef = db.collection('members').doc(phone);
   await db.runTransaction(async tx=>{
     const snap = await tx.get(docRef);
     const data = snap.data()||{};
     let passes = data.passes || [];
 
-    // 새 pass 추가 (만료일 별로 개별 저장)
     passes.push({name, count, exp});
-    tx.update(docRef, {passes});
+    tx.update(docRef, {passes, updatedAt: ts()});
   });
 
-  alert("권종이 추가되었습니다.");
+  toast("권종이 추가되었습니다.");
 }
 
 document.getElementById('btnAddPass')?.addEventListener('click', async ()=>{
