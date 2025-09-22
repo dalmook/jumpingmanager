@@ -1,9 +1,9 @@
 // ==========================
-// File: app.js
-// Purpose: GitHub Pages + Firebase 멤버 관리 (관리자/손님) - 캔버스 최신 HTML에 맞춘 JS
+// File: app.js (회원등록/수정 핸들러 포함 버전)
 // ==========================
+/* global firebase */
 
-/* 1) Firebase 설정값 채우기 (콘솔 > 프로젝트 설정 > 일반에서 복사) */
+// 1) Firebase 설정값 채우기
 const firebaseConfig = {
   apiKey: "AIzaSyD9tP0HnP3S8X82NoZXQ5DPwoigoHJ-zfU",
   authDomain: "jumpingmanager-dcd21.firebaseapp.com",
@@ -12,284 +12,214 @@ const firebaseConfig = {
   messagingSenderId: "286929980468",
   appId: "G-4CJN8R3XQ4"
 };
-// --- 초기화
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* 2) 디버그 패널: 콘솔/에러를 화면으로도 확인 (태블릿 편의) */
-(function debugPanel() {
-  const $ = (id) => document.getElementById(id);
-  const area = () => $("__dbgArea");
-  const panel = () => $("__dbgPanel");
+// 2) 간단 헬퍼/유틸
+const $ = (s)=>document.querySelector(s);
+const toast = (m)=> alert(m);
+const normPhone = (p)=> (p||"").replace(/\D/g,"");
+const ts = ()=> firebase.firestore.FieldValue.serverTimestamp();
 
-  function stamp() {
-    const d = new Date();
-    return d.toLocaleString() + "." + String(d.getMilliseconds()).padStart(3, "0");
+// 3) 디버그 패널 로그(태블릿용)
+(function(){
+  const area = ()=> document.getElementById('__dbgArea');
+  function stamp(){ const d=new Date(); return d.toLocaleString()+'.'+String(d.getMilliseconds()).padStart(3,'0'); }
+  function write(kind, ...args){
+    try{
+      const el=area(); if(!el) return;
+      const line = `[${stamp()}] ${kind}: ${args.map(a=>{try{return typeof a==='string'?a:JSON.stringify(a);}catch{return String(a);}}).join(' ')}`;
+      el.value += (el.value?'\n':'')+line; el.scrollTop = el.scrollHeight;
+    }catch(_){}
   }
-  function write(kind, ...args) {
-    try {
-      const el = area();
-      if (!el) return;
-      const line =
-        `[${stamp()}] ${kind}: ` +
-        args
-          .map((a) => {
-            try {
-              if (typeof a === "string") return a;
-              return JSON.stringify(a);
-            } catch {
-              return String(a);
-            }
-          })
-          .join(" ");
-      el.value += (el.value ? "\n" : "") + line;
-      el.scrollTop = el.scrollHeight;
-    } catch (_) {}
-  }
-
-  // 버튼
-  window.addEventListener("DOMContentLoaded", () => {
-    $("__dbgToggle")?.addEventListener("click", () => panel()?.classList.toggle("hidden"));
-    $("__dbgClose")?.addEventListener("click", () => panel()?.classList.add("hidden"));
-    $("__dbgClear")?.addEventListener("click", () => {
-      if (area()) area().value = "";
-    });
-    $("__dbgCopy")?.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(area()?.value || "");
-        alert("복사됨");
-      } catch (e) {
-        alert("복사 실패: " + (e?.message || e));
-      }
-    });
-  });
-
-  // console 프록시
-  const _log = console.log.bind(console);
-  const _warn = console.warn.bind(console);
-  const _err = console.error.bind(console);
-  console.log = (...args) => {
-    write("LOG", ...args);
-    _log(...args);
-  };
-  console.warn = (...args) => {
-    write("WARN", ...args);
-    _warn(...args);
-  };
-  console.error = (...args) => {
-    write("ERROR", ...args);
-    _err(...args);
-  };
-
-  // 전역 오류
-  window.addEventListener("error", (e) => write("UNCAUGHT", e?.message || e?.error || e));
-  window.addEventListener("unhandledrejection", (e) =>
-    write("REJECTION", e?.reason?.message || e?.reason || e)
-  );
-
-  // 전역 try 헬퍼(원하면 사용)
-  window.__dbgTry = async (label, fn) => {
-    try {
-      return await fn();
-    } catch (e) {
-      console.error(label, e?.message || e, e);
-      alert(`[${label}] 오류: ${e?.message || e}`);
-      throw e;
-    }
-  };
+  const _log=console.log.bind(console), _err=console.error.bind(console), _warn=console.warn.bind(console);
+  console.log=(...a)=>{ write('LOG',...a); _log(...a); };
+  console.warn=(...a)=>{ write('WARN',...a); _warn(...a); };
+  console.error=(...a)=>{ write('ERROR',...a); _err(...a); };
+  window.addEventListener('error', e=> write('UNCAUGHT', e?.message||e));
+  window.addEventListener('unhandledrejection', e=> write('REJECTION', e?.reason?.message||e?.reason));
 })();
 
-/* 3) 유틸 & DOM 안전 접근자 */
-const $ = (sel) => document.querySelector(sel);
-const byId = (id) => document.getElementById(id);
-const setHTML = (id, html) => {
-  const el = byId(id);
-  if (el) el.innerHTML = html;
-};
-const setText = (id, text) => {
-  const el = byId(id);
-  if (el) el.textContent = text;
-};
-const normPhone = (p) => (p || "").replace(/\D/g, "");
-const fmtPhone = (p) => {
-  const s = normPhone(p);
-  if (s.length === 11) return `${s.slice(0, 3)}-${s.slice(3, 7)}-${s.slice(7)}`;
-  if (s.length === 10) return `${s.slice(0, 3)}-${s.slice(3, 6)}-${s.slice(6)}`;
-  return s || "-";
-};
-const sumPass = (passes) => Object.values(passes || {}).reduce((a, b) => a + (b || 0), 0);
-const toast = (m) => alert(m);
+// 4) 권한(간단): 관리자 이메일 리스트
+const adminEmails = ["chosungmook@naver.com"];
 
-/* 4) 관리자 이메일 목록 (간단 권한 분기) */
-const adminEmails = ["chosungmook@naver.com"]; // 필요 시 추가
+// 5) 공통 DOM
+const signedOut = $('#signedOut');
+const signedIn  = $('#signedIn');
+const whoami    = $('#whoami');
+const btnLogin  = $('#btnLogin');
+const btnSignup = $('#btnSignup');
+const btnLogout = $('#btnLogout');
 
-/* 5) HTML 요소 참조 (캔버스 최신본 기준) */
-const signedOut = byId("signedOut");
-const signedIn = byId("signedIn");
-const whoami = byId("whoami");
-const btnLogin = byId("btnLogin");
-const btnSignup = byId("btnSignup");
-const btnLogout = byId("btnLogout");
+const adminPanel = $('#adminPanel');
+const allMembers = $('#allMembers');  // 관리자 전체 목록 컨테이너(없어도 무방)
+const memberSelf = $('#memberSelf');
+const selfCard   = $('#selfCard');    // 손님 카드 컨테이너(없어도 무방)
 
-// 관리자/손님 패널
-const adminPanel = byId("adminPanel"); // 내부에 allMembers만 존재
-const allMembers = byId("allMembers");
+// ★ 회원등록/수정에 필요한 입력 요소
+const regName  = $('#regName');
+const regPhone = $('#regPhone');
+const regTeam  = $('#regTeam');
+const btnRegister = $('#btnRegister');
 
-const memberSelf = byId("memberSelf");
-const selfCard = byId("selfCard");
-
-/* 6) 인증 상태 */
 let isAdmin = false;
 
-auth.onAuthStateChanged(async (user) => {
-  console.log("onAuthStateChanged:", !!user, user?.email);
+// 6) 인증 상태
+auth.onAuthStateChanged(async(user)=>{
+  if(user){
+    signedOut?.classList.add('hidden');
+    signedIn?.classList.remove('hidden');
+    if (whoami) whoami.textContent = user.email || '';
 
-  if (user) {
-    signedOut?.classList.add("hidden");
-    signedIn?.classList.remove("hidden");
-    setText("whoami", user.email || "");
+    isAdmin = adminEmails.includes(user.email || '');
+    adminPanel?.classList.toggle('hidden', !isAdmin);
+    memberSelf?.classList.toggle('hidden', isAdmin);
 
-    // 관리자 여부
-    isAdmin = adminEmails.includes(user.email || "");
-    adminPanel?.classList.toggle("hidden", !isAdmin);
-    memberSelf?.classList.toggle("hidden", isAdmin);
-
-    try {
-      if (isAdmin) {
+    try{
+      if(isAdmin){
         await loadAllMembers();
-      } else {
+      }else{
         await loadSelf(user);
       }
-    } catch (e) {
-      console.error("initial load error", e);
-    }
-  } else {
-    signedOut?.classList.remove("hidden");
-    signedIn?.classList.add("hidden");
-    adminPanel?.classList.add("hidden");
-    memberSelf?.classList.add("hidden");
-    setText("whoami", "");
+    }catch(e){ console.error('initial load', e); }
+  }else{
+    signedOut?.classList.remove('hidden');
+    signedIn?.classList.add('hidden');
+    adminPanel?.classList.add('hidden');
+    memberSelf?.classList.add('hidden');
   }
 });
 
-/* 7) 로그인/가입/로그아웃 */
-btnLogin?.addEventListener("click", async () => {
-  const email = byId("loginEmail")?.value?.trim();
-  const pass = byId("loginPass")?.value?.trim();
-  if (!email || !pass) return toast("이메일/비밀번호를 입력하세요.");
-  await __dbgTry("login", async () => {
+// 7) 로그인/회원가입/로그아웃
+btnLogin?.addEventListener('click', async()=>{
+  const email = $('#loginEmail')?.value?.trim();
+  const pass  = $('#loginPass')?.value?.trim();
+  if(!email || !pass) return toast('이메일/비밀번호를 입력하세요.');
+  try{
     await auth.signInWithEmailAndPassword(email, pass);
-  });
-  toast("로그인 성공");
+    toast('로그인 성공');
+  }catch(e){ console.error('login', e); toast('로그인 실패: '+e.message); }
 });
 
-btnSignup?.addEventListener("click", async () => {
-  const email = byId("loginEmail")?.value?.trim();
-  const pass = byId("loginPass")?.value?.trim();
-  if (!email || !pass) return toast("이메일/비밀번호를 입력하세요.");
-  await __dbgTry("signup", async () => {
-    // 계정 생성
+btnSignup?.addEventListener('click', async()=>{
+  const email = $('#loginEmail')?.value?.trim();
+  const pass  = $('#loginPass')?.value?.trim();
+  if(!email || !pass) return toast('이메일/비밀번호를 입력하세요.');
+  try{
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
-    console.log("signup user uid:", cred.user?.uid);
-
-    // 멤버 문서 생성 (DocID: phone 우선, 없으면 email)
-    const phone = email.replace(/@.*/, "");
-    const now = firebase.firestore.FieldValue.serverTimestamp();
-    const ref = db.collection("members").doc(phone || email);
-
-    // 이미 있으면 건너뛰고, 없으면 생성
-    await db.runTransaction(async (tx) => {
-      const snap = await tx.get(ref);
-      if (!snap.exists) {
+    console.log('signup uid:', cred.user?.uid);
+    const phone = email.replace(/@.*/, '');
+    const ref = db.collection('members').doc(phone || email);
+    await db.runTransaction(async(tx)=>{
+      const s = await tx.get(ref);
+      if(!s.exists){
         tx.set(ref, {
-          name: "",
-          phone,
-          team: "",
-          stamp: 0,
-          freeCredits: 0,
-          passes: {},
-          totalVisits: 0,
-          createdAt: now,
-          updatedAt: now,
+          name:'', phone, team:'', stamp:0, freeCredits:0, passes:{}, totalVisits:0,
+          createdAt: ts(), updatedAt: ts()
         });
       }
     });
-  });
-  toast("회원가입 완료");
+    toast('회원가입 완료');
+  }catch(e){ console.error('signup', e); toast('회원가입 실패: '+e.message); }
 });
 
-btnLogout?.addEventListener("click", async () => {
-  await __dbgTry("logout", () => auth.signOut());
-  toast("로그아웃되었습니다.");
+btnLogout?.addEventListener('click', async()=>{
+  try{ await auth.signOut(); toast('로그아웃'); }catch(e){ console.error('logout', e); }
 });
 
-/* 8) 데이터 로드: 관리자/손님 */
-async function loadAllMembers() {
-  if (!allMembers) return;
+// 8) ★★★ 관리자: 회원 등록/수정 핸들러 ★★★
+btnRegister?.addEventListener('click', async()=>{
+  if(!isAdmin) return toast('운영자 전용 기능입니다.');
+  if(!regName || !regPhone) { console.warn('[missing-el] reg inputs'); return; }
 
-  setHTML("allMembers", `<div class="muted">불러오는 중…</div>`);
-  await __dbgTry("loadAllMembers", async () => {
-    // createdAt 또는 updatedAt 정렬 가능한 필드가 없을 수도 있어 orderBy 제거(최대 200)
-    const qs = await db.collection("members").limit(200).get();
-    if (qs.empty) {
-      setHTML("allMembers", `<div class="muted">회원이 없습니다.</div>`);
-      return;
-    }
+  const name  = regName.value.trim();
+  const phone = normPhone(regPhone.value);
+  const team  = regTeam?.value?.trim() || '';
+
+  if(!name || !phone){
+    return toast('이름과 휴대폰번호(숫자) 를 입력해 주세요.');
+  }
+
+  const ref = db.collection('members').doc(phone);
+  console.log('register/update member', {name, phone, team});
+
+  try{
+    await db.runTransaction(async(tx)=>{
+      const snap = await tx.get(ref);
+      if(snap.exists){
+        tx.update(ref, { name, team, updatedAt: ts() });
+      }else{
+        tx.set(ref, {
+          name, phone, team, stamp:0, freeCredits:0, passes:{}, totalVisits:0,
+          createdAt: ts(), updatedAt: ts()
+        });
+      }
+    });
+    toast('등록/수정 완료');
+    // 입력칸 유지 / 필요시 초기화 원하면 아래 주석 해제
+    // regName.value=''; regPhone.value=''; regTeam.value='';
+    // 목록 새로고침(컨테이너가 있을 때만)
+    if(allMembers) await loadAllMembers();
+  }catch(e){
+    console.error('btnRegister', e);
+    toast('등록/수정 실패: '+e.message);
+  }
+});
+
+// 9) 관리자: 전체 회원 목록 로드(컨테이너 있을 때만)
+async function loadAllMembers(){
+  if(!allMembers){ console.warn('[missing-el] #allMembers'); return; }
+  allMembers.innerHTML = '<div class="muted">불러오는 중…</div>';
+  try{
+    // updatedAt 기준 최신 100
+    const qs = await db.collection('members').orderBy('updatedAt','desc').limit(100).get();
+    if(qs.empty){ allMembers.innerHTML = '<div class="muted">회원 없음</div>'; return; }
     const frag = document.createDocumentFragment();
-    qs.forEach((doc) => {
+    qs.forEach(doc=>{
       const d = doc.data() || {};
-      const div = document.createElement("div");
-      div.className = "item";
-      div.textContent = `${d.name || "-"} · ${fmtPhone(d.phone)} · 스탬프:${d.stamp || 0}/10 · 무료:${
-        d.freeCredits || 0
-      } · 다회권:${sumPass(d.passes || {})}`;
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.textContent = `${d.name||'-'} · ${d.phone||''} · 스탬프:${d.stamp||0}/10 · 무료:${d.freeCredits||0} · 다회:${Object.values(d.passes||{}).reduce((a,b)=>a+(b||0),0)}`;
       frag.appendChild(div);
     });
-    allMembers.innerHTML = "";
+    allMembers.innerHTML = '';
     allMembers.appendChild(frag);
-  });
+  }catch(e){
+    console.error('loadAllMembers', e);
+    allMembers.innerHTML = '로드 실패: '+e.message;
+  }
 }
 
-async function loadSelf(user) {
-  if (!selfCard) return;
+// 10) 손님: 내 정보(컨테이너 있을 때만)
+async function loadSelf(user){
+  if(!selfCard){ console.warn('[missing-el] #selfCard'); return; }
+  selfCard.innerHTML = '<div class="muted">불러오는 중…</div>';
+  try{
+    const email = user?.email || '';
+    const phone = email.replace(/@.*/, '');
+    let snap = await db.collection('members').doc(phone).get();
+    if(!snap.exists) snap = await db.collection('members').doc(email).get();
 
-  setHTML("selfCard", `<div class="muted">불러오는 중…</div>`);
-  await __dbgTry("loadSelf", async () => {
-    const email = user?.email || "";
-    const phone = email.replace(/@.*/, "");
-
-    // phone Doc 우선 → 없으면 email Doc
-    let snap = await db.collection("members").doc(phone).get();
-    if (!snap.exists) {
-      snap = await db.collection("members").doc(email).get();
-    }
-    if (!snap.exists) {
-      setHTML(
-        "selfCard",
-        `<div class="muted">회원 정보가 없습니다. 관리자에게 등록을 요청해 주세요.</div>`
-      );
+    if(!snap.exists){
+      selfCard.innerHTML = '<div class="muted">회원 정보 없음 (관리자에게 등록 요청)</div>';
       return;
     }
     const d = snap.data() || {};
-    const passStr =
-      Object.entries(d.passes || {})
-        .map(([k, v]) => `${k}: ${v}`)
-        .join(", ") || "-";
-
-    setHTML(
-      "selfCard",
-      `
-      <div><b>${d.name || "-"}</b> (${fmtPhone(d.phone)})</div>
-      <div>팀: ${d.team || "-"}</div>
-      <div>스탬프: ${d.stamp || 0}/10</div>
-      <div>무료권: ${d.freeCredits || 0}</div>
+    const passStr = Object.entries(d.passes||{}).map(([k,v])=>`${k}:${v}`).join(', ') || '-';
+    selfCard.innerHTML = `
+      <div><b>${d.name||'-'}</b> (${d.phone||''})</div>
+      <div>팀: ${d.team||'-'}</div>
+      <div>스탬프: ${d.stamp||0}/10</div>
+      <div>무료권: ${d.freeCredits||0}</div>
       <div>다회권: ${passStr}</div>
-    `.trim()
-    );
-  });
+    `;
+  }catch(e){
+    console.error('loadSelf', e);
+    selfCard.innerHTML = '로드 실패: '+e.message;
+  }
 }
 
-/* 9) 초기 로그 */
-console.log("app.js loaded. HTML bindings ready.");
+// 초기 로그
+console.log('app.js loaded (with register/update handler).');
 
