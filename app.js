@@ -182,6 +182,12 @@ const passName   = $('#passName');
 const passCount  = $('#passCount');
 const btnAddPass = $('#btnAddPass');
 const passSelect = $('#passSelect');
+let lastSelectedPass = '';
+
+passSelect?.addEventListener('change', () => {
+  lastSelectedPass = passSelect.value || '';
+});
+
 const btnUsePass = $('#btnUsePass');
 const btnRefundPass = $('#btnRefundPass');
 const passPreset10 = $('#passPreset10');
@@ -557,23 +563,31 @@ async function openMember(id){
 }
 
 function renderMember(d){
+  // 0) 방어 & 이전 선택값 백업
+  const prevSelected = lastSelectedPass || passSelect?.value || '';
+
+  // 1) 리스트/셀렉트 비우기
+  if (passList)  passList.innerHTML = '';
+  if (passSelect) passSelect.innerHTML = '';
+
   if(!d) return;
+
+  // 2) 헤더/요약 필드
   if(mPhoneTeam) mPhoneTeam.textContent = `${fmtPhone(d.phone)} · ${d.team||'-'}`;
   if(mCar)       mCar.textContent  = d.car  || '-';
   if(mNote)      mNote.textContent = d.note || '-';
   if(mStamp)     mStamp.textContent = d.stamp || 0;
   if(mFree)      mFree.textContent  = d.freeCredits || 0;
-  if(mFreeWk)    mFreeWk.textContent = d.freeWeekday || 0;  // 추가
-  if(mFreeSl)    mFreeSl.textContent = d.freeSlush || 0;    // 추가
+  if(mFreeWk)    mFreeWk.textContent = d.freeWeekday || 0;
+  if(mFreeSl)    mFreeSl.textContent = d.freeSlush || 0;
   if(mPassTotal) mPassTotal.textContent = sumPass(d.passes||{}, d.passBatches||{});
-
 
   if(editName) editName.value = d.name || '';
   if(editTeam) editTeam.value = d.team || '';
   if(editCar)  editCar.value  = d.car || '';
   if(editNote) editNote.value = d.note || '';
 
-
+  // 3) 스탬프 점 갱신
   if(stampDots){
     stampDots.innerHTML = '';
     for(let i=0;i<10;i++){
@@ -582,6 +596,71 @@ function renderMember(d){
       stampDots.appendChild(dot);
     }
   }
+
+  // 4) 다회권 목록/선택 (배치 + 레거시) — 정렬 고정
+  // 4-1) 배치(passBatches)
+  Object.entries(d.passBatches || {})
+    .sort(([,a],[,b])=>{
+      // 이름 → 만료일(가까운 순) 정렬
+      const na = (a?.name||''); const nb = (b?.name||'');
+      const ncmp = na.localeCompare(nb);
+      if (ncmp !== 0) return ncmp;
+      const ea = a?.expireAt?.toMillis?.() ?? Infinity;
+      const eb = b?.expireAt?.toMillis?.() ?? Infinity;
+      return ea - eb;
+    })
+    .forEach(([id,b])=>{
+      const cnt = b?.count || 0;
+      const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
+      const line = exp ? `${b.name} · 잔여 ${cnt} · 만료 ${exp}` : `${b.name} · 잔여 ${cnt}`;
+
+      if(passList){
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = line + '  [배치]';
+        passList.appendChild(item);
+      }
+      if(passSelect){
+        const opt = document.createElement('option');
+        opt.value = `batch:${id}`;
+        opt.textContent = exp ? `${b.name} (잔 ${cnt}, 만료 ${exp})` : `${b.name} (잔 ${cnt})`;
+        passSelect.appendChild(opt);
+      }
+    });
+
+  // 4-2) 레거시(passes)
+  Object.entries(d.passes || {})
+    .sort(([ak],[bk]) => ak.localeCompare(bk))
+    .forEach(([k,v])=>{
+      const cnt = getPassCount(v);
+      const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
+      const line = exp ? `${k} · 잔여 ${cnt} · 만료 ${exp}` : `${k} · 잔여 ${cnt}`;
+
+      if(passList){
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = line + '  [레거시]';
+        passList.appendChild(item);
+      }
+      if(passSelect){
+        const opt = document.createElement('option');
+        opt.value = `legacy:${k}`;
+        opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
+        passSelect.appendChild(opt);
+      }
+    });
+
+  // 5) 선택값 복원 (렌더 후)
+  if (passSelect) {
+    const hasPrev = Array.from(passSelect.options).some(o => o.value === prevSelected);
+    passSelect.value = hasPrev ? prevSelected : (passSelect.options[0]?.value || '');
+    lastSelectedPass = passSelect.value;
+  }
+
+  // 6) 스테이지 입력 렌더
+  renderStageInputs(d.stages || {});
+}
+
 
   // 다회권 목록/선택
 // 다회권 목록/선택 (만료일 표기 지원)
@@ -884,14 +963,15 @@ function parsePosInt(el, def = 1) {
 }
 function parseSelectedPassKey(){
   const raw = passSelect?.value || '';
-  if(!raw){ toast('권종을 선택하세요'); return null; }
+  if (!raw) { toast('권종을 선택하세요'); return null; }
   const i = raw.indexOf(':');
-  if (i < 0){ toast('권종 선택값이 올바르지 않습니다'); return null; }
+  if (i < 0) { toast('권종 선택값이 올바르지 않습니다'); return null; }
   const kind = raw.slice(0, i);
-  const key  = raw.slice(i+1);       // 나머지 전부
-  if(!kind || !key){ toast('권종 선택값이 올바르지 않습니다'); return null; }
+  const key  = raw.slice(i + 1);
+  if (!kind || !key) { toast('권종 선택값이 올바르지 않습니다'); return null; }
   return { kind, key };
 }
+
 
 
 
