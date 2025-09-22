@@ -101,8 +101,41 @@ const STAGE_TOTALS = {
 };
 const stageOrder = ['베이직','이지','노말','하드','챌린저','여름','우주'];
 
-const stageList      = $('#stageList');        // 관리자 입력용 컨테이너
-const btnSaveStages  = $('#btnSaveStages');    // 관리자 저장 버튼
+const stageList      = $('#stageList');
+const btnSaveStages  = $('#btnSaveStages');
+
+// 바인딩 함수로 분리 + 전역 노출(테스트/대비)
+async function handleSaveStages(){
+  if (!isAdmin) return toast('운영자 전용');
+  if (!currentMemberRef) return toast('회원을 먼저 선택');
+
+  try {
+    const inputs = stageList?.querySelectorAll('input[data-stage]') || [];
+    const stages = {};
+    inputs.forEach((el) => {
+      const name  = el.dataset.stage;
+      const total = STAGE_TOTALS[name] || 0;
+      let val = parseInt(el.value || '0', 10);
+      if (!Number.isFinite(val) || val < 0) val = 0;
+      if (val > total) val = total;
+      stages[name] = val;
+    });
+
+    console.log('saving stages:', stages);
+    await currentMemberRef.update({ stages, updatedAt: ts() });
+    await addLog('stages_save', { stages });
+    renderMember((await currentMemberRef.get()).data());
+    toast('스테이지 저장 완료');
+  } catch (e) {
+    console.error('save stages', e);
+    toast('저장 실패: ' + (e?.message || e));
+  }
+}
+
+btnSaveStages?.addEventListener('click', handleSaveStages);
+// 테스트/대비용(필요시 HTML에서 onclick="__saveStages()"도 가능)
+window.__saveStages = handleSaveStages;
+
 
 const btnViewStages  = $('#btnViewStages');    // 손님 ‘기록 보기’
 const selfStageList  = $('#selfStageList');    // 손님 카드 리스트
