@@ -236,6 +236,10 @@ auth.onAuthStateChanged(async(user)=>{
     signedIn?.classList.add('hidden');
     adminPanel?.classList.add('hidden');
     memberSelf?.classList.add('hidden');
+    // 디버그 버튼/패널 숨김
+    dbgToggle?.classList.add('hidden');
+    dbgPanel ?.classList.add('hidden');
+
     hideMemberPanel();
   }
 });
