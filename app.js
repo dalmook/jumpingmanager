@@ -572,7 +572,7 @@ function renderMember(d){
 
   if(!d) return;
 
-  // 2) 헤더/요약 필드
+  // --- 회원 기본정보 ---
   if(mPhoneTeam) mPhoneTeam.textContent = `${fmtPhone(d.phone)} · ${d.team||'-'}`;
   if(mCar)       mCar.textContent  = d.car  || '-';
   if(mNote)      mNote.textContent = d.note || '-';
@@ -587,7 +587,7 @@ function renderMember(d){
   if(editCar)  editCar.value  = d.car || '';
   if(editNote) editNote.value = d.note || '';
 
-  // 3) 스탬프 점 갱신
+  // --- 스탬프 점 표시 ---
   if(stampDots){
     stampDots.innerHTML = '';
     for(let i=0;i<10;i++){
@@ -597,118 +597,53 @@ function renderMember(d){
     }
   }
 
-  // 4) 다회권 목록/선택 (배치 + 레거시) — 정렬 고정
-  // 4-1) 배치(passBatches)
-  Object.entries(d.passBatches || {})
-    .sort(([,a],[,b])=>{
-      // 이름 → 만료일(가까운 순) 정렬
-      const na = (a?.name||''); const nb = (b?.name||'');
-      const ncmp = na.localeCompare(nb);
-      if (ncmp !== 0) return ncmp;
-      const ea = a?.expireAt?.toMillis?.() ?? Infinity;
-      const eb = b?.expireAt?.toMillis?.() ?? Infinity;
-      return ea - eb;
-    })
-    .forEach(([id,b])=>{
-      const cnt = b?.count || 0;
-      const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
-      const line = exp ? `${b.name} · 잔여 ${cnt} · 만료 ${exp}` : `${b.name} · 잔여 ${cnt}`;
+  // --- 다회권 (배치 + 레거시) ---
+  Object.entries(d.passBatches || {}).forEach(([id,b])=>{
+    const cnt = b?.count || 0;
+    const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
+    const line = exp ? `${b.name} · 잔여 ${cnt} · 만료 ${exp}` : `${b.name} · 잔여 ${cnt}`;
 
-      if(passList){
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.textContent = line + '  [배치]';
-        passList.appendChild(item);
-      }
-      if(passSelect){
-        const opt = document.createElement('option');
-        opt.value = `batch:${id}`;
-        opt.textContent = exp ? `${b.name} (잔 ${cnt}, 만료 ${exp})` : `${b.name} (잔 ${cnt})`;
-        passSelect.appendChild(opt);
-      }
-    });
+    if(passList){
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.textContent = line + '  [배치]';
+      passList.appendChild(item);
+    }
+    if(passSelect){
+      const opt = document.createElement('option');
+      opt.value = `batch:${id}`;
+      opt.textContent = exp ? `${b.name} (잔 ${cnt}, 만료 ${exp})` : `${b.name} (잔 ${cnt})`;
+      passSelect.appendChild(opt);
+    }
+  });
 
-  // 4-2) 레거시(passes)
-  Object.entries(d.passes || {})
-    .sort(([ak],[bk]) => ak.localeCompare(bk))
-    .forEach(([k,v])=>{
-      const cnt = getPassCount(v);
-      const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
-      const line = exp ? `${k} · 잔여 ${cnt} · 만료 ${exp}` : `${k} · 잔여 ${cnt}`;
+  Object.entries(d.passes || {}).forEach(([k,v])=>{
+    const cnt = getPassCount(v);
+    const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
+    const line = exp ? `${k} · 잔여 ${cnt} · 만료 ${exp}` : `${k} · 잔여 ${cnt}`;
 
-      if(passList){
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.textContent = line + '  [레거시]';
-        passList.appendChild(item);
-      }
-      if(passSelect){
-        const opt = document.createElement('option');
-        opt.value = `legacy:${k}`;
-        opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
-        passSelect.appendChild(opt);
-      }
-    });
+    if(passList){
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.textContent = line + '  [레거시]';
+      passList.appendChild(item);
+    }
+    if(passSelect){
+      const opt = document.createElement('option');
+      opt.value = `legacy:${k}`;
+      opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
+      passSelect.appendChild(opt);
+    }
+  });
 
-  // 5) 선택값 복원 (렌더 후)
+  // --- 선택값 복원 ---
   if (passSelect) {
     const hasPrev = Array.from(passSelect.options).some(o => o.value === prevSelected);
     passSelect.value = hasPrev ? prevSelected : (passSelect.options[0]?.value || '');
     lastSelectedPass = passSelect.value;
   }
 
-  // 6) 스테이지 입력 렌더
-  renderStageInputs(d.stages || {});
-}
-
-
-  // 다회권 목록/선택
-// 다회권 목록/선택 (만료일 표기 지원)
-// ✅ 배치 + 레거시 모두 표시
-if(passList)  passList.innerHTML='';
-if(passSelect){ passSelect.innerHTML=''; }
-
-// 1) 배치 먼저
-Object.entries(d.passBatches||{}).forEach(([id,b])=>{
-  const cnt = b?.count||0;
-  const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
-  const line = exp ? `${b.name} · 잔여 ${cnt} · 만료 ${exp}` : `${b.name} · 잔여 ${cnt}`;
-
-  if(passList){
-    const item = document.createElement('div');
-    item.className = 'item';
-    item.textContent = line + '  [배치]';
-    passList.appendChild(item);
-  }
-  if(passSelect){
-    const opt = document.createElement('option');
-    opt.value = `batch:${id}`;
-    opt.textContent = exp ? `${b.name} (잔 ${cnt}, 만료 ${exp})` : `${b.name} (잔 ${cnt})`;
-    passSelect.appendChild(opt);
-  }
-});
-
-// 2) 레거시(기존 passes)도 하위호환으로 표시
-Object.entries(d.passes||{}).forEach(([k,v])=>{
-  const cnt = getPassCount(v);
-  const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
-  const line = exp ? `${k} · 잔여 ${cnt} · 만료 ${exp}` : `${k} · 잔여 ${cnt}`;
-
-  if(passList){
-    const item = document.createElement('div');
-    item.className = 'item';
-    item.textContent = line + '  [레거시]';
-    passList.appendChild(item);
-  }
-  if(passSelect){
-    const opt = document.createElement('option');
-    opt.value = `legacy:${k}`;
-    opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
-    passSelect.appendChild(opt);
-  }
-});
-
-
+  // --- 스테이지 입력 렌더 ---
   renderStageInputs(d.stages || {});
 }
 
