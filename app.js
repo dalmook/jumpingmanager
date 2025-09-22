@@ -826,18 +826,19 @@ async function loadSelf(user){
 // 요약 박스 + 도장 격자(2행×5열)
     cardEl.innerHTML = `
       <div class="summary-box">
-        <div class="summary-left">
+        <div class="summary-row top">
           <div class="summary-title">${d.name || '-'}</div>
-          <div class="summary-sub muted">${fmtPhone(d.phone)} · ${d.team || '-'}</div>
-        </div>
-        <div class="summary-right">
           <div class="summary-badge">⭐ 스탬프 ${d.stamp || 0}/10</div>
-          <div class="summary-sub-mini perks">
-            🎁 무료 <b>${d.freeCredits||0}</b>　
-            🏖️ 평일 <b>${d.freeWeekday||0}</b>　
-            🧊 슬러시 <b>${d.freeSlush||0}</b>
-          </div>
         </div>
+        <div class="summary-row mid muted">
+          ${fmtPhone(d.phone)} · ${d.team || '-'}
+        </div>
+        <div class="summary-row bottom perks">
+          🎁 무료 <b>${d.freeCredits||0}</b>　
+          🏖️ 평일 <b>${d.freeWeekday||0}</b>　
+          🧊 슬러시 <b>${d.freeSlush||0}</b>
+        </div>
+      </div>
       </div>   <!-- ✅ 닫힘 태그 추가 -->
     
       <div id="selfStampGrid" class="stamp-grid"></div>
