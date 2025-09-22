@@ -162,7 +162,9 @@ btnRegister?.addEventListener('click', async ()=>{
     await db.runTransaction(async (tx)=>{
       const snap = await tx.get(ref);
       const base = snap.exists ? (snap.data()||{}) : {
-        name:'', phone, team:'', stamp:0, freeCredits:0, passes:{}, totalVisits:0, createdAt: ts()
+        name:'', phone, team:'', stamp:0,
+        freeCredits:0, freeWeekday:0, freeSlush:0,  // 추가
+        passes:{}, totalVisits:0, createdAt: ts()
       };
       tx.set(ref, {
         ...base,
