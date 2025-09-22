@@ -20,10 +20,22 @@ const db   = firebase.firestore();
 const $ = (s)=>document.querySelector(s);
 const byId = (id)=>document.getElementById(id);
 const toast = (m)=> alert(m);
-const normPhone = (p)=> (p||"").replace(/\D/g,"");
-// 전화번호 입력인지 판별 & 내부 이메일 변환
-const isPhoneInput = (s)=> /^\d{9,12}$/.test(normPhone(s||""));
-const toEmailFromPhone = (p)=> `${normPhone(p)}@local`;
+// 🔧 휴대폰 → 내부 이메일 변환 설정 (도메인에 점이 있어야 함)
+const PHONE_DOMAIN = 'phone.local'; // 예: phone.local, app.internal 등
+
+// 🔧 휴대폰 정규화(+82 → 0, 숫자만)
+function canonPhone(s){
+  let d = (s||'').replace(/\D/g,'');      // 숫자만
+  if (d.startsWith('82')) {               // +82 / 82로 시작하면 국내형으로 변환
+    if (d.startsWith('8210')) d = '0' + d.slice(2); // 8210xxxx → 010xxxx
+    else d = d.replace(/^82/, '0');       // 그 외 82 → 0
+  }
+  return d;
+}
+
+const isPhoneInput = (s)=> /^\d{9,12}$/.test(canonPhone(s||""));
+const toEmailFromPhone = (p)=> `${canonPhone(p)}@${PHONE_DOMAIN}`;
+
 
 const fmtPhone = (p)=> {
   const s = normPhone(p);
@@ -138,24 +150,25 @@ auth.onAuthStateChanged(async(user)=>{
   }
 });
 
-// 로그인: 관리자(이메일) / 손님(휴대폰) 모두 지원
+// 로그인: 관리자(이메일) / 손님(휴대폰) 지원
 btnLogin?.addEventListener("click", async () => {
   const idRaw = byId("loginEmail")?.value?.trim();
   const pass = byId("loginPass")?.value?.trim();
-  if (!idRaw || !pass) return toast("아이디(이메일 또는 휴대폰)와 비밀번호를 입력하세요.");
+  if (!idRaw || !pass) return toast("아이디(이메일/휴대폰)와 비밀번호를 입력하세요.");
 
   let emailForAuth = null;
 
-  // 관리자: 이메일 입력 또는 adminEmails 목록과 일치
   const looksLikeEmail = idRaw.includes("@");
   const isAdminEmailTyped = adminEmails.includes(idRaw);
 
   if (looksLikeEmail || isAdminEmailTyped) {
-    emailForAuth = idRaw; // 관리자: 그대로 이메일 사용
+    // 관리자: 이메일 그대로 사용
+    emailForAuth = idRaw;
   } else if (isPhoneInput(idRaw)) {
-    emailForAuth = toEmailFromPhone(idRaw); // 손님: 휴대폰 -> 내부 이메일
+    // 손님: 휴대폰 → 내부 이메일로
+    emailForAuth = toEmailFromPhone(idRaw);
   } else {
-    return toast("로그인: 이메일(관리자) 또는 휴대폰번호(손님)를 입력하세요.");
+    return toast("로그인: 관리자=이메일, 손님=휴대폰번호(숫자만) 입력");
   }
 
   try {
@@ -168,22 +181,24 @@ btnLogin?.addEventListener("click", async () => {
 });
 
 
-// 회원가입: 휴대폰번호 + 비밀번호만 허용
+
+// 회원가입: 휴대폰번호 + 비밀번호
 btnSignup?.addEventListener("click", async () => {
   const phoneRaw = byId("loginEmail")?.value?.trim();
   const pass = byId("loginPass")?.value?.trim();
-  const phone = normPhone(phoneRaw || "");
+  const phone = canonPhone(phoneRaw || "");
 
-  if (!isPhoneInput(phone)) return toast("회원가입: 휴대폰번호(숫자만)를 입력하세요.");
+  if (!isPhoneInput(phone)) return toast("회원가입: 휴대폰번호(숫자만)를 정확히 입력하세요.");
   if (!pass) return toast("회원가입: 비밀번호를 입력하세요.");
 
-  const email = toEmailFromPhone(phone);
+  const email = toEmailFromPhone(phone); // 예: 01012345678@phone.local
   const now = firebase.firestore.FieldValue.serverTimestamp();
 
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
     console.log("signup uid", cred.user?.uid);
 
+    // Firestore 문서: members/{phone}
     const ref = db.collection("members").doc(phone);
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
@@ -208,6 +223,7 @@ btnSignup?.addEventListener("click", async () => {
     toast("회원가입 실패: " + (e?.message || e));
   }
 });
+
 
 
 btnLogout?.addEventListener('click', async()=>{ try{ await auth.signOut(); toast('로그아웃'); }catch(e){ console.error('logout',e); }});
