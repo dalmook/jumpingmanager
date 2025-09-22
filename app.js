@@ -986,19 +986,6 @@ async function loadSelf(user){
         colorLight: "#ffffff"
       });
     }
-  // === QR 코드 생성 (손님별) ===
-  try{
-    const qrWrap = document.getElementById('selfQR');
-    if(qrWrap){
-      qrWrap.innerHTML = ''; // 초기화
-      // 관리자 단말에서 이 QR을 스캔하면 같은 사이트로 이동하며 ?stamp=휴대폰 파라미터 포함
-      const base = window.location.origin + window.location.pathname;
-      const stampUrl = `${base}?stamp=${encodeURIComponent(d.phone||'')}`;
-      new QRCode(qrWrap, { text: stampUrl, width: 72, height: 72 });
-    }
-  }catch(e){ console.warn('qr gen', e); }
-
-
 
 // 팽귄 도장 격자 (2행×5열)
     const grid = document.getElementById('selfStampGrid');
