@@ -671,93 +671,55 @@ passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; }});
 passPreset30?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='30회권'; passCount.value='30'; }});
 
-// =============================
-// 개선된 다회권/무료권/스탬프 로직
-// =============================
-
-// 빠른 선택 버튼 → 권종명 입력
-document.querySelectorAll('.quick-pass').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.getElementById('passName').value = btn.dataset.name;
-  });
-});
-
-// Firestore 저장 구조 변경
-async function addPass(docRef){
-  const name = passName?.value.trim();
-  const count = parseInt(passCount?.value,10);
-  const exp = passExp?.value || null;
-
-  if(!name || !count) return;
-
-  await db.runTransaction(async tx=>{
-    const snap = await tx.get(docRef);
-    const data = snap.data()||{};
-    let passes = data.passes;
-
-    // ✅ 스키마 통일: 객체 → 배열 변환
-    if(!Array.isArray(passes)){
-      passes = Object.entries(passes||{}).map(([k,v])=>{
-        if(typeof v === 'object' && v){
-          return { name:k, count:v.count||0, exp:v.exp||null };
-        }else{
-          return { name:k, count:v||0, exp:null };
-        }
-      });
-    }
-
-    // 새 권종 추가
-    passes.push({name, count, exp});
-    tx.update(docRef, {passes, updatedAt: ts()});
-  });
-
-  toast("권종이 추가되었습니다.");
-}
-
-
-  await db.runTransaction(async tx=>{
-    const snap = await tx.get(docRef);
-    const data = snap.data()||{};
-    let passes = data.passes || [];
-
-    passes.push({name, count, exp});
-    tx.update(docRef, {passes, updatedAt: ts()});
-  });
-
-  toast("권종이 추가되었습니다.");
-}
-
-document.getElementById('btnAddPass')?.addEventListener('click', async ()=>{
-  if(!isAdmin) return toast('운영자 전용');
-  if(!currentMemberRef) return toast('회원을 먼저 선택하세요');
-  await addPass(currentMemberRef);
-});
-
-
-btnRefundPass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용');
-  if(!currentMemberRef) return toast('회원을 먼저 선택');
-
-  const key = passSelect?.value;
-  if(!key) return toast('권종을 선택하세요');
-
+btnAddPass?.addEventListener('click', async()=>{
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const name=(passName?.value||'').trim();
+  const cnt=parseInt(passCount?.value||'1',10);
+  const expStr = passExp?.value?.trim() || null;     // ✅ yyyy-mm-dd (선택)
+  if(!name || !(cnt>0)) return toast('권종/수량 확인');
   try{
     await db.runTransaction(async(tx)=>{
       const snap=await tx.get(currentMemberRef);
       const d=snap.data()||{};
-      let passes = Array.isArray(d.passes) ? d.passes : [];
-      const [name, exp] = key.split('@@');
-      const found = passes.find(p=>p.name===name && (p.exp||'')===(exp||''));
-      if(!found) throw new Error('권종 없음');
-      found.count++;
-      tx.update(currentMemberRef, {passes, updatedAt: ts()});
+      const passes = Object.assign({}, d.passes||{});
+      const prev = passes[name];
+
+      // 구스키마(number)와 신스키마(object) 동시 처리
+      const prevCount = typeof prev === 'object' && prev ? (prev.count||0) : (prev||0);
+      const prevExp   = typeof prev === 'object' && prev ? (prev.exp||null)   : null;
+
+      passes[name] = {
+        count: prevCount + cnt,
+        exp: expStr || prevExp || null
+      };
+
+      tx.update(currentMemberRef, { passes, updatedAt: ts() });
     });
-    await addLog('pass_refund',{key});
-    renderMember((await currentMemberRef.get()).data());
-  }catch(e){ console.error('refundPass',e); toast('실패: '+e.message); }
+
+    await addLog('pass_add', {name, cnt});
+    if(passName) passName.value='';
+    if(passCount) passCount.value='1';
+    const d=(await currentMemberRef.get()).data(); renderMember(d);
+  }catch(e){ console.error('addPass',e); toast('실패: '+e.message); }
 });
-
-
+btnUsePass?.addEventListener('click', async()=>{
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const key = passSelect?.value;
+  if(!key) return toast('권종을 선택하세요');
+  try{
+    await db.runTransaction(async(tx)=>{
+      const snap=await tx.get(currentMemberRef);
+      const d=snap.data()||{};
+      const passes = Object.assign({}, d.passes||{});
+      const cur = passes[key]||0;
+      if(cur<=0) throw new Error('잔여 없음');
+      passes[key] = cur - 1;
+      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+    });
+    await addLog('pass_use', {name:key, cnt:1});
+    const d=(await currentMemberRef.get()).data(); renderMember(d);
+  }catch(e){ console.error('usePass',e); toast('실패: '+e.message); }
+});
 btnRefundPass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const key = passSelect?.value;
@@ -834,31 +796,21 @@ btnAddFreeN?.addEventListener('click', async () => {
     renderMember((await currentMemberRef.get()).data());
   } catch (e) { console.error('free +N', e); toast('실패: ' + e.message); }
 });
-btnRefundPassN?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용');
-  if(!currentMemberRef) return toast('회원을 먼저 선택');
-
-  const key = passSelect?.value;
-  if(!key) return toast('권종을 선택하세요');
-  const N = parsePosInt(passDelta,1);
-
-  try{
-    await db.runTransaction(async(tx)=>{
-      const snap=await tx.get(currentMemberRef);
-      const d=snap.data()||{};
-      let passes = Array.isArray(d.passes) ? d.passes : [];
-      const [name, exp] = key.split('@@');
-      const found = passes.find(p=>p.name===name && (p.exp||'')===(exp||''));
-      if(!found) throw new Error('권종 없음');
-      found.count += N;
-      tx.update(currentMemberRef, {passes, updatedAt: ts()});
+btnSubFreeN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(freeDelta, 1);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const cur = d.freeCredits || 0;
+      const next = Math.max(0, cur - N);
+      tx.update(currentMemberRef, { freeCredits: next, updatedAt: ts() });
     });
-    await addLog('pass_add_n',{key,n:N});
+    await addLog('free_sub_n', { n: N });
     renderMember((await currentMemberRef.get()).data());
-  }catch(e){ console.error('pass +N',e); toast('실패: '+e.message); }
+  } catch (e) { console.error('free -N', e); toast('실패: ' + e.message); }
 });
-
-
 
 // 다회권 -N
 btnUsePassN?.addEventListener('click', async () => {
@@ -881,28 +833,22 @@ btnUsePassN?.addEventListener('click', async () => {
 });
 
 // 다회권 +N
-btnDeletePass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용');
-  if(!currentMemberRef) return toast('회원을 먼저 선택');
-
-  const key = passSelect?.value;
-  if(!key) return toast('권종을 선택하세요');
-  if(!confirm(`'${key}' 권종을 삭제할까요?`)) return;
-
-  try{
-    await db.runTransaction(async(tx)=>{
-      const snap=await tx.get(currentMemberRef);
-      const d=snap.data()||{};
-      let passes = Array.isArray(d.passes) ? d.passes : [];
-      const [name, exp] = key.split('@@');
-      passes = passes.filter(p=> !(p.name===name && (p.exp||'')===(exp||'')));
-      tx.update(currentMemberRef, {passes, updatedAt: ts()});
+btnRefundPassN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const key = requireSelectedPass(); if(!key) return;
+  const N = parsePosInt(passDelta, 1);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const passes = { ...(d.passes || {}) };
+      passes[key] = (passes[key] || 0) + N;
+      tx.update(currentMemberRef, { passes, updatedAt: ts() });
     });
-    await addLog('pass_delete',{key});
+    await addLog('pass_add_n', { name: key, n: N });
     renderMember((await currentMemberRef.get()).data());
-  }catch(e){ console.error('pass delete',e); toast('실패: '+e.message); }
+  } catch (e) { console.error('pass +N', e); toast('실패: ' + e.message); }
 });
-
 
 // 권종 삭제(키 자체 제거)
 btnDeletePass?.addEventListener('click', async () => {
