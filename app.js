@@ -146,6 +146,42 @@ const selfTabPanes  = {
 const selfPassList  = document.getElementById('selfPassList');
 const selfLogList   = document.getElementById('selfLogList');
 
+
+// === 빠른 회원 등록/수정 ===
+btnRegister?.addEventListener('click', async ()=>{
+  if(!isAdmin) return toast('운영자 전용 기능입니다.');
+
+  const name  = regName?.value?.trim()  || '';
+  const phone = canonPhone(regPhone?.value?.trim() || '');
+  const team  = regTeam?.value?.trim()  || '';
+
+  if(!phone) return toast('휴대폰번호(숫자만)를 입력하세요.');
+
+  try{
+    const ref = db.collection('members').doc(phone);
+    await db.runTransaction(async (tx)=>{
+      const snap = await tx.get(ref);
+      const base = snap.exists ? (snap.data()||{}) : {
+        name:'', phone, team:'', stamp:0, freeCredits:0, passes:{}, totalVisits:0, createdAt: ts()
+      };
+      tx.set(ref, {
+        ...base,
+        name: name || base.name,
+        team: team || base.team,
+        updatedAt: ts()
+      }, { merge:true });
+    });
+
+    // 목록 갱신 및 폼 비우기(선택)
+    await loadAllMembers();
+    toast('등록/수정 완료');
+    // regName.value = ''; regPhone.value=''; regTeam.value='';
+  }catch(e){
+    console.error('quick-register', e);
+    toast('등록/수정 실패: '+(e?.message||e));
+  }
+});
+
 // 상태
 let isAdmin = false;
 let currentMemberRef = null; // 현재 편집 중 회원 ref
