@@ -70,6 +70,27 @@ function fmtDate(d){
 // ✅ 배치용 ID
 const newBatchId = ()=> db.collection('_').doc().id;
 
+// ✅ YYYY-MM-DD (로컬) 헬퍼
+function ymdLocal(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+// ✅ 만료일 디폴트: 오늘 min, 기본값 = 1년 후
+function initPassExpireDefault(){
+  const el = document.getElementById('passExpire');
+  if (!el) return;
+  const today = new Date();
+  const oneYear = new Date(today);
+  oneYear.setFullYear(oneYear.getFullYear() + 1);
+
+  el.min = ymdLocal(today);              // 오늘 이전 선택 불가
+  if (!el.value) el.value = ymdLocal(oneYear); // 값 비었으면 1년 후로 기본값
+}
+
+
 
 
 // 디버그 패널(있으면 로그 표시)
@@ -275,6 +296,7 @@ auth.onAuthStateChanged(async(user)=>{
       if(isAdmin){
         await loadAllMembers();
         hideMemberPanel();
+        initPassExpireDefault();
       }else{
         await loadSelf(user);
       }
