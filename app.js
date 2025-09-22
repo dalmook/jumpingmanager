@@ -831,10 +831,14 @@ async function loadSelf(user){
           <div class="summary-sub muted">${fmtPhone(d.phone)} · ${d.team || '-'}</div>
         </div>
         <div class="summary-right">
-          <div class="summary-badge">스탬프 ${d.stamp || 0}/10</div>
-          <div class="summary-sub-mini muted">무료 ${d.freeCredits||0} · 평일 ${d.freeWeekday||0} · 슬러시 ${d.freeSlush||0}</div>
+          <div class="summary-badge">⭐ 스탬프 ${d.stamp || 0}/10</div>
+          <div class="summary-sub-mini perks">
+            🎁 무료 <b>${d.freeCredits||0}</b>　
+            🏖️ 평일 <b>${d.freeWeekday||0}</b>　
+            🧊 슬러시 <b>${d.freeSlush||0}</b>
+          </div>
         </div>
-      </div>
+
 
       <div id="selfStampGrid" class="stamp-grid"></div>
 
