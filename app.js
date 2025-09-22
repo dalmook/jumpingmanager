@@ -130,6 +130,7 @@ const btnResetStamp = $('#btnResetStamp');
 
 const passName   = $('#passName');
 const passCount  = $('#passCount');
+const passExp    = $('#passExp');      // ✅ 만료일 input
 const btnAddPass = $('#btnAddPass');
 const passSelect = $('#passSelect');
 const btnUsePass = $('#btnUsePass');
@@ -669,15 +670,27 @@ btnAddPass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const name=(passName?.value||'').trim();
   const cnt=parseInt(passCount?.value||'1',10);
+  const expStr = passExp?.value?.trim() || null;     // ✅ yyyy-mm-dd (선택)
   if(!name || !(cnt>0)) return toast('권종/수량 확인');
   try{
     await db.runTransaction(async(tx)=>{
       const snap=await tx.get(currentMemberRef);
       const d=snap.data()||{};
       const passes = Object.assign({}, d.passes||{});
-      passes[name] = (passes[name]||0) + cnt;
+      const prev = passes[name];
+
+      // 구스키마(number)와 신스키마(object) 동시 처리
+      const prevCount = typeof prev === 'object' && prev ? (prev.count||0) : (prev||0);
+      const prevExp   = typeof prev === 'object' && prev ? (prev.exp||null)   : null;
+
+      passes[name] = {
+        count: prevCount + cnt,
+        exp: expStr || prevExp || null
+      };
+
       tx.update(currentMemberRef, { passes, updatedAt: ts() });
     });
+
     await addLog('pass_add', {name, cnt});
     if(passName) passName.value='';
     if(passCount) passCount.value='1';
@@ -1008,7 +1021,6 @@ async function loadSelf(user){
       }
     }
 
-
     // 다회권 목록
     if(selfPassList){
       const frag=document.createDocumentFragment();
@@ -1016,19 +1028,46 @@ async function loadSelf(user){
       if(passes.length===0){
         selfPassList.innerHTML = '<div class="muted">보유한 다회권이 없습니다</div>';
       }else{
-        passes.forEach(([k,v])=>{
+        const now = new Date();
+        passes.forEach(([name,val])=>{
+          // 숫자(구스키마) 또는 객체(신스키마) 모두 지원
+          const count = (typeof val === 'object' && val) ? (val.count||0) : (val||0);
+          const expStr = (typeof val === 'object' && val) ? (val.exp||null) : null;
+    
+          let expHTML = '';
+          if(expStr){
+            // 날짜 비교: 해당일 하루 끝까지 유효하게 보려면 23:59:59로 해석
+            const expDate = new Date(expStr + 'T23:59:59');
+            const expired = expDate.getTime() < now.getTime();
+            const expText = expDate.toLocaleDateString();
+            expHTML = `<span class="muted">${expText}</span>${expired ? ' <span class="expired-label">사용기간 만료</span>' : ''}`;
+          }
+    
           const row=document.createElement('div');
           row.className='pass-card';
           row.innerHTML = `
-            <span class="p-name">🎫 ${k}</span>
-            <span class="p-count">${v}</span>
+            <span class="p-name">🎫 ${name}</span>
+            <span class="p-count">${count}</span>
           `;
-          frag.appendChild(row);
+          // 만료일/라벨은 오른쪽 아래 라인으로 추가
+          if(expHTML){
+            const expLine = document.createElement('div');
+            expLine.style.cssText = 'width:100%; display:flex; justify-content:flex-end; gap:8px; font-size:12px; margin-top:4px;';
+            expLine.innerHTML = expHTML;
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'width:100%;';
+            wrap.appendChild(row);
+            wrap.appendChild(expLine);
+            frag.appendChild(wrap);
+          }else{
+            frag.appendChild(row);
+          }
         });
         selfPassList.innerHTML=''; 
         selfPassList.appendChild(frag);
       }
     }
+
 
 
 
