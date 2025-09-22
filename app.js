@@ -103,6 +103,8 @@ const stampDots  = $('#stampDots');
 
 const editName = $('#editName');
 const editTeam = $('#editTeam');
+const editCar  = $('#editCar');     // 차량번호
+const editNote = $('#editNote');    // 비고
 const btnSaveProfile = $('#btnSaveProfile');
 
 const btnAddVisit   = $('#btnAddVisit');
