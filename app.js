@@ -713,6 +713,59 @@ btnDeleteMember?.addEventListener('click', async () => {
     toast('회원 삭제 완료');
   } catch (e) { console.error('delete member', e); toast('삭제 실패: ' + e.message); }
 });
+// 평일무료권 +N
+btnAddFreeWkN?.addEventListener('click', async ()=>{
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(freeWkDelta, 1);
+  try{
+    await currentMemberRef.update({ freeWeekday: firebase.firestore.FieldValue.increment(N), updatedAt: ts() });
+    await addLog('free_weekday_add_n', { n:N });
+    renderMember((await currentMemberRef.get()).data());
+  }catch(e){ console.error('freeWeekday +N',e); toast('실패: '+e.message); }
+});
+
+// 평일무료권 -N
+btnSubFreeWkN?.addEventListener('click', async ()=>{
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(freeWkDelta, 1);
+  try{
+    await db.runTransaction(async(tx)=>{
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data()||{};
+      const next = Math.max(0, (d.freeWeekday||0) - N);
+      tx.update(currentMemberRef, { freeWeekday: next, updatedAt: ts() });
+    });
+    await addLog('free_weekday_sub_n', { n:N });
+    renderMember((await currentMemberRef.get()).data());
+  }catch(e){ console.error('freeWeekday -N',e); toast('실패: '+e.message); }
+});
+
+// 슬러시 무료권 +N
+btnAddFreeSlN?.addEventListener('click', async ()=>{
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(freeSlDelta, 1);
+  try{
+    await currentMemberRef.update({ freeSlush: firebase.firestore.FieldValue.increment(N), updatedAt: ts() });
+    await addLog('free_slush_add_n', { n:N });
+    renderMember((await currentMemberRef.get()).data());
+  }catch(e){ console.error('freeSlush +N',e); toast('실패: '+e.message); }
+});
+
+// 슬러시 무료권 -N
+btnSubFreeSlN?.addEventListener('click', async ()=>{
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(freeSlDelta, 1);
+  try{
+    await db.runTransaction(async(tx)=>{
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data()||{};
+      const next = Math.max(0, (d.freeSlush||0) - N);
+      tx.update(currentMemberRef, { freeSlush: next, updatedAt: ts() });
+    });
+    await addLog('free_slush_sub_n', { n:N });
+    renderMember((await currentMemberRef.get()).data());
+  }catch(e){ console.error('freeSlush -N',e); toast('실패: '+e.message); }
+});
 
 // 15) 손님 탭 전환 & 마이페이지 로딩
 function activateSelfTab(key){
