@@ -1253,28 +1253,61 @@ async function loadSelf(user){
 
 
     // 다회권 목록
-    if(selfPassList){
-      const frag=document.createDocumentFragment();
-      const passes = Object.entries(d.passes||{});
-      if(passes.length===0){
-        selfPassList.innerHTML = '<div class="muted">보유한 다회권이 없습니다</div>';
-      }else{
-        passes.forEach(([k,v])=>{
-          const cnt = getPassCount(v);
-          const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
-        
-          const row=document.createElement('div');
-          row.className='pass-card';
-          row.innerHTML = `
-            <span class="p-name">🎫 ${k}${exp ? ` <span class="muted" style="font-weight:700;font-size:12px;">· 만료 ${exp}</span>` : ''}</span>
-            <span class="p-count">${cnt}</span>
-          `;
-          frag.appendChild(row);
-        });
-        selfPassList.innerHTML=''; 
-        selfPassList.appendChild(frag);
-      }
-    }
+// 다회권 목록 (배치 + 레거시 모두 표기)
+if (selfPassList) {
+  const frag = document.createDocumentFragment();
+  const items = [];
+
+  // 1) 배치형
+  Object.entries(d.passBatches || {}).forEach(([id, b]) => {
+    const cnt = b?.count || 0;
+    const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
+    items.push({
+      kind: 'batch',
+      name: b?.name || '(이름없음)',
+      count: cnt,
+      expire: exp
+    });
+  });
+
+  // 2) 레거시형
+  Object.entries(d.passes || {}).forEach(([k, v]) => {
+    const cnt = getPassCount(v);
+    const exp = (v && typeof v === 'object' && v.expireAt) ? fmtDate(v.expireAt) : null;
+    items.push({
+      kind: 'legacy',
+      name: k,
+      count: cnt,
+      expire: exp
+    });
+  });
+
+  if (items.length === 0) {
+    selfPassList.innerHTML = '<div class="muted">보유한 다회권이 없습니다</div>';
+  } else {
+    // (선택) 만료 임박순 정렬: 만료 있는 것 먼저, 날짜 빠른 순
+    items.sort((a, b) => {
+      const ax = a.expire ? 0 : 1;
+      const bx = b.expire ? 0 : 1;
+      if (ax !== bx) return ax - bx;
+      if (!a.expire || !b.expire) return 0;
+      return a.expire.localeCompare(b.expire);
+    });
+
+    items.forEach(({ name, count, expire }) => {
+      const row = document.createElement('div');
+      row.className = 'pass-card';
+      row.innerHTML = `
+        <span class="p-name">🎫 ${name}${expire ? ` <span class="muted" style="font-weight:700;font-size:12px;">· 만료 ${expire}</span>` : ''}</span>
+        <span class="p-count">${count}</span>
+      `;
+      frag.appendChild(row);
+    });
+    selfPassList.innerHTML = '';
+    selfPassList.appendChild(frag);
+  }
+}
+
 
 
 
