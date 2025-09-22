@@ -44,41 +44,32 @@ const fmtPhone = (p)=> {
   return s||"-";
 };
 // ✅ 교체: 숫자/객체(하위호환) 모두 지원
-const sumPass = (passes) =>
-  Object.values(passes || {}).reduce((acc, v) => {
-    if (typeof v === 'number') return acc + (v || 0);
-    if (v && typeof v === 'object') return acc + (v.count || 0);
+const sumPass = (passes, passBatches) => {
+  const legacy = Object.values(passes||{}).reduce((acc, v)=>{
+    if (typeof v === 'number') return acc + (v||0);
+    if (v && typeof v === 'object') return acc + (v.count||0);
     return acc;
   }, 0);
+  const batches = Object.values(passBatches||{}).reduce((acc, v)=> acc + (v?.count||0), 0);
+  return legacy + batches;
+};
 
-// ✅ 추가: 공용 유틸
+// ✅ 기존 유틸 유지(레거시용)
 function getPassCount(v){ return typeof v==='number' ? (v||0) : (v?.count||0); }
 function setPassCount(oldVal, newCount){
-  // 기존이 숫자면 객체로 승격, 객체면 count만 변경(만료일 유지)
-  if (typeof oldVal === 'number' || oldVal == null) {
-    return { count: newCount };
-  } else {
-    return { ...oldVal, count: newCount };
-  }
+  if (typeof oldVal === 'number' || oldVal == null) return { count: newCount };
+  return { ...oldVal, count: newCount };
 }
 function setPassExpire(oldVal, expireTs){
-  // expireTs: firebase.firestore.Timestamp | null
-  if (typeof oldVal === 'number' || oldVal == null) {
-    return expireTs ? { count: (oldVal||0), expireAt: expireTs } : { count: (oldVal||0) };
-  } else {
-    const next = { ...oldVal };
-    if (expireTs) next.expireAt = expireTs; else delete next.expireAt;
-    return next;
-  }
+  if (typeof oldVal === 'number' || oldVal == null) return expireTs ? { count:(oldVal||0), expireAt:expireTs } : { count:(oldVal||0) };
+  const next = { ...oldVal }; if (expireTs) next.expireAt = expireTs; else delete next.expireAt; return next;
 }
 function fmtDate(d){
-  try{
-    if(!d) return '-';
-    const dd = d.toDate ? d.toDate() : d; // Firestore Timestamp or Date
-    const y = dd.getFullYear(), m = String(dd.getMonth()+1).padStart(2,'0'), day = String(dd.getDate()).padStart(2,'0');
-    return `${y}-${m}-${day}`;
-  }catch{return '-';}
+  try{ const dd = d?.toDate ? d.toDate() : d; const y=dd.getFullYear(), m=String(dd.getMonth()+1).padStart(2,'0'), day=String(dd.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }catch{return '-';}
 }
+// ✅ 배치용 ID
+const newBatchId = ()=> db.collection('_').doc().id;
+
 
 
 // 디버그 패널(있으면 로그 표시)
@@ -550,7 +541,7 @@ function renderMember(d){
   if(mFree)      mFree.textContent  = d.freeCredits || 0;
   if(mFreeWk)    mFreeWk.textContent = d.freeWeekday || 0;  // 추가
   if(mFreeSl)    mFreeSl.textContent = d.freeSlush || 0;    // 추가
-  if(mPassTotal) mPassTotal.textContent = sumPass(d.passes||{});
+  if(mPassTotal) mPassTotal.textContent = sumPass(d.passes||{}, d.passBatches||{});
 
 
   if(editName) editName.value = d.name || '';
@@ -570,24 +561,50 @@ function renderMember(d){
 
   // 다회권 목록/선택
 // 다회권 목록/선택 (만료일 표기 지원)
+// ✅ 배치 + 레거시 모두 표시
 if(passList)  passList.innerHTML='';
 if(passSelect){ passSelect.innerHTML=''; }
-Object.entries(d.passes||{}).forEach(([k,v])=>{
-  const cnt = getPassCount(v);
-  const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
+
+// 1) 배치 먼저
+Object.entries(d.passBatches||{}).forEach(([id,b])=>{
+  const cnt = b?.count||0;
+  const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
+  const line = exp ? `${b.name} · 잔여 ${cnt} · 만료 ${exp}` : `${b.name} · 잔여 ${cnt}`;
 
   if(passList){
     const item = document.createElement('div');
-    item.className='item';
-    item.textContent = exp ? `${k} · 잔여 ${cnt} · 만료 ${exp}` : `${k} · 잔여 ${cnt}`;
+    item.className = 'item';
+    item.textContent = line + '  [배치]';
     passList.appendChild(item);
   }
   if(passSelect){
     const opt = document.createElement('option');
-    opt.value=k; opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
+    opt.value = `batch:${id}`;
+    opt.textContent = exp ? `${b.name} (잔 ${cnt}, 만료 ${exp})` : `${b.name} (잔 ${cnt})`;
     passSelect.appendChild(opt);
   }
 });
+
+// 2) 레거시(기존 passes)도 하위호환으로 표시
+Object.entries(d.passes||{}).forEach(([k,v])=>{
+  const cnt = getPassCount(v);
+  const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
+  const line = exp ? `${k} · 잔여 ${cnt} · 만료 ${exp}` : `${k} · 잔여 ${cnt}`;
+
+  if(passList){
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.textContent = line + '  [레거시]';
+    passList.appendChild(item);
+  }
+  if(passSelect){
+    const opt = document.createElement('option');
+    opt.value = `legacy:${k}`;
+    opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
+    passSelect.appendChild(opt);
+  }
+});
+
 
   renderStageInputs(d.stages || {});
 }
@@ -711,57 +728,65 @@ btnAddPass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const name=(passName?.value||'').trim();
   const cnt=parseInt(passCount?.value||'1',10);
-  const expireStr = document.getElementById('passExpire')?.value || '';  // ✅ 추가
+  const expireStr = document.getElementById('passExpire')?.value || '';
   if(!name || !(cnt>0)) return toast('권종/수량 확인');
+
   try{
     await db.runTransaction(async(tx)=>{
       const snap=await tx.get(currentMemberRef);
       const d=snap.data()||{};
-      const passes = Object.assign({}, d.passes||{});
+      const passBatches = { ...(d.passBatches||{}) };
 
-      // 기존 값
-      const prev = passes[name];
-      // 수량 업데이트 (숫자→객체 승격 포함)
-      const nextCount = getPassCount(prev) + cnt;
-      let nextVal = setPassCount(prev, nextCount);
-
-      // 만료일 지정 시 반영
+      // ✅ 항상 새 배치로 추가
+      const id = newBatchId();
+      let batch = { name, count: cnt };
       if (expireStr){
-        const dt = new Date(expireStr + 'T23:59:59'); // 해당일 끝까지 유효하게 처리
-        const tsExpire = firebase.firestore.Timestamp.fromDate(dt);
-        nextVal = setPassExpire(nextVal, tsExpire);
+        const dt = new Date(expireStr + 'T23:59:59');
+        batch.expireAt = firebase.firestore.Timestamp.fromDate(dt);
       }
+      passBatches[id] = batch;
 
-      passes[name] = nextVal;
-      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+      tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
     });
-    await addLog('pass_add', {name, cnt, expire: expireStr||null});
+    await addLog('pass_add_batch', {name, cnt, expire: expireStr||null});
     if(passName) passName.value='';
     if(passCount) passCount.value='1';
-    const pe = document.getElementById('passExpire'); if(pe) pe.value=''; // ✅ 만료일 입력 초기화
+    const pe = document.getElementById('passExpire'); if(pe) pe.value='';
     const d=(await currentMemberRef.get()).data(); renderMember(d);
   }catch(e){ console.error('addPass',e); toast('실패: '+e.message); }
 });
 
+
 btnUsePass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const key = passSelect?.value;
-  if(!key) return toast('권종을 선택하세요');
+
+  const sel = parseSelectedPassKey(); if(!sel) return;
   try{
     await db.runTransaction(async(tx)=>{
       const snap=await tx.get(currentMemberRef);
       const d=snap.data()||{};
-      const passes = Object.assign({}, d.passes||{});
-      const prev = passes[key];
-      const cur = getPassCount(prev);
-      if(cur<=0) throw new Error('잔여 없음');
-      passes[key] = setPassCount(prev, cur - 1);   // ✅ 객체/숫자 모두 지원
-      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+
+      if(sel.kind==='batch'){
+        const passBatches = { ...(d.passBatches||{}) };
+        const b = passBatches[sel.key];
+        if(!b) throw new Error('선택한 배치를 찾을 수 없습니다.');
+        if((b.count||0) <= 0) throw new Error('잔여 없음');
+        passBatches[sel.key] = { ...b, count: (b.count||0) - 1 };
+        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
+      }else{ // legacy
+        const passes = { ...(d.passes||{}) };
+        const prev = passes[sel.key];
+        const cur = getPassCount(prev);
+        if(cur<=0) throw new Error('잔여 없음');
+        passes[sel.key] = setPassCount(prev, cur - 1);
+        tx.update(currentMemberRef, { passes, updatedAt: ts() });
+      }
     });
-    await addLog('pass_use', {name:key, cnt:1});
-    const d=(await currentMemberRef.get()).data(); renderMember(d);
+    await addLog('pass_use', { where: sel.kind, key: sel.key, cnt:1 });
+    renderMember((await currentMemberRef.get()).data());
   }catch(e){ console.error('usePass',e); toast('실패: '+e.message); }
 });
+
 
 btnRefundPass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
@@ -785,11 +810,15 @@ function parsePosInt(el, def = 1) {
   const n = parseInt(el?.value ?? def, 10);
   return Number.isFinite(n) && n > 0 ? n : def;
 }
-function requireSelectedPass() {
-  const key = passSelect?.value;
-  if (!key) { toast('권종을 선택하세요'); return null; }
-  return key;
+function parseSelectedPassKey(){
+  const raw = passSelect?.value || '';
+  if(!raw){ toast('권종을 선택하세요'); return null; }
+  // "batch:<id>" 또는 "legacy:<name>"
+  const [kind, rest] = raw.split(':');
+  if(!kind || !rest){ toast('권종 선택값이 올바르지 않습니다'); return null; }
+  return { kind, key: rest };
 }
+
 
 // 스탬프 +N (10마다 무료권 자동 적립)
 btnAddStampN?.addEventListener('click', async () => {
@@ -856,60 +885,139 @@ btnSubFreeN?.addEventListener('click', async () => {
 });
 
 // 다회권 -N
-btnUsePassN?.addEventListener('click', async () => {
+btnUsePass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const key = requireSelectedPass(); if(!key) return;
-  const N = parsePosInt(passDelta, 1);
-  try {
-    await db.runTransaction(async (tx) => {
+
+  const sel = parseSelectedPassKey(); if(!sel) return;
+
+  try{
+    await db.runTransaction(async(tx)=>{
       const snap = await tx.get(currentMemberRef);
       const d = snap.data() || {};
-      const passes = { ...(d.passes || {}) };
-      const cur = getPassCount(passes[key]);
-      if (cur < N) throw new Error('잔여 수량이 부족합니다.');
-      passes[key] = setPassCount(passes[key], cur - N);
-      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+      const nowMs = firebase.firestore.Timestamp.now().toMillis();  // ✅ 현재 서버시간 기반 비교
+
+      if(sel.kind === 'batch'){
+        const passBatches = { ...(d.passBatches || {}) };
+        const b = passBatches[sel.key];
+        if(!b) throw new Error('선택한 배치를 찾을 수 없습니다.');
+
+        // ✅ 만료 체크 (expireAt이 있고, 지금보다 이전이면 사용 불가)
+        if (b.expireAt && b.expireAt.toMillis() < nowMs) {
+          throw new Error('만료된 배치입니다.');
+        }
+
+        if((b.count || 0) <= 0) throw new Error('잔여 없음');
+        passBatches[sel.key] = { ...b, count: (b.count || 0) - 1 };
+        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
+
+      } else { // legacy
+        const passes = { ...(d.passes || {}) };
+        const prev = passes[sel.key];
+
+        // ✅ 레거시에도 expireAt이 객체에 들어가 있을 수 있으니 방어
+        if (prev && typeof prev === 'object' && prev.expireAt && prev.expireAt.toMillis() < nowMs) {
+          throw new Error('만료된 권종입니다.');
+        }
+
+        const cur = getPassCount(prev);
+        if(cur <= 0) throw new Error('잔여 없음');
+
+        passes[sel.key] = setPassCount(prev, cur - 1);
+        tx.update(currentMemberRef, { passes, updatedAt: ts() });
+      }
     });
-    await addLog('pass_use_n', { name: key, n: N });
+
+    await addLog('pass_use', { where: sel.kind, key: sel.key, cnt: 1 });
     renderMember((await currentMemberRef.get()).data());
-  } catch (e) { console.error('pass -N', e); toast('실패: ' + e.message); }
+
+  } catch(e){
+    console.error('usePass', e);
+    toast('실패: ' + (e?.message || e));
+  }
 });
+
 
 // 다회권 +N
 btnRefundPassN?.addEventListener('click', async () => {
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const key = requireSelectedPass(); if(!key) return;
+  if(!isAdmin) return toast('운영자 전용');
+  if(!currentMemberRef) return toast('회원을 먼저 선택');
+
+  const sel = parseSelectedPassKey(); // "batch:<id>" 또는 "legacy:<name>"
+  if(!sel) return;
+
   const N = parsePosInt(passDelta, 1);
+  if (!(N > 0)) return toast('수량(N)을 확인하세요.');
+
   try {
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(currentMemberRef);
       const d = snap.data() || {};
-      const passes = { ...(d.passes || {}) };
-      passes[key] = setPassCount(passes[key], getPassCount(passes[key]) + N);
-      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+
+      if (sel.kind === 'batch') {
+        // ✅ 배치 +N
+        const passBatches = { ...(d.passBatches || {}) };
+        const b = passBatches[sel.key];
+        if (!b) throw new Error('배치를 찾을 수 없습니다.');
+        passBatches[sel.key] = { ...b, count: (b.count || 0) + N };
+        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
+
+      } else {
+        // ✅ 레거시 +N
+        const passes = { ...(d.passes || {}) };
+        passes[sel.key] = setPassCount(passes[sel.key], getPassCount(passes[sel.key]) + N);
+        tx.update(currentMemberRef, { passes, updatedAt: ts() });
+      }
     });
-    await addLog('pass_add_n', { name: key, n: N });
+
+    await addLog('pass_add_n', { where: sel.kind, key: sel.key, n: N });
     renderMember((await currentMemberRef.get()).data());
-  } catch (e) { console.error('pass +N', e); toast('실패: ' + e.message); }
+
+  } catch (e) {
+    console.error('pass +N', e);
+    toast('실패: ' + (e?.message || e));
+  }
 });
+
 
 // 권종 삭제(키 자체 제거)
 btnDeletePass?.addEventListener('click', async () => {
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const key = requireSelectedPass(); if(!key) return;
-  if(!confirm(`'${key}' 권종을 삭제할까요? (잔여 수량과 함께 사라집니다)`)) return;
+  if (!isAdmin) return toast('운영자 전용');
+  if (!currentMemberRef) return toast('회원을 먼저 선택');
+
+  const sel = parseSelectedPassKey(); // { kind: 'batch'|'legacy', key: string }
+  if (!sel) return;
+
+  // 보기 좋은 확인문구 (선택 옵션 표시 텍스트 사용)
+  const label = passSelect?.selectedOptions?.[0]?.textContent?.trim() || sel.key;
+  if (!confirm(`'${label}' 를 삭제할까요? (잔여 수량과 함께 사라집니다)`)) return;
+
   try {
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(currentMemberRef);
       const d = snap.data() || {};
-      const passes = { ...(d.passes || {}) };
-      delete passes[key];
-      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+
+      if (sel.kind === 'batch') {
+        const passBatches = { ...(d.passBatches || {}) };
+        if (!passBatches[sel.key]) throw new Error('배치를 찾을 수 없습니다.');
+        delete passBatches[sel.key];
+        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
+
+      } else {
+        const passes = { ...(d.passes || {}) };
+        if (!(sel.key in passes)) throw new Error('권종을 찾을 수 없습니다.');
+        delete passes[sel.key];
+        tx.update(currentMemberRef, { passes, updatedAt: ts() });
+      }
     });
-    await addLog('pass_delete', { name: key });
+
+    await addLog('pass_delete', { where: sel.kind, key: sel.key });
     renderMember((await currentMemberRef.get()).data());
-  } catch (e) { console.error('pass delete', e); toast('실패: ' + e.message); }
+  } catch (e) {
+    console.error('pass delete', e);
+    toast('실패: ' + (e?.message || e));
+  }
 });
+
 
 // 회원 삭제 (문서만 삭제; logs 서브컬렉션은 유지)
 btnDeleteMember?.addEventListener('click', async () => {
