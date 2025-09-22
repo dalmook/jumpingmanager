@@ -90,6 +90,29 @@
             <button id="passPreset20" class="ghost">20회권</button>
             <button id="passPreset30" class="ghost">30회권</button>
           </div>
+          <!-- 스탬프 / 무료권 : N개 증감 -->
+          <div class="row">
+            <input id="stampDelta" type="number" min="1" step="1" value="1" style="width:100px" />
+            <button id="btnAddStampN" class="primary">스탬프 +N</button>
+            <button id="btnSubStampN" class="ghost">스탬프 -N</button>
+          
+            <input id="freeDelta" type="number" min="1" step="1" value="1" style="width:100px; margin-left:8px" />
+            <button id="btnAddFreeN" class="primary">무료권 +N</button>
+            <button id="btnSubFreeN" class="ghost">무료권 -N</button>
+          </div>
+          
+          <!-- 다회권 : N개 증감 + 권종 삭제 -->
+          <div class="row">
+            <input id="passDelta" type="number" min="1" step="1" value="1" style="width:100px" />
+            <button id="btnUsePassN">선택권 -N</button>
+            <button id="btnRefundPassN" class="ghost">선택권 +N</button>
+            <button id="btnDeletePass" class="warning">선택권 삭제</button>
+          </div>
+          
+          <!-- 회원 삭제 -->
+          <div class="row">
+            <button id="btnDeleteMember" class="danger">회원 삭제</button>
+          </div>          
           <h3>보유 다회권</h3>
           <div id="passList" class="list small"></div>
           <h3>최근 로그</h3>
