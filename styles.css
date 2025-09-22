@@ -225,3 +225,8 @@ input,select{
 }
 .tabpane{ display:none; }
 .tabpane.active{ display:block; }
+.stamp{
+  font-size: 24px;
+  margin: 4px;
+}
+
