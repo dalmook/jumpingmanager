@@ -21,6 +21,10 @@ const $ = (s)=>document.querySelector(s);
 const byId = (id)=>document.getElementById(id);
 const toast = (m)=> alert(m);
 const normPhone = (p)=> (p||"").replace(/\D/g,"");
+// 전화번호 입력인지 판별 & 내부 이메일 변환
+const isPhoneInput = (s)=> /^\d{9,12}$/.test(normPhone(s||""));
+const toEmailFromPhone = (p)=> `${normPhone(p)}@local`;
+
 const fmtPhone = (p)=> {
   const s = normPhone(p);
   if (s.length===11) return `${s.slice(0,3)}-${s.slice(3,7)}-${s.slice(7)}`;
@@ -134,43 +138,59 @@ auth.onAuthStateChanged(async(user)=>{
   }
 });
 
-// 6) 로그인/가입/로그아웃
+// 로그인: 관리자(이메일) / 손님(휴대폰) 모두 지원
 btnLogin?.addEventListener("click", async () => {
-  const phoneRaw = byId("loginEmail")?.value?.trim();
+  const idRaw = byId("loginEmail")?.value?.trim();
   const pass = byId("loginPass")?.value?.trim();
-  const phone = normPhone(phoneRaw || "");
-  if (!phone || !pass) return toast("휴대폰번호와 비밀번호를 입력하세요.");
+  if (!idRaw || !pass) return toast("아이디(이메일 또는 휴대폰)와 비밀번호를 입력하세요.");
 
-  // 휴대폰 → 내부용 이메일로 변환
-  const email = `${phone}@local`;
+  let emailForAuth = null;
 
-  await __dbgTry("login", () => auth.signInWithEmailAndPassword(email, pass));
-  toast("로그인 성공");
+  // 관리자: 이메일 입력 또는 adminEmails 목록과 일치
+  const looksLikeEmail = idRaw.includes("@");
+  const isAdminEmailTyped = adminEmails.includes(idRaw);
+
+  if (looksLikeEmail || isAdminEmailTyped) {
+    emailForAuth = idRaw; // 관리자: 그대로 이메일 사용
+  } else if (isPhoneInput(idRaw)) {
+    emailForAuth = toEmailFromPhone(idRaw); // 손님: 휴대폰 -> 내부 이메일
+  } else {
+    return toast("로그인: 이메일(관리자) 또는 휴대폰번호(손님)를 입력하세요.");
+  }
+
+  try {
+    await auth.signInWithEmailAndPassword(emailForAuth, pass);
+    toast("로그인 성공");
+  } catch (e) {
+    console.error("login error", e);
+    toast("로그인 실패: " + (e?.message || e));
+  }
 });
 
+
+// 회원가입: 휴대폰번호 + 비밀번호만 허용
 btnSignup?.addEventListener("click", async () => {
   const phoneRaw = byId("loginEmail")?.value?.trim();
   const pass = byId("loginPass")?.value?.trim();
   const phone = normPhone(phoneRaw || "");
-  if (!phone || !pass) return toast("휴대폰번호와 비밀번호를 입력하세요.");
 
-  // 휴대폰 → 내부용 이메일로 변환
-  const email = `${phone}@local`;
+  if (!isPhoneInput(phone)) return toast("회원가입: 휴대폰번호(숫자만)를 입력하세요.");
+  if (!pass) return toast("회원가입: 비밀번호를 입력하세요.");
+
+  const email = toEmailFromPhone(phone);
   const now = firebase.firestore.FieldValue.serverTimestamp();
 
-  await __dbgTry("signup", async () => {
-    // 1) Auth 계정 생성 (email/password)
+  try {
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
     console.log("signup uid", cred.user?.uid);
 
-    // 2) 회원 문서 생성/보장: members/{phone}
     const ref = db.collection("members").doc(phone);
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists) {
         tx.set(ref, {
           name: "",
-          phone,           // 전화번호 저장
+          phone,
           team: "",
           stamp: 0,
           freeCredits: 0,
@@ -181,10 +201,14 @@ btnSignup?.addEventListener("click", async () => {
         });
       }
     });
-  });
 
-  toast("회원가입 완료");
+    toast("회원가입 완료");
+  } catch (e) {
+    console.error("signup error", e);
+    toast("회원가입 실패: " + (e?.message || e));
+  }
 });
+
 
 btnLogout?.addEventListener('click', async()=>{ try{ await auth.signOut(); toast('로그아웃'); }catch(e){ console.error('logout',e); }});
 
