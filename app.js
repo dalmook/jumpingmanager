@@ -805,21 +805,33 @@ btnUsePass?.addEventListener('click', async()=>{
 
 
 btnRefundPass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const key = passSelect?.value;
-  if(!key) return toast('권종을 선택하세요');
+  if(!isAdmin) return toast('운영자 전용');
+  if(!currentMemberRef) return toast('회원을 먼저 선택');
+
+  const sel = parseSelectedPassKey(); if(!sel) return;   // ← 파싱 필수
+
   try{
     await db.runTransaction(async(tx)=>{
       const snap=await tx.get(currentMemberRef);
       const d=snap.data()||{};
-      const passes = Object.assign({}, d.passes||{});
-      passes[key] = setPassCount(passes[key], getPassCount(passes[key]) + 1);
-      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+
+      if (sel.kind === 'batch') {
+        const passBatches = { ...(d.passBatches||{}) };
+        const b = passBatches[sel.key];
+        if(!b) throw new Error('배치를 찾을 수 없습니다.');
+        passBatches[sel.key] = { ...b, count:(b.count||0)+1 };
+        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
+      } else {
+        const passes = { ...(d.passes||{}) };
+        passes[sel.key] = setPassCount(passes[sel.key], getPassCount(passes[sel.key]) + 1);
+        tx.update(currentMemberRef, { passes, updatedAt: ts() });
+      }
     });
-    await addLog('pass_refund', {name:key, cnt:1});
-    const d=(await currentMemberRef.get()).data(); renderMember(d);
-  }catch(e){ console.error('refundPass',e); toast('실패: '+e.message); }
+    await addLog('pass_refund', { where: sel.kind, key: sel.key, cnt:1 });
+    renderMember((await currentMemberRef.get()).data());
+  }catch(e){ console.error('refundPass',e); toast('실패: '+(e?.message||e)); }
 });
+
 
 // 14) === N개 증감 & 권종 삭제 & 회원 삭제 ===
 function parsePosInt(el, def = 1) {
@@ -829,11 +841,14 @@ function parsePosInt(el, def = 1) {
 function parseSelectedPassKey(){
   const raw = passSelect?.value || '';
   if(!raw){ toast('권종을 선택하세요'); return null; }
-  // "batch:<id>" 또는 "legacy:<name>"
-  const [kind, rest] = raw.split(':');
-  if(!kind || !rest){ toast('권종 선택값이 올바르지 않습니다'); return null; }
-  return { kind, key: rest };
+  const i = raw.indexOf(':');
+  if (i < 0){ toast('권종 선택값이 올바르지 않습니다'); return null; }
+  const kind = raw.slice(0, i);
+  const key  = raw.slice(i+1);       // 나머지 전부
+  if(!kind || !key){ toast('권종 선택값이 올바르지 않습니다'); return null; }
+  return { kind, key };
 }
+
 
 
 // 스탬프 +N (10마다 무료권 자동 적립)
@@ -1138,7 +1153,6 @@ async function loadSelf(user){
       return;
     }
     const d = snap.data() || {};
-    const totalPasses = Object.values(d.passes||{}).reduce((a,b)=>a+(b||0),0);
 
 // 요약 박스 + 도장 격자(2행×5열)
     cardEl.innerHTML = `
@@ -1156,7 +1170,6 @@ async function loadSelf(user){
           🧊 슬러시 <b>${d.freeSlush||0}</b>
         </div>
       </div>
-      </div>   <!-- ✅ 닫힘 태그 추가 -->
     
       <div id="selfStampGrid" class="stamp-grid"></div>
     
