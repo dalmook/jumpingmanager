@@ -381,6 +381,28 @@ input,select{
   min-width:48px;
   text-align:center;
 }
+.stage-card{
+  padding:12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#fff;
+  box-shadow: var(--shadow);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:14px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+.stage-card .s-name{ color:#333; }
+.stage-card .s-progress{ color:#6b8bff; font-weight:900; }
+.stage-card.clear{
+  background:linear-gradient(135deg,#fff8dc,#ffe066);
+  color:#8a5d00;
+}
+.stage-card.clear .s-progress::after{
+  content:" 🏆✨";
+}
 
 /* Responsive */
 @media (max-width:1180px){
