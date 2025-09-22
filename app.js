@@ -388,7 +388,10 @@ function renderMember(d){
   if(mPhoneTeam) mPhoneTeam.textContent = `${fmtPhone(d.phone)} · ${d.team||'-'}`;
   if(mStamp)     mStamp.textContent = d.stamp || 0;
   if(mFree)      mFree.textContent  = d.freeCredits || 0;
+  if(mFreeWk)    mFreeWk.textContent = d.freeWeekday || 0;  // 추가
+  if(mFreeSl)    mFreeSl.textContent = d.freeSlush || 0;    // 추가
   if(mPassTotal) mPassTotal.textContent = sumPass(d.passes||{});
+
 
   if(editName) editName.value = d.name || '';
   if(editTeam) editTeam.value = d.team || '';
