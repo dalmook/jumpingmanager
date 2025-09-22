@@ -473,10 +473,12 @@ async function loadLogs(){
 btnSaveProfile?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용');
   if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const name = editName?.value?.trim() || '';
-  const team = editTeam?.value?.trim() || '';
-  try{
-    await currentMemberRef.update({ name, team, updatedAt: ts() });
+   const name = editName?.value?.trim() || '';
+   const team = editTeam?.value?.trim() || '';
+   const car  = editCar?.value?.trim()  || '';
+   const note = editNote?.value?.trim() || '';
+   try{
+     await currentMemberRef.update({ name, team, car, note, updatedAt: ts() });
     await addLog('profile_save', {name, team});
     const d = (await currentMemberRef.get()).data();
     renderMember(d);
