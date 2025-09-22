@@ -1,35 +1,35 @@
 // ==========================
-// File: app.js (관리자 편집/조작 + 휴대폰 회원가입/로그인 + 검색/목록 + 상세조작)
+// File: app.js (관리자 편집/조작 + 휴대폰 회원가입/로그인 + 검색/목록 + 상세조작 + N증감 + 삭제)
 // ==========================
 /* global firebase */
 
-// 1) Firebase 설정값
+// 1) Firebase 설정값 (사용자 제공값)
 const firebaseConfig = {
   apiKey: "AIzaSyD9tP0HnP3S8X82NoZXQ5DPwoigoHJ-zfU",
   authDomain: "jumpingmanager-dcd21.firebaseapp.com",
   projectId: "jumpingmanager-dcd21",
-  storageBucket: "jumpingmanager-dcd21.firebasestorage.app", // (참고) 일반적으로 appspot.com
+  storageBucket: "jumpingmanager-dcd21.firebasestorage.app",
   messagingSenderId: "286929980468",
-  appId: "G-4CJN8R3XQ4" // (참고) 보통 appId는 1:… 형식, 이 값은 measurementId 형식
+  appId: "G-4CJN8R3XQ4"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// 2) 유틸/로그
+// 2) 유틸/로그/전화번호
 const $ = (s)=>document.querySelector(s);
 const byId = (id)=>document.getElementById(id);
 const toast = (m)=> alert(m);
 const ts = ()=> firebase.firestore.FieldValue.serverTimestamp();
 
-// 🔧 휴대폰 → 내부 이메일 변환 설정(도메인에 점이 있어야 함)
+// 도메인에 점(.) 포함 필수
 const PHONE_DOMAIN = 'phone.local';
 
-// 🔧 휴대폰 정규화(+82 → 0, 숫자만)
+// +82 → 0, 숫자만
 function canonPhone(s){
-  let d = (s||'').replace(/\D/g,'');     // 숫자만
+  let d = (s||'').replace(/\D/g,'');
   if (d.startsWith('82')) {
-    if (d.startsWith('8210')) d = '0' + d.slice(2); // 8210xxxx → 010xxxx
+    if (d.startsWith('8210')) d = '0' + d.slice(2);
     else d = d.replace(/^82/, '0');
   }
   return d;
@@ -45,7 +45,7 @@ const fmtPhone = (p)=> {
 };
 const sumPass = (passes)=> Object.values(passes||{}).reduce((a,b)=>a+(b||0),0);
 
-// 디버그 패널 연동(있으면 로그 노출)
+// 디버그 패널(있으면 로그 표시)
 (function(){
   const area = ()=> byId('__dbgArea');
   function stamp(){ const d=new Date(); return d.toLocaleString()+'.'+String(d.getMilliseconds()).padStart(3,'0'); }
@@ -62,28 +62,31 @@ const sumPass = (passes)=> Object.values(passes||{}).reduce((a,b)=>a+(b||0),0);
   window.addEventListener('unhandledrejection', e=> write('REJECTION', e?.reason?.message||e?.reason));
 })();
 
-// 3) 권한(간단 버전)
+// 3) 권한(간단)
 const adminEmails = ["chosungmook@naver.com"];
 
 // 4) DOM 참조
-// 인증
+// 인증/공통
 const signedOut = $('#signedOut');
 const signedIn  = $('#signedIn');
 const whoami    = $('#whoami');
 const btnLogin  = $('#btnLogin');
 const btnSignup = $('#btnSignup');
 const btnLogout = $('#btnLogout');
+
 // 관리자 리스트/검색
 const adminPanel = $('#adminPanel');
 const adminList  = $('#adminList');
 const searchPhone= $('#searchPhone');
 const btnSearch  = $('#btnSearch');
 const btnLoadAll = $('#btnLoadAll');
-// 회원 등록(간단 등록 UI)
+
+// 회원 등록
 const regName  = $('#regName');
 const regPhone = $('#regPhone');
 const regTeam  = $('#regTeam');
 const btnRegister = $('#btnRegister');
+
 // 손님 마이페이지
 const memberSelf = $('#memberSelf');
 const selfCard   = $('#selfCard');
@@ -117,6 +120,22 @@ const passPreset30 = $('#passPreset30');
 const passList = $('#passList');
 const logList  = $('#logList');
 
+// === N개 증감/삭제용 새 요소들 ===
+const stampDelta   = $('#stampDelta');
+const btnAddStampN = $('#btnAddStampN');
+const btnSubStampN = $('#btnSubStampN');
+
+const freeDelta    = $('#freeDelta');
+const btnAddFreeN  = $('#btnAddFreeN');
+const btnSubFreeN  = $('#btnSubFreeN');
+
+const passDelta      = $('#passDelta');
+const btnUsePassN    = $('#btnUsePassN');
+const btnRefundPassN = $('#btnRefundPassN');
+const btnDeletePass  = $('#btnDeletePass');
+
+const btnDeleteMember = $('#btnDeleteMember');
+
 // 상태
 let isAdmin = false;
 let currentMemberRef = null; // 현재 편집 중 회원 ref
@@ -134,10 +153,10 @@ auth.onAuthStateChanged(async(user)=>{
 
     try{
       if(isAdmin){
-        await loadAllMembers();    // 관리자: 기본 전체 목록
-        hideMemberPanel();         // 시작 시 패널 닫힘
+        await loadAllMembers();
+        hideMemberPanel();
       }else{
-        await loadSelf(user);      // 손님: 마이페이지
+        await loadSelf(user);
       }
     }catch(e){ console.error('initial', e); }
   }else{
@@ -149,7 +168,7 @@ auth.onAuthStateChanged(async(user)=>{
   }
 });
 
-// 6) 로그인: 관리자(이메일) / 손님(휴대폰) 지원
+// 6) 로그인: 관리자(이메일) / 손님(휴대폰)
 btnLogin?.addEventListener("click", async () => {
   const idRaw = byId("loginEmail")?.value?.trim();
   const pass = byId("loginPass")?.value?.trim();
@@ -160,11 +179,9 @@ btnLogin?.addEventListener("click", async () => {
   const isAdminEmailTyped = adminEmails.includes(idRaw);
 
   if (looksLikeEmail || isAdminEmailTyped) {
-    // 관리자: 이메일 그대로 사용
-    emailForAuth = idRaw;
+    emailForAuth = idRaw; // 관리자: 이메일 그대로
   } else if (isPhoneInput(idRaw)) {
-    // 손님: 휴대폰 → 내부 이메일
-    emailForAuth = toEmailFromPhone(idRaw);
+    emailForAuth = toEmailFromPhone(idRaw); // 손님: 휴대폰 → 내부 이메일
   } else {
     return toast("로그인: 관리자=이메일, 손님=휴대폰번호(숫자만) 입력");
   }
@@ -292,7 +309,7 @@ async function searchMembers(){
   }catch(e){ console.error('searchMembers',e); adminList.innerHTML='검색 실패: '+e.message; }
 }
 
-// 10) 회원 상세 열기/렌더/로그
+// 10) 회원 상세/렌더/로그
 function hideMemberPanel(){ memberSection?.classList.add('hidden'); currentMemberRef=null; }
 
 async function openMember(id){
@@ -381,7 +398,7 @@ btnSaveProfile?.addEventListener('click', async()=>{
   }catch(e){ console.error('saveProfile',e); toast('저장 실패: '+e.message); }
 });
 
-// 12) 스탬프/무료권
+// 12) 스탬프/무료권 (기존 +1 / -1 성격)
 btnAddVisit?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   try{
@@ -421,7 +438,7 @@ btnResetStamp?.addEventListener('click', async()=>{
   }catch(e){ console.error('resetStamp',e); toast('실패: '+e.message); }
 });
 
-// 13) 다회권
+// 13) 다회권 (기존 +/-1)
 passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='10회권'; passCount.value='10'; }});
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; }});
 passPreset30?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='30회권'; passCount.value='30'; }});
@@ -480,13 +497,158 @@ btnRefundPass?.addEventListener('click', async()=>{
   }catch(e){ console.error('refundPass',e); toast('실패: '+e.message); }
 });
 
-// 14) 손님 마이페이지
+// 14) === N개 증감 & 권종 삭제 & 회원 삭제 ===
+
+// 숫자 파싱 유틸
+function parsePosInt(el, def = 1) {
+  const n = parseInt(el?.value ?? def, 10);
+  return Number.isFinite(n) && n > 0 ? n : def;
+}
+function requireSelectedPass() {
+  const key = passSelect?.value;
+  if (!key) { toast('권종을 선택하세요'); return null; }
+  return key;
+}
+
+// 스탬프 +N (10마다 무료권 자동 적립)
+btnAddStampN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(stampDelta, 1);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const s0 = d.stamp || 0;
+      const total = s0 + N;
+      const addFree = Math.floor(total / 10);
+      const s1 = total % 10;
+      const totalVisits = (d.totalVisits || 0) + N;
+      const freeCredits = (d.freeCredits || 0) + addFree;
+      tx.update(currentMemberRef, { stamp: s1, freeCredits, totalVisits, updatedAt: ts() });
+    });
+    await addLog('stamp_add_n', { n: N });
+    renderMember((await currentMemberRef.get()).data());
+  } catch (e) { console.error('stamp +N', e); toast('실패: ' + e.message); }
+});
+
+// 스탬프 -N (무료권 변화 없음)
+btnSubStampN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(stampDelta, 1);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const s0 = d.stamp || 0;
+      const s1 = Math.max(0, s0 - N);
+      tx.update(currentMemberRef, { stamp: s1, updatedAt: ts() });
+    });
+    await addLog('stamp_sub_n', { n: N });
+    renderMember((await currentMemberRef.get()).data());
+  } catch (e) { console.error('stamp -N', e); toast('실패: ' + e.message); }
+});
+
+// 무료권 +N / -N
+btnAddFreeN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(freeDelta, 1);
+  try {
+    await currentMemberRef.update({ freeCredits: firebase.firestore.FieldValue.increment(N), updatedAt: ts() });
+    await addLog('free_add_n', { n: N });
+    renderMember((await currentMemberRef.get()).data());
+  } catch (e) { console.error('free +N', e); toast('실패: ' + e.message); }
+});
+btnSubFreeN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const N = parsePosInt(freeDelta, 1);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const cur = d.freeCredits || 0;
+      const next = Math.max(0, cur - N);
+      tx.update(currentMemberRef, { freeCredits: next, updatedAt: ts() });
+    });
+    await addLog('free_sub_n', { n: N });
+    renderMember((await currentMemberRef.get()).data());
+  } catch (e) { console.error('free -N', e); toast('실패: ' + e.message); }
+});
+
+// 다회권 -N
+btnUsePassN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const key = requireSelectedPass(); if(!key) return;
+  const N = parsePosInt(passDelta, 1);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const passes = { ...(d.passes || {}) };
+      const cur = passes[key] || 0;
+      if (cur < N) throw new Error('잔여 수량이 부족합니다.');
+      passes[key] = cur - N;
+      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+    });
+    await addLog('pass_use_n', { name: key, n: N });
+    renderMember((await currentMemberRef.get()).data());
+  } catch (e) { console.error('pass -N', e); toast('실패: ' + e.message); }
+});
+
+// 다회권 +N
+btnRefundPassN?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const key = requireSelectedPass(); if(!key) return;
+  const N = parsePosInt(passDelta, 1);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const passes = { ...(d.passes || {}) };
+      passes[key] = (passes[key] || 0) + N;
+      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+    });
+    await addLog('pass_add_n', { name: key, n: N });
+    renderMember((await currentMemberRef.get()).data());
+  } catch (e) { console.error('pass +N', e); toast('실패: ' + e.message); }
+});
+
+// 권종 삭제(키 자체 제거)
+btnDeletePass?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const key = requireSelectedPass(); if(!key) return;
+  if(!confirm(`'${key}' 권종을 삭제할까요? (잔여 수량과 함께 사라집니다)`)) return;
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+      const passes = { ...(d.passes || {}) };
+      delete passes[key];
+      tx.update(currentMemberRef, { passes, updatedAt: ts() });
+    });
+    await addLog('pass_delete', { name: key });
+    renderMember((await currentMemberRef.get()).data());
+  } catch (e) { console.error('pass delete', e); toast('실패: ' + e.message); }
+});
+
+// 회원 삭제 (문서만 삭제; logs 서브컬렉션은 유지)
+btnDeleteMember?.addEventListener('click', async () => {
+  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
+  const id = currentMemberRef.id;
+  if(!confirm(`회원(${id})을 삭제할까요? (로그 서브컬렉션은 유지)`)) return;
+  try {
+    await currentMemberRef.delete();
+    hideMemberPanel();
+    await loadAllMembers();
+    toast('회원 삭제 완료');
+  } catch (e) { console.error('delete member', e); toast('삭제 실패: ' + e.message); }
+});
+
+// 15) 손님 마이페이지
 async function loadSelf(user){
   if(!selfCard) return;
   selfCard.innerHTML = '<div class="muted">불러오는 중…</div>';
   try{
     const email = user?.email || '';
-    // 010…@phone.local 형태면 @ 앞부분이 phone
     const m = email.match(/^(\d{9,12})@phone\.local$/);
     const phone = m ? m[1] : email.replace(/@.*/, '');
     let snap = await db.collection('members').doc(phone).get();
@@ -505,4 +667,4 @@ async function loadSelf(user){
   }catch(e){ console.error('loadSelf',e); selfCard.innerHTML = '로드 실패: '+e.message; }
 }
 
-console.log('app.js loaded: admin edit + visits + passes + logs (canonPhone 기반)');
+console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions');
