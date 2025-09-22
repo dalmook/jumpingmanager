@@ -96,6 +96,8 @@ const memberSection = $('#memberSection');
 const mPhoneTeam = $('#mPhoneTeam');
 const mStamp = $('#mStamp');
 const mFree  = $('#mFree');
+const mFreeWk = $('#mFreeWk');   // 추가
+const mFreeSl = $('#mFreeSl');   // 추가
 const mPassTotal = $('#mPassTotal');
 const stampDots  = $('#stampDots');
 
