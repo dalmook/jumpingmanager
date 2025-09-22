@@ -876,13 +876,18 @@ async function loadSelf(user){
       }else{
         passes.forEach(([k,v])=>{
           const row=document.createElement('div');
-          row.className='item';
-          row.textContent=`${k} · 잔여 ${v}`;
+          row.className='pass-card';
+          row.innerHTML = `
+            <span class="p-name">🎫 ${k}</span>
+            <span class="p-count">${v}</span>
+          `;
           frag.appendChild(row);
         });
-        selfPassList.innerHTML=''; selfPassList.appendChild(frag);
+        selfPassList.innerHTML=''; 
+        selfPassList.appendChild(frag);
       }
     }
+
 
     // 최근 로그 (권한 허용 시)
     if(selfLogList){
