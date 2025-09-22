@@ -210,7 +210,15 @@ input,select{
   border:0; padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px;
   outline:none; resize:none; line-height:1.4;
 }
-
+.tabpane{ display:none; }
+.tabpane.active{ display:block; }
+.stamp{
+  /* 화면 폭에 맞춰 자동 줄어듦: 최소 18px ~ 최대 28px */
+  font-size: clamp(18px, 5.5vw, 28px);
+  line-height: 1;
+  display:block;   /* 이모지 잘림 방지 */
+  margin: 2px;
+}
 /* Responsive */
 @media (max-width:1180px){
   .app-shell{ padding: 14px 14px; }
@@ -228,10 +236,9 @@ input,select{
   .item{ border-radius:12px }
   .member-card .stat{ min-width:104px }
 }
-.tabpane{ display:none; }
-.tabpane.active{ display:block; }
-.stamp{
-  font-size: 24px;
-  margin: 4px;
+@media (max-width: 380px){
+  .dots{ gap:2px; }
 }
+
+
 
