@@ -816,6 +816,8 @@ async function loadSelf(user){
       <div class="stats">
         <div class="stat"><div class="label">스탬프(10)</div><div class="value">${d.stamp||0}</div></div>
         <div class="stat"><div class="label">무료권</div><div class="value">${d.freeCredits||0}</div></div>
+        <div class="stat"><div class="label">평일무료권</div><div class="value">${d.freeWeekday||0}</div></div>  <!-- 추가 -->
+        <div class="stat"><div class="label">슬러시 무료권</div><div class="value">${d.freeSlush||0}</div></div>   <!-- 추가 -->
         <div class="stat"><div class="label">다회권</div><div class="value">${totalPasses}</div></div>
       </div>
       <div class="progress"><div id="selfDots" class="dots"></div></div>
