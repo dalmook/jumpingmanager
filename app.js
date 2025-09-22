@@ -693,6 +693,31 @@ async function addPass(docRef){
   await db.runTransaction(async tx=>{
     const snap = await tx.get(docRef);
     const data = snap.data()||{};
+    let passes = data.passes;
+
+    // ✅ 스키마 통일: 객체 → 배열 변환
+    if(!Array.isArray(passes)){
+      passes = Object.entries(passes||{}).map(([k,v])=>{
+        if(typeof v === 'object' && v){
+          return { name:k, count:v.count||0, exp:v.exp||null };
+        }else{
+          return { name:k, count:v||0, exp:null };
+        }
+      });
+    }
+
+    // 새 권종 추가
+    passes.push({name, count, exp});
+    tx.update(docRef, {passes, updatedAt: ts()});
+  });
+
+  toast("권종이 추가되었습니다.");
+}
+
+
+  await db.runTransaction(async tx=>{
+    const snap = await tx.get(docRef);
+    const data = snap.data()||{};
     let passes = data.passes || [];
 
     passes.push({name, count, exp});
