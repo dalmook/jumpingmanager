@@ -11,6 +11,68 @@ const firebaseConfig = {
   appId: "G-4CJN8R3XQ4"
 };
 firebase.initializeApp(firebaseConfig);
+// === 디버그 로거 ===
+(function(){
+  const area = ()=> document.getElementById('__dbgArea');
+  const panel = ()=> document.getElementById('__dbgPanel');
+
+  function stamp(){ 
+    const d = new Date(); 
+    return d.toLocaleString() + '.' + String(d.getMilliseconds()).padStart(3,'0');
+  }
+  function write(kind, ...args){
+    try{
+      const el = area();
+      if(!el) return; // 패널이 없는 페이지면 무시
+      const line = `[${stamp()}] ${kind}: ${args.map(a=>{
+        try{ return typeof a==='string'? a : JSON.stringify(a); }catch{ return String(a); }
+      }).join(' ')}`;
+      el.value += (el.value ? '\n' : '') + line;
+      el.scrollTop = el.scrollHeight;
+    }catch(_){}
+  }
+
+  // 버튼들
+  window.addEventListener('DOMContentLoaded', ()=>{
+    const t = document.getElementById('__dbgToggle');
+    const p = panel();
+    const a = area();
+    const bCopy = document.getElementById('__dbgCopy');
+    const bClear = document.getElementById('__dbgClear');
+    const bClose = document.getElementById('__dbgClose');
+    if(t && p){
+      t.addEventListener('click', ()=> p.classList.toggle('hidden'));
+    }
+    bClose?.addEventListener('click', ()=> p.classList.add('hidden'));
+    bClear?.addEventListener('click', ()=> { if(a) a.value=''; });
+    bCopy?.addEventListener('click', async ()=> {
+      try{ await navigator.clipboard.writeText(a?.value||''); alert('복사됨'); }catch(e){ alert('복사 실패: '+e.message); }
+    });
+  });
+
+  // console 프록시
+  const _log = console.log.bind(console);
+  const _warn = console.warn.bind(console);
+  const _err = console.error.bind(console);
+  console.log = (...args)=>{ write('LOG', ...args); _log(...args); };
+  console.warn = (...args)=>{ write('WARN', ...args); _warn(...args); };
+  console.error = (...args)=>{ write('ERROR', ...args); _err(...args); };
+
+  // 전역 에러/Promise 오류 잡기
+  window.addEventListener('error', (e)=>{
+    write('UNCAUGHT', e?.message || e?.error || e);
+  });
+  window.addEventListener('unhandledrejection', (e)=>{
+    write('REJECTION', e?.reason?.message || e?.reason || e);
+  });
+
+  // Firestore/네트워크 에러 헬퍼
+  window.__dbgTry = async (label, fn)=>{
+    try{ return await fn(); }
+    catch(e){ console.error(label, e && e.message ? e.message : e, e); alert(`[${label}] 오류: `+(e?.message||e)); throw e; }
+  };
+})();
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
