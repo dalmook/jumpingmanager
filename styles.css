@@ -247,13 +247,16 @@ input,select{
   font-size:13px;
   color:#444;
   display:flex;
-  gap:10px;
-  flex-wrap:wrap;
+  justify-content:flex-end;   /* 오른쪽 정렬 */
+  gap:12px;                   /* 항목 간격 */
+  white-space:nowrap;          /* 줄바꿈 방지 */
+  flex-wrap:nowrap;            /* 한 줄 고정 */
 }
 .summary-sub-mini.perks b{
-  color:#6b8bff;   /* 파스텔 블루 */
+  color:#6b8bff;
   font-weight:900;
 }
+
 
 
 /* 팽귄 도장 격자 (2행×5열) */
