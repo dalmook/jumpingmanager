@@ -524,30 +524,65 @@ input,select{
   padding-right: 10px;
 }
 
-/* 다회권: 조작 영역 */
-.pass-op-grid{
-/* 다회권: 조작 영역 (-1/+1 제거 후 레이아웃) */
+/* 다회권: 조작 영역 (-1/+1 제거 후 레이아웃) — 모바일 안전 버전 */
 .pass-op-grid{
   display: grid;
-  grid-template-columns: 1.6fr 110px auto; /* select | N입력 | (-N/+N) */
+  grid-template-columns: minmax(0,1fr) 110px auto; /* select | N입력 | (-N/+N) */
   gap: 8px;
   align-items: center;
 }
-.pass-op-grid select{ width:100%; min-width: 0; }
-.pass-op-grid input[type="number"]{ width:100%; }
 
-/* 삭제 버튼은 전체폭 */
-.pass-op-grid .wFull{ grid-column: 1 / -1; }
+/* 폭 넘침 방지: select는 min-width:0 필수 */
+.pass-op-grid select{
+  width: 100%;
+  min-width: 0;
+}
 
-/* 태블릿/모바일에서 2열 → 1열 */
+/* 숫자 입력 기본은 110px, 모바일에선 100%로 */
+.pass-op-grid input[type="number"]{
+  width: 110px;
+}
+
+/* -N / +N 묶음은 줄바꿈 허용 */
+.pass-op-grid .row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 삭제 버튼은 항상 전체 폭 */
+.pass-op-grid .wFull{
+  grid-column: 1 / -1;
+}
+
+/* 태블릿: 2열로 정렬 (넘침 방지) */
 @media (max-width: 900px){
   .pass-op-grid{
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
   }
   .pass-op-grid select{ grid-column: span 2; }
-  .pass-op-grid input#passDelta{ width: 100%; }
-  .pass-op-grid .row.gap8{ justify-content: start; }
   .pass-op-grid .wFull{ grid-column: span 2; }
+}
+
+/* 스마트폰: 완전 1열 */
+@media (max-width: 680px){
+  .pass-op-grid{
+    grid-template-columns: 1fr;
+  }
+  .pass-op-grid select{ grid-column: 1; }
+  .pass-op-grid input[type="number"]{
+    width: 100%;
+  }
+  .pass-op-grid .row{
+    width: 100%;
+    justify-content: stretch;
+  }
+  .pass-op-grid .row .btn{
+    flex: 1 1 48%;   /* -N / +N 반반 */
+  }
+  .pass-op-grid .wFull{
+    grid-column: 1;
+  }
 }
 
 /* 스마트폰에서 완전 1열 + 큰 터치 타겟 */
