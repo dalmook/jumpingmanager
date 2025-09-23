@@ -781,36 +781,90 @@ passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; }});
 
 btnAddPass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const name=(passName?.value||'').trim();
-  const cnt=parseInt(passCount?.value||'1',10);
+  if(!isAdmin) return toast('운영자 전용'); 
+  if(!currentMemberRef) return toast('회원을 먼저 선택');
+
+  const rawName = (passName?.value || '').trim();
+  const cnt = parseInt(passCount?.value || '1', 10);
   const expireStr = document.getElementById('passExpire')?.value || '';
-  if(!name || !(cnt>0)) return toast('권종/수량 확인');
+  if(!rawName || !(cnt > 0)) return toast('권종/수량 확인');
+
+  // 이름 정규화(공백 제거 기준)
+  const name = rawName.replace(/\s+/g, '');
+
+  // 분기: 평일무료권 / 무료권 / 그 외(다회권·10회권·20회권·기타)
+  const isWeekdayFree = (name === '평일무료권');
+  const isFree = (!isWeekdayFree && name === '무료권');
+  const isMulti = (name === '다회권' || name === '10회권' || name === '20회권');
 
   try{
     await db.runTransaction(async(tx)=>{
-      const snap=await tx.get(currentMemberRef);
-      const d=snap.data()||{};
-      const passBatches = { ...(d.passBatches||{}) };
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
 
-      // ✅ 항상 새 배치로 추가
-      const id = newBatchId();
-      let batch = { name, count: cnt };
-      if (expireStr){
-        const dt = new Date(expireStr + 'T23:59:59');
-        batch.expireAt = firebase.firestore.Timestamp.fromDate(dt);
+      if (isWeekdayFree) {
+        // ✅ 평일무료권 카운트만 증가
+        const cur = d.freeWeekday || 0;
+        tx.update(currentMemberRef, { 
+          freeWeekday: cur + cnt, 
+          updatedAt: ts() 
+        });
+      } else if (isFree) {
+        // ✅ 무료권 카운트만 증가
+        const cur = d.freeCredits || 0;
+        tx.update(currentMemberRef, { 
+          freeCredits: cur + cnt, 
+          updatedAt: ts() 
+        });
+      } else if (isMulti) {
+        // ✅ 다회권/10회권/20회권 → 새 배치 추가
+        const passBatches = { ...(d.passBatches || {}) };
+        const id = newBatchId();
+        const batch = { name: rawName, count: cnt };
+        if (expireStr){
+          const dt = new Date(expireStr + 'T23:59:59');
+          batch.expireAt = firebase.firestore.Timestamp.fromDate(dt);
+        }
+        passBatches[id] = batch;
+        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
+      } else {
+        // ✅ 그 외 이름도 배치로 추가 (기존 동작 유지)
+        const passBatches = { ...(d.passBatches || {}) };
+        const id = newBatchId();
+        const batch = { name: rawName, count: cnt };
+        if (expireStr){
+          const dt = new Date(expireStr + 'T23:59:59');
+          batch.expireAt = firebase.firestore.Timestamp.fromDate(dt);
+        }
+        passBatches[id] = batch;
+        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
       }
-      passBatches[id] = batch;
-
-      tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
     });
-    await addLog('pass_add_batch', {name, cnt, expire: expireStr||null});
-    if(passName) passName.value='';
-    if(passCount) passCount.value='1';
-    const pe = document.getElementById('passExpire'); if(pe) pe.value='';
-    const d=(await currentMemberRef.get()).data(); renderMember(d);
-  }catch(e){ console.error('addPass',e); toast('실패: '+e.message); }
+
+    // 로그 구분
+    if (isWeekdayFree) {
+      await addLog('free_weekday_add_n', { n: cnt, via: 'pass_add' });
+    } else if (isFree) {
+      await addLog('free_add_n', { n: cnt, via: 'pass_add' });
+    } else {
+      await addLog('pass_add_batch', { name: rawName, cnt, expire: expireStr || null });
+    }
+
+    // 입력값 초기화
+    if(passName) passName.value = '';
+    if(passCount) passCount.value = '1';
+    const pe = document.getElementById('passExpire'); 
+    if (pe) pe.value = '';
+
+    // 리렌더
+    renderMember((await currentMemberRef.get()).data());
+    toast('처리 완료');
+  }catch(e){
+    console.error('addPass', e);
+    toast('실패: ' + (e?.message || e));
+  }
 });
+
 
 
 // 다회권 -1
