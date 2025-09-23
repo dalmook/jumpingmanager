@@ -120,8 +120,8 @@ function defaultExpireMonthsByName(name) {
   return 12;                            // 1년
 }
 
-// === QR 고해상도 PNG 다운로드 유틸 ===
-function downloadHighResQR(text, filename = 'qr.png', size = 1024){
+// === QR 고해상도 PNG 다운로드 유틸 (여백 포함) ===
+function downloadHighResQR(text, filename = 'qr.png', size = 1024, padding = 40){
   // 임시 컨테이너를 만들어 고해상도로 다시 렌더(업스케일 대신 재생성)
   const tmp = document.createElement('div');
   tmp.style.position='fixed';
@@ -129,32 +129,46 @@ function downloadHighResQR(text, filename = 'qr.png', size = 1024){
   document.body.appendChild(tmp);
 
   // qrcodejs로 큰 사이즈 생성
-const qr = new QRCode(tmp, {
-  text,
-  width: size,
-  height: size,
-  colorDark: "#000000",
-  colorLight: "#ffffff",
-  correctLevel: QRCode.CorrectLevel.H,
-  margin: 20   // ✅ 여백(px) 추가 (원하는 만큼 숫자 조절)
-});
+  const qr = new QRCode(tmp, {
+    text,
+    width: size,
+    height: size,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
 
-  // qrcodejs가 img 또는 canvas를 넣음 → PNG dataURL 추출
+  // qrcodejs가 img 또는 canvas를 넣음 → PNG dataURL 추출 (+패딩)
   setTimeout(()=>{  // 렌더 완료 보장용
     let dataUrl = '';
     const cvs = tmp.querySelector('canvas');
+
+    // 최종 출력 캔버스(여백 포함)
+    const out = document.createElement('canvas');
+    out.width = size + padding * 2;
+    out.height = size + padding * 2;
+    const ctx = out.getContext('2d');
+
+    // 배경 흰색
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, out.width, out.height);
+
     if (cvs) {
-      dataUrl = cvs.toDataURL('image/png');
+      // 원본 QR(canvas)을 여백 주고 붙여넣기
+      ctx.drawImage(cvs, padding, padding, size, size);
+      dataUrl = out.toDataURL('image/png');
     } else {
       const img = tmp.querySelector('img');
       if (img) {
-        // img라면 canvas로 옮겨 png 생성(품질 확보)
+        // img로 렌더됐으면 먼저 임시 캔버스로 동일 크기 QR을 만들고 → out에 붙이기
         const c = document.createElement('canvas');
         c.width = size; c.height = size;
-        const ctx = c.getContext('2d');
-        ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
-        ctx.drawImage(img, 0, 0, size, size);
-        dataUrl = c.toDataURL('image/png');
+        const cctx = c.getContext('2d');
+        cctx.fillStyle = '#ffffff';
+        cctx.fillRect(0,0,size,size);
+        cctx.drawImage(img, 0, 0, size, size);
+        ctx.drawImage(c, padding, padding, size, size);
+        dataUrl = out.toDataURL('image/png');
       }
     }
 
@@ -171,6 +185,7 @@ const qr = new QRCode(tmp, {
     tmp.remove();
   }, 0);
 }
+
 
 /**
  * 권종명에 따라 #passExpire 기본값을 설정
