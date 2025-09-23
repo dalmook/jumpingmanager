@@ -279,11 +279,20 @@ input,select{
 /* 3줄: 무료권/평일/슬러시 */
 .summary-row.bottom{
   display:flex;
-  gap:12px;
+  flex-wrap: wrap;           /* ✅ 줄바꿈 허용 */
+  gap: 8px 12px;             /* 행/열 간격 */
   font-size:13px;
   font-weight:700;
   color:#444;
-  white-space:nowrap;
+  white-space: normal;       /* ✅ nowrap 제거 */
+}
+.summary-row.bottom .perk{
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;          /* 터치 타깃도 넉넉하게 */
+  border-radius: 10px;
+  background: #f5f7ff;       /* 파스텔 톤 칩 느낌 */
 }
 .summary-row.bottom b{
   color:#6b8bff;
@@ -716,4 +725,13 @@ input, select{
   opacity:.95; cursor:pointer;
 }
 .qr-dl-btn:hover{ transform: translateY(-1px); }
-
+/* 더 좁은 모바일일 때 살짝 압축 */
+@media (max-width: 480px){
+  .summary-row.bottom{
+    gap: 6px 8px;
+    font-size: 12px;
+  }
+  .summary-row.bottom .perk{
+    padding: 4px 6px;
+  }
+}
