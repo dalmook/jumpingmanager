@@ -1525,8 +1525,8 @@ const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
       
       new QRCode(qrTarget, {
         text: stampURL,       // ← 절대 URL을 QR에 넣기
-        width: 120,
-        height: 120,
+        width: 140,
+        height: 140,
         colorDark: "#000000",
         colorLight: "#ffffff"
       });
