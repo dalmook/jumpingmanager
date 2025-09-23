@@ -1326,99 +1326,89 @@ const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
 
     // 다회권 목록
 // 다회권 목록 (배치 + 레거시 모두 표기)
-if (selfPassList) {
-  const frag = document.createDocumentFragment();
-  const items = [];
+  // 다회권 목록 (배치 + 레거시 모두 표기)
+  if (selfPassList) {
+    const frag = document.createDocumentFragment();
+    const items = [];
 
-  // 1) 배치형
-  Object.entries(d.passBatches || {}).forEach(([id, b]) => {
-    const cnt = b?.count || 0;
-    const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
-    items.push({
-      kind: 'batch',
-      name: b?.name || '(이름없음)',
-      count: cnt,
-      expire: exp
-    });
-  });
-
-  // 2) 레거시형
-  Object.entries(d.passes || {}).forEach(([k, v]) => {
-    const cnt = getPassCount(v);
-    const exp = (v && typeof v === 'object' && v.expireAt) ? fmtDate(v.expireAt) : null;
-    items.push({
-      kind: 'legacy',
-      name: k,
-      count: cnt,
-      expire: exp
-    });
-  });
-
-  if (items.length === 0) {
-    selfPassList.innerHTML = '<div class="muted">보유한 다회권이 없습니다</div>';
-  } else {
-    // (선택) 만료 임박순 정렬: 만료 있는 것 먼저, 날짜 빠른 순
-    items.sort((a, b) => {
-      const ax = a.expire ? 0 : 1;
-      const bx = b.expire ? 0 : 1;
-      if (ax !== bx) return ax - bx;
-      if (!a.expire || !b.expire) return 0;
-      return a.expire.localeCompare(b.expire);
+    // 1) 배치형
+    Object.entries(d.passBatches || {}).forEach(([id, b]) => {
+      const cnt = b?.count || 0;
+      const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
+      items.push({ kind:'batch', name: b?.name || '(이름없음)', count: cnt, expire: exp });
     });
 
-    items.forEach(({ name, count, expire }) => {
-      const row = document.createElement('div');
-      row.className = 'pass-card';
-    
-      // 남은 일수 계산
-      let remainTxt = '';
-      if (expire) {
-        const expDate = new Date(expire);  // expire 문자열이 YYYY-MM-DD라면 그대로 Date 변환
-        const now = new Date();
-        const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
-        if (diffDays >= 0) {
-          remainTxt = `<span class="p-remain">D-${diffDays}</span>`;
-        } else {
-          remainTxt = `<span class="p-remain expired">만료됨</span>`;
+    // 2) 레거시형
+    Object.entries(d.passes || {}).forEach(([k, v]) => {
+      const cnt = getPassCount(v);
+      const exp = (v && typeof v === 'object' && v.expireAt) ? fmtDate(v.expireAt) : null;
+      items.push({ kind:'legacy', name: k, count: cnt, expire: exp });
+    });
+
+    if (items.length === 0) {
+      selfPassList.innerHTML = '<div class="muted">보유한 다회권이 없습니다</div>';
+    } else {
+      // 만료 있는 것 먼저, 날짜 빠른 순
+      items.sort((a, b) => {
+        const ax = a.expire ? 0 : 1;
+        const bx = b.expire ? 0 : 1;
+        if (ax !== bx) return ax - bx;
+        if (!a.expire || !b.expire) return 0;
+        return a.expire.localeCompare(b.expire);
+      });
+
+      items.forEach(({ name, count, expire }) => {
+        const row = document.createElement('div');
+        row.className = 'pass-card';
+
+        // D-XX 계산
+        let remainTxt = '';
+        if (expire) {
+          const expDate = new Date(expire);
+          const now = new Date();
+          const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+          remainTxt = diffDays >= 0
+            ? `<span class="p-remain">D-${diffDays}</span>`
+            : `<span class="p-remain expired">만료됨</span>`;
         }
+
+        row.innerHTML = `
+          <span class="p-name">
+            🎫 ${name}
+            ${expire ? `<span class="muted" style="font-weight:700;font-size:12px;">· 만료 ${expire}</span>` : ''}
+          </span>
+          <span class="p-count">${count}</span>
+          ${remainTxt}
+        `;
+        frag.appendChild(row);
+      });
+
+      selfPassList.innerHTML = '';
+      selfPassList.appendChild(frag);
+    } // ← items if/else 닫힘
+  } // ← selfPassList if 닫힘
+
+  // 손님 화면: 스테이지 기록 보기 (← 이건 바깥으로 빼는 게 안전)
+  const btnView = byId('btnViewStages');
+  if (btnView) {
+    btnView.onclick = async () => {
+      try {
+        const snap2 = await db.collection('members').doc(phone).get();
+        renderSelfStages(snap2.data() || {});
+      } catch (e2) {
+        console.error('view stages', e2);
+        selfStageList.innerHTML = '<div class="muted">기록을 불러올 수 없습니다</div>';
       }
-    
-      row.innerHTML = `
-        <span class="p-name">
-          🎫 ${name}
-          ${expire ? `<span class="muted" style="font-weight:700;font-size:12px;">· 만료 ${expire}</span>` : ''}
-        </span>
-        <span class="p-count">${count}</span>
-        ${remainTxt}
-      `;
-      frag.appendChild(row);
-    });
-    selfPassList.innerHTML = '';
-    selfPassList.appendChild(frag);
-
-
-    // 손님 화면: 스테이지 기록 보기
-    const btnView = byId('btnViewStages');
-    if (btnView) {
-      btnView.onclick = async () => {
-        try {
-          const snap = await db.collection('members').doc(phone).get();
-          renderSelfStages(snap.data() || {});   // 스테이지 기록 렌더링
-        } catch (e) {
-          console.error('view stages', e);
-          selfStageList.innerHTML = '<div class="muted">기록을 불러올 수 없습니다</div>';
-        }
-      };
-    }
-
-
-  }catch(e){
-    console.error('loadSelf', e);
-    cardEl.innerHTML = '로드 실패: '+e.message;
-    if(selfPassList) selfPassList.innerHTML = '';
-    if(selfLogList)  selfLogList.innerHTML  = '';
+    };
   }
+
+} catch (e) { // ← loadSelf try/catch
+  console.error('loadSelf', e);
+  cardEl.innerHTML = '로드 실패: ' + e.message;
+  if (selfPassList) selfPassList.innerHTML = '';
+  if (selfLogList)  selfLogList.innerHTML  = '';
 }
+
 
 console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions + self tabs');
 // === 디버그 패널 토글/복사/지우기 ===
