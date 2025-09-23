@@ -1369,18 +1369,32 @@ if (selfPassList) {
     items.forEach(({ name, count, expire }) => {
       const row = document.createElement('div');
       row.className = 'pass-card';
+    
+      // 남은 일수 계산
+      let remainTxt = '';
+      if (expire) {
+        const expDate = new Date(expire);  // expire 문자열이 YYYY-MM-DD라면 그대로 Date 변환
+        const now = new Date();
+        const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0) {
+          remainTxt = `<span class="p-remain">D-${diffDays}</span>`;
+        } else {
+          remainTxt = `<span class="p-remain expired">만료됨</span>`;
+        }
+      }
+    
       row.innerHTML = `
-        <span class="p-name">🎫 ${name}${expire ? ` <span class="muted" style="font-weight:700;font-size:12px;">· 만료 ${expire}</span>` : ''}</span>
+        <span class="p-name">
+          🎫 ${name}
+          ${expire ? `<span class="muted" style="font-weight:700;font-size:12px;">· 만료 ${expire}</span>` : ''}
+        </span>
         <span class="p-count">${count}</span>
+        ${remainTxt}
       `;
       frag.appendChild(row);
     });
     selfPassList.innerHTML = '';
     selfPassList.appendChild(frag);
-  }
-}
-
-
 
 
     // 손님 화면: 스테이지 기록 보기
