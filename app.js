@@ -1317,8 +1317,8 @@ const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
           ${fmtPhone(d.phone)} · ${d.team || '-'}
         </div>
         <div class="summary-row bottom perks">
-          🎁 무료 <b>${d.freeCredits||0}</b>　
-          🏖️ 평일 <b>${d.freeWeekday||0}</b>　
+          🎁 무료 <b>${freeSum}</b>　
+          🏖️ 평일 <b>${freeWkSum}</b>　
           🧊 슬러시 <b>${d.freeSlush||0}</b>
         </div>
       </div>
