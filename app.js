@@ -120,9 +120,8 @@ function defaultExpireMonthsByName(name) {
   return 12;                            // 1년
 }
 
-// === QR 고해상도 PNG 다운로드 유틸 (여백 포함) ===
-function downloadHighResQR(text, filename = 'qr.png', size = 1024, padding = 40){
-  // 임시 컨테이너를 만들어 고해상도로 다시 렌더(업스케일 대신 재생성)
+// === QR 고해상도 PNG 다운로드 유틸 (제목 포함) ===
+function downloadHighResQR(text, filename = 'qr.png', size = 1024){
   const tmp = document.createElement('div');
   tmp.style.position='fixed';
   tmp.style.left='-9999px';
@@ -138,53 +137,59 @@ function downloadHighResQR(text, filename = 'qr.png', size = 1024, padding = 40)
     correctLevel: QRCode.CorrectLevel.H
   });
 
-  // qrcodejs가 img 또는 canvas를 넣음 → PNG dataURL 추출 (+패딩)
-  setTimeout(()=>{  // 렌더 완료 보장용
-    let dataUrl = '';
-    const cvs = tmp.querySelector('canvas');
+  setTimeout(()=>{
+    let c = document.createElement('canvas');
+    let ctx = c.getContext('2d');
 
-    // 최종 출력 캔버스(여백 포함)
-    const out = document.createElement('canvas');
-    out.width = size + padding * 2;
-    out.height = size + padding * 2;
-    const ctx = out.getContext('2d');
+    // 최종 캔버스 크기 = QR 크기 + 상단 제목 영역
+    const title = "점핑배틀 화성병점점";
+    const margin = 40;        // QR 주변 여백
+    const titleHeight = 100;  // 제목 영역 높이
+    c.width  = size + margin*2;
+    c.height = size + margin*2 + titleHeight;
 
     // 배경 흰색
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, out.width, out.height);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0,0,c.width,c.height);
+
+    // 제목 텍스트
+    ctx.fillStyle = '#000';
+    ctx.font = "bold 48px 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(title, c.width/2, margin/2);
+
+    // QR 코드 원본을 임시 DOM에서 가져오기
+    const cvs = tmp.querySelector('canvas');
+    const img = tmp.querySelector('img');
 
     if (cvs) {
-      // 원본 QR(canvas)을 여백 주고 붙여넣기
-      ctx.drawImage(cvs, padding, padding, size, size);
-      dataUrl = out.toDataURL('image/png');
-    } else {
-      const img = tmp.querySelector('img');
-      if (img) {
-        // img로 렌더됐으면 먼저 임시 캔버스로 동일 크기 QR을 만들고 → out에 붙이기
-        const c = document.createElement('canvas');
-        c.width = size; c.height = size;
-        const cctx = c.getContext('2d');
-        cctx.fillStyle = '#ffffff';
-        cctx.fillRect(0,0,size,size);
-        cctx.drawImage(img, 0, 0, size, size);
-        ctx.drawImage(c, padding, padding, size, size);
-        dataUrl = out.toDataURL('image/png');
-      }
+      ctx.drawImage(cvs, margin, margin+titleHeight, size, size);
+    } else if (img) {
+      const qrImg = new Image();
+      qrImg.onload = ()=>{
+        ctx.drawImage(qrImg, margin, margin+titleHeight, size, size);
+        triggerDownload();
+      };
+      qrImg.src = img.src;
+      return; // load 후 실행
     }
 
-    // 다운로드 트리거
-    if (dataUrl) {
+    triggerDownload();
+
+    function triggerDownload(){
+      const dataUrl = c.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
+      tmp.remove();
     }
-    // 정리
-    tmp.remove();
-  }, 0);
+  }, 200); // qrcodejs 렌더 타이밍 보정
 }
+
 
 
 /**
