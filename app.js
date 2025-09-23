@@ -840,14 +840,14 @@ btnResetStamp?.addEventListener('click', async()=>{
 passPresetCustom?.addEventListener('click', ()=>{
   if(passName&&passCount){
     passName.value='다회권'; passCount.value='1';
-    ensureExpireDefaultIfEmpty();
+    setExpireDefaultByName('다회권');
   }
 });
 
 passPresetWeekday?.addEventListener('click', ()=>{
   if(passName&&passCount){
     passName.value='평일무료권'; passCount.value='1';
-    ensureExpireDefaultIfEmpty();
+    setExpireDefaultByName('평일무료권');
   }
 });
 // 13) 다회권 (기존 +/-1)
