@@ -766,3 +766,16 @@ input, select{
     padding: 4px 6px;
   }
 }
+/* 상단 우측 작은 로그아웃 버튼 */
+.logout-top{
+  position:absolute;
+  top: calc(var(--safe-top, 0px) + 8px);
+  right: 12px;
+  font-size: 12px;
+  padding:6px 10px;
+  border-radius:10px;
+  background:#ffe1e6;   /* 옅은 핑크톤 */
+  color:#a33;
+  font-weight:800;
+  z-index:1500;
+}
