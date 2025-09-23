@@ -1561,7 +1561,19 @@ async function loadSelf(user){
     }
     const d = snap.data() || {};
 const freeSum   = sumNamedValidBatches(d.passBatches, '무료권');
-const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');    
+const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
+
+// 🎫 다회권 총 잔여(무료권·평일무료권 제외, 배치+레거시 합산)
+const passTotal = 
+  Object.values(d.passBatches || {}).reduce((acc, b) => {
+    const name = (b?.name || '');
+    if (name === '무료권' || name === '평일무료권') return acc;
+    return acc + (b?.count || 0);
+  }, 0) +
+  Object.entries(d.passes || {}).reduce((acc, [k, v]) => {
+    if (k === '무료권' || k === '평일무료권') return acc;
+    return acc + getPassCount(v);
+  }, 0);  
 
 // 요약 박스 + 도장 격자(2행×5열)
     cardEl.innerHTML = `
@@ -1574,9 +1586,10 @@ const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
           ${fmtPhone(d.phone)} · ${d.team || '-'}
         </div>
         <div class="summary-row bottom perks">
-          🎁 무료 <b>${freeSum}</b>　
-          🏖️ 평일 <b>${freeWkSum}</b>　
-          🧊 슬러시 <b>${d.freeSlush||0}</b>
+  🎫 다회권 <b>${passTotal}</b>　
+  🎁 무료 <b>${freeSum}</b>　
+  🏖️ 평일 <b>${freeWkSum}</b>　
+  🧊 슬러시 <b>${d.freeSlush||0}</b>
         </div>
       </div>
     
