@@ -183,6 +183,13 @@ const btnLogin  = $('#btnLogin');
 const btnSignup = $('#btnSignup');
 const btnLogout = $('#btnLogout');
 
+// [추가] QR 스캔 UI 참조
+const btnQRScan = document.getElementById('btnQRScan');
+const qrModal   = document.getElementById('qrModal');
+const qrVideo   = document.getElementById('qrVideo');
+const qrClose   = document.getElementById('qrClose');
+
+
 // 관리자 리스트/검색
 const adminPanel = $('#adminPanel');
 const adminList  = $('#adminList');
