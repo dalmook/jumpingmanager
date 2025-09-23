@@ -362,6 +362,12 @@ btnRegister?.addEventListener('click', async ()=>{
 // 상태
 let isAdmin = false;
 let currentMemberRef = null; // 현재 편집 중 회원 ref
+// [추가] QR 스캔 상태
+let qrStream = null;
+let qrScanRunning = false;
+const qrDetector = ('BarcodeDetector' in window)
+  ? new BarcodeDetector({ formats: ['qr_code'] })
+  : null;
 
 // 5) 인증 상태
 auth.onAuthStateChanged(async(user)=>{
