@@ -129,14 +129,15 @@ function downloadHighResQR(text, filename = 'qr.png', size = 1024){
   document.body.appendChild(tmp);
 
   // qrcodejs로 큰 사이즈 생성
-  const qr = new QRCode(tmp, {
-    text,
-    width: size,
-    height: size,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
-  });
+const qr = new QRCode(tmp, {
+  text,
+  width: size,
+  height: size,
+  colorDark: "#000000",
+  colorLight: "#ffffff",
+  correctLevel: QRCode.CorrectLevel.H,
+  margin: 20   // ✅ 여백(px) 추가 (원하는 만큼 숫자 조절)
+});
 
   // qrcodejs가 img 또는 canvas를 넣음 → PNG dataURL 추출
   setTimeout(()=>{  // 렌더 완료 보장용
