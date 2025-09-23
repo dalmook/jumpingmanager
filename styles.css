@@ -766,16 +766,21 @@ input, select{
     padding: 4px 6px;
   }
 }
-/* 상단 우측 작은 로그아웃 버튼 */
+/* 헤더 우측 상단 작은 로그아웃 버튼 */
 .logout-top{
-  position:absolute;
-  top: calc(var(--safe-top, 0px) + 8px);
-  right: 12px;
-  font-size: 12px;
-  padding:6px 10px;
-  border-radius:10px;
-  background:#ffe1e6;   /* 옅은 핑크톤 */
-  color:#a33;
-  font-weight:800;
-  z-index:1500;
+  position: absolute;
+  top: 10px;           /* 필요시 조정 */
+  right: 12px;         /* 필요시 조정 */
+  z-index: 1100;
 }
+
+/* 헤더 레이아웃이 position:relative 여야 절대좌표가 작동 */
+.ios-header .header-inner{
+  position: relative;
+}
+
+/* 모바일에서 너무 겹치면 살짝 아래로 */
+@media (max-width: 480px){
+  .logout-top{ top: 12px; right: 10px; }
+}
+
