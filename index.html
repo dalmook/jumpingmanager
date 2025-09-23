@@ -26,8 +26,6 @@
         <div class="brand">
           <span class="logo-dot"></span>
           <span class="brand-text">점핑배틀 화성병점점</span>
-          <!-- 로그아웃 버튼 (우측 상단) -->
-          <button id="btnLogout" class="btn small ghost logout-top">로그아웃</button>
         </div>
         <div class="auth-area">
           <div id="signedOut" class="auth-row">
@@ -38,6 +36,11 @@
             <button id="btnSignup" class="btn ghost">회원가입</button>
           </div>
           <div id="signedIn" class="auth-row hidden">
+            <div id="signedIn" class="auth-row hidden">
+            <!-- 로그인 상태에서만 보이는 로그아웃 버튼 -->
+            <button id="btnLogout" class="btn small ghost logout-top">로그아웃</button>
+              </div>      
+
           </div>
         </div>
       </div>
