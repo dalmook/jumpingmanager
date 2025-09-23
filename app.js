@@ -208,12 +208,6 @@ const passPreset20 = $('#passPreset20');
 const passPresetFree = document.getElementById('passPresetFree');
 const passPresetWk   = document.getElementById('passPresetWk');
 
-function ensureExpireDefaultIfEmpty(){
-  const el = document.getElementById('passExpire');
-  if (!el || el.value) return;
-  const d = new Date(); d.setFullYear(d.getFullYear()+1);
-  el.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
 
 passPresetFree?.addEventListener('click', ()=>{
   if(passName&&passCount){
