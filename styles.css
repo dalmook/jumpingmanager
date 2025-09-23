@@ -695,4 +695,15 @@ input, select{
 #qrVideo{
   width:100%; display:block; border-radius:12px; background:#000;
 }
+/* QR 스캔 버튼 강조 */
+.btn.highlight{
+  background: linear-gradient(135deg, #ff9ca0, #ff5c70); /* 파스텔톤 붉은-핑크 */
+  color:#fff;
+  font-weight:900;
+  box-shadow: 0 4px 12px rgba(255,80,100,.35);
+  border:0;
+}
+.btn.highlight:hover{
+  filter: brightness(1.05);
+}
 
