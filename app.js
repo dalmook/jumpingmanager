@@ -500,20 +500,20 @@ auth.onAuthStateChanged(async(user)=>{
             const addFree = Math.floor(total / 10);
             const s1 = total % 10;
             const totalVisits = (d.totalVisits || 0) + N;
-          
+            
             const passBatches = { ...(d.passBatches || {}) };
             if (addFree > 0) {
               const id = newBatchId();
               passBatches[id] = {
                 name: '무료권',
                 count: addFree,
-                expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')),
+                expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')), // 기본 만료 반영
               };
             }
-          
+            
             tx.update(currentMemberRef, {
               stamp: s1,
-              passBatches,
+              passBatches,      // ← 여기로 변경
               totalVisits,
               updatedAt: ts()
             });
