@@ -261,14 +261,14 @@ passPresetFree?.addEventListener('click', ()=>{
   if(passName&&passCount){
     passName.value='무료권';
     passCount.value='1';
-    ensureExpireDefaultIfEmpty();
+    setExpireDefaultByName('무료권');
   }
 });
 passPresetWk?.addEventListener('click', ()=>{
   if(passName&&passCount){
     passName.value='평일무료권';
     passCount.value='1';
-    ensureExpireDefaultIfEmpty();
+    setExpireDefaultByName('무료권');
   }
 });
 
