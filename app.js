@@ -342,7 +342,6 @@ const editNote = $('#editNote');    // 비고
 const btnSaveProfile = $('#btnSaveProfile');
 
 const btnAddVisit   = $('#btnAddVisit');
-const btnUseFree    = $('#btnUseFree');
 const btnResetStamp = $('#btnResetStamp');
 
 const passName   = $('#passName');
@@ -1068,19 +1067,7 @@ await db.runTransaction(async(tx)=>{
     const d=(await currentMemberRef.get()).data(); renderMember(d);
   }catch(e){ console.error('addVisit',e); toast('실패: '+e.message); }
 });
-btnUseFree?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  try{
-    await db.runTransaction(async(tx)=>{
-      const snap=await tx.get(currentMemberRef);
-      const d=snap.data()||{};
-      const free=Math.max(0,(d.freeCredits||0)-1);
-      tx.update(currentMemberRef, { freeCredits: free, updatedAt: ts() });
-    });
-    await addLog('free_use');
-    const d=(await currentMemberRef.get()).data(); renderMember(d);
-  }catch(e){ console.error('useFree',e); toast('실패: '+e.message); }
-});
+
 btnResetStamp?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   if(!confirm('스탬프를 0으로 초기화할까요?')) return;
