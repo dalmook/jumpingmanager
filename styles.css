@@ -469,3 +469,121 @@ input,select{
 @media (max-width: 680px){
   .quick-register .grid.three{ grid-template-columns: 1fr; }
 }
+/* --------------------------
+   관리자: 액션 섹션 반응형 배치
+--------------------------- */
+.admin-actions{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 1024px){
+  .admin-actions{ grid-template-columns: 1fr; }
+}
+
+/* 버튼들을 자동으로 칸에 맞춰 크게 */
+.btn-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+/* 라벨 + 숫자입력 + +N/-N 버튼 묶음 (터치 최적화) */
+.input-actions{ display: grid; gap: 8px; }
+.ia-row{
+  display: grid;
+  grid-template-columns: 110px minmax(110px, 160px) 1fr;
+  gap: 8px;
+  align-items: center;
+}
+.ia-label{
+  font-size: 13px; font-weight: 800; color: var(--muted);
+}
+.ia-row input{
+  width: 100%;
+}
+.ia-buttons{
+  display: grid;
+  grid-auto-flow: column;
+  gap: 8px;
+  justify-content: start;
+}
+
+/* 다회권: 추가 폼 */
+.pass-add-grid{
+  display: grid;
+  grid-template-columns: minmax(160px,1.6fr) 110px 200px auto;
+  gap: 8px;
+  align-items: center;
+}
+.pass-add-grid #passName{ width:100%; }
+.pass-add-grid #passCount{ width:100%; }
+.pass-add-grid #passExpire{
+  width:100%;
+  min-width: 0;               /* 줄어듦 허용 */
+  padding-right: 10px;
+}
+
+/* 다회권: 조작 영역 */
+.pass-op-grid{
+  display: grid;
+  grid-template-columns: 1.6fr auto 110px auto;
+  gap: 8px;
+  align-items: center;
+}
+.pass-op-grid select{ width:100%; min-width: 0; }
+.pass-op-grid input[type="number"]{ width:100%; }
+.wFull{ width:100%; }
+
+/* 태블릿/모바일에서 세로 스택 */
+@media (max-width: 900px){
+  .pass-add-grid{
+    grid-template-columns: 1fr 1fr;
+  }
+  .pass-add-grid #passExpire,
+  .pass-add-grid #btnAddPass{
+    grid-column: span 2;
+  }
+  .pass-op-grid{
+    grid-template-columns: 1fr 1fr;
+  }
+  .pass-op-grid select{ grid-column: span 2; }
+  .pass-op-grid .row.gap8:nth-of-type(1){ justify-content: start; }
+  .pass-op-grid input#passDelta{ width: 100%; }
+  .pass-op-grid .wFull{ grid-column: span 2; }
+}
+
+/* 스마트폰에서 완전 1열 + 큰 터치 타겟 */
+@media (max-width: 560px){
+  .ia-row{
+    grid-template-columns: 1fr;
+  }
+  .ia-buttons{
+    grid-auto-flow: row;
+    grid-template-columns: 1fr 1fr;
+  }
+  .btn-grid{ grid-template-columns: 1fr; }
+}
+
+/* 보유 다회권 / 스테이지 기록 리스트는 스크롤 가능 */
+#passList, #stageList{
+  max-height: 300px;
+  overflow: auto;
+}
+
+/* 입력/버튼 터치 영역 살짝 키우기 */
+input, select{
+  min-height: 42px;
+}
+.btn{
+  min-height: 42px;
+}
+
+/* (이미 있었던) passExpire 폭 보장과 모바일 전체폭 */
+#passExpire{
+  width: 200px;
+  min-width: 200px;
+}
+@media (max-width:680px){
+  #passExpire{ width: 100%; min-width: 0; }
+}
