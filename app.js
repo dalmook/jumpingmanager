@@ -764,6 +764,120 @@ async function loadLogs(){
   logList.innerHTML='';
   logList.appendChild(frag);
 }
+// [추가] QR 스캐너 열기
+async function openQRScanner(){
+  if(!isAdmin) return toast('운영자 전용');
+  if(!qrModal || !qrVideo) return;
+
+  if(!navigator.mediaDevices?.getUserMedia){
+    return toast('카메라를 사용할 수 없습니다.');
+  }
+
+  try{
+    qrModal.classList.remove('hidden');
+
+    qrStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false
+    });
+    qrVideo.srcObject = qrStream;
+    await qrVideo.play();
+
+    if(!qrDetector){
+      toast('이 브라우저는 QR 스캔(BarcodeDetector)을 지원하지 않습니다. 크롬/안드로이드 최신 버전을 이용하세요.');
+      return;
+    }
+
+    qrScanRunning = true;
+    const tick = async () => {
+      if(!qrScanRunning) return;
+      try{
+        const codes = await qrDetector.detect(qrVideo);
+        if(codes && codes.length){
+          const raw = codes[0].rawValue || '';
+          await handleScannedText(raw);
+          stopQRScanner();
+          return;
+        }
+      }catch(e){ /* noop */ }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+  }catch(e){
+    console.error('qr open', e);
+    toast('카메라 접근 실패: ' + (e?.message || e));
+    stopQRScanner();
+  }
+}
+
+// [추가] QR 스캐너 닫기
+function stopQRScanner(){
+  qrScanRunning = false;
+  try{
+    if(qrStream){
+      qrStream.getTracks().forEach(t => t.stop());
+      qrStream = null;
+    }
+    if(qrModal) qrModal.classList.add('hidden');
+  }catch{}
+}
+
+// [추가] 스캔 결과 처리 → 회원 열고 스탬프 N 입력
+async function handleScannedText(text){
+  try{
+    // 1) URL의 ?stamp=핸드폰 추출 시도
+    let phone = null;
+    try{
+      const u = new URL(text);
+      const sp = u.searchParams.get('stamp');
+      if(sp) phone = canonPhone(sp);
+    }catch{ /* URL 아니면 무시 */ }
+
+    // 2) 숫자만 있는 QR이면 그 숫자에서 추출
+    if(!phone){
+      const m = text.match(/(\d{9,12})/);
+      if(m) phone = canonPhone(m[1]);
+    }
+
+    if(!phone){
+      toast('QR에서 휴대폰 번호를 찾지 못했습니다.');
+      return;
+    }
+
+    // 회원 열기
+    await openMember(phone);
+
+    // 스탬프 N 입력 & 적립 (기존 QR 파라미터 로직과 동일)
+    const nRaw = prompt('적립할 스탬프 개수를 입력하세요', '1');
+    const N = parseInt(nRaw||'0', 10);
+    if(Number.isFinite(N) && N>0 && currentMemberRef){
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(currentMemberRef);
+        const d = snap.data() || {};
+        const s0 = d.stamp || 0;
+        const total = s0 + N;
+        const addFree = Math.floor(total / 10);
+        const s1 = total % 10;
+        const totalVisits = (d.totalVisits || 0) + N;
+        const freeCredits = (d.freeCredits || 0) + addFree;
+        tx.update(currentMemberRef, {
+          stamp: s1,
+          freeCredits,
+          totalVisits,
+          updatedAt: ts()
+        });
+      });
+      await addLog('stamp_add_n', { n: N, via: 'qr_live' });
+      renderMember((await currentMemberRef.get()).data());
+      toast(`스탬프 ${N}개 적립 완료`);
+    }
+  }catch(e){
+    console.error('scan handle', e);
+    toast('처리 실패: ' + (e?.message || e));
+  }
+}
+
 
 
 btnSaveStages?.addEventListener('click', async () => {
