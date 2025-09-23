@@ -642,3 +642,38 @@ input, select{
 .p-remain.expired {
   color: #aaa;
 }
+/* =========================
+   Tablet (<=1024px) 레이아웃 개선
+   - 관리자 상세: 스탬프/무료권, 다회권, 하단 2분할(보유 다회권/스테이지) 모두 1열로
+   - 내부 폼/버튼도 줄바꿈되어 터치 영역 확보
+========================= */
+@media (max-width: 1024px){
+  /* 관리자 좌/우는 이미 1열이지만, 상세 안의 2열 그리드를 1열로 */
+  .grid.two{
+    grid-template-columns: 1fr;       /* '보유 다회권' / '스테이지 기록'도 세로 배치 */
+  }
+
+  /* 다회권 입력/조작 폼도 태블릿에선 1열로 넓게 */
+  .pass-add-grid{
+    grid-template-columns: 1fr;       /* 권종명 / 수량 / 만료일 / 버튼 모두 세로 */
+  }
+  .pass-op-grid{
+    grid-template-columns: 1fr;       /* 선택 셀렉트 / N 입력 / -N,+N 버튼 묶음 세로 */
+  }
+  .pass-op-grid input[type="number"]{
+    width: 100%;                       /* 숫자 입력 가로 꽉 차게 */
+  }
+  .pass-op-grid .row{
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .pass-op-grid .row .btn{
+    flex: 1 1 48%;                     /* -N / +N 반반 배치(줄바꿈 가능) */
+  }
+
+  /* 섹션 안 버튼/줄들이 너무 붙지 않도록 */
+  #memberSection .section-card .row{
+    flex-wrap: wrap;
+  }
+}
+
