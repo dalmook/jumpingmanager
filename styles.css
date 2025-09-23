@@ -290,23 +290,6 @@ input,select{
   font-weight:900;
 }
 
-/* Pass expire date input (wider) */
-#passExpire{
-  width: 200px;       /* 넓게 */
-  min-width: 200px;   /* 줄지 않게 */
-  padding-right: 12px;/* iOS 캘린더 아이콘 공간 */
-}
-
-/* 모바일에선 가로 꽉 차게 */
-@media (max-width:680px){
-  #passExpire{
-    width: 100%;
-    min-width: 0;
-  }
-}
-
-
-
 /* 팽귄 도장 격자 (2행×5열) */
 .stamp-grid{
   margin-top:14px;
