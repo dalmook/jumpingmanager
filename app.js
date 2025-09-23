@@ -268,7 +268,7 @@ passPresetWk?.addEventListener('click', ()=>{
   if(passName&&passCount){
     passName.value='평일무료권';
     passCount.value='1';
-    setExpireDefaultByName('무료권');
+    setExpireDefaultByName('평일무료권');
   }
 });
 
