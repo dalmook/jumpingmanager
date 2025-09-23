@@ -50,6 +50,37 @@ body{
 .subtitle{ margin:0; color:var(--muted); font-size:13px }
 
 /* Auth */
+/* === 로그인 화면 확대 & 정렬 === */
+.auth-area { width: 100%; }
+
+#signedOut.auth-row{
+  max-width: 520px;          /* 폼 폭 키우기 */
+  margin: 10px auto 0;       /* 가운데 정렬 */
+  gap: 10px;
+}
+
+#signedOut.auth-row input{
+  flex: 1 1 100%;
+  min-width: 0;
+  width: 100%;
+  font-size: 16px;           /* 모바일 확대 */
+  padding: 14px 16px;        /* 터치 타겟 업 */
+}
+
+#signedOut.auth-row .btn{
+  flex: 1 1 48%;
+  font-size: 16px;
+  padding: 14px 16px;
+}
+
+/* 아주 좁은 화면에선 버튼도 1열 */
+@media (max-width: 420px){
+  #signedOut.auth-row .btn{ flex-basis: 100%; }
+}
+
+/* 헤더 상단 여백을 살짝 넓혀 시각적으로 여유 */
+.header-inner{ padding: 14px 16px 14px; }
+.large-title{ font-size: 30px; }
 .auth-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
 .auth-row input{
   flex:1; min-width:220px; padding:12px 14px; border-radius:14px;
