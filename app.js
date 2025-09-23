@@ -141,17 +141,15 @@ document.getElementById('passExpire')?.addEventListener('input', (e)=>{
   if (e.currentTarget) e.currentTarget.dataset.autoset = '';
 });
 
-// ✅ 만료일 디폴트: 오늘 min, 기본값 = 1년 후
+// (교체) 만료일 기본값 강제 X, 오늘 이전만 막음
 function initPassExpireDefault(){
   const el = document.getElementById('passExpire');
   if (!el) return;
   const today = new Date();
-  const oneYear = new Date(today);
-  oneYear.setFullYear(oneYear.getFullYear() + 1);
-
-  el.min = ymdLocal(today);              // 오늘 이전 선택 불가
-  if (!el.value) el.value = ymdLocal(oneYear); // 값 비었으면 1년 후로 기본값
+  el.min = ymdLocal(today);
+  // el.value 설정은 하지 않음 (권종별 setExpireDefaultByName로 처리)
 }
+
 
 
 
