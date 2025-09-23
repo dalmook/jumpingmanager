@@ -90,6 +90,56 @@ function ymdLocal(date){
   const d = String(date.getDate()).padStart(2,'0');
   return `${y}-${m}-${d}`;
 }
+// === 만료일 자동세팅 헬퍼 추가 (ymdLocal 아래에 붙여넣기) ===
+function addMonths(date, n){
+  const d = new Date(date);
+  const day = d.getDate();
+  d.setMonth(d.getMonth() + n);
+  if (d.getDate() < day) d.setDate(0); // 말일 보정
+  return d;
+}
+function addYears(date, n){
+  const d = new Date(date);
+  d.setFullYear(d.getFullYear() + n);
+  return d;
+}
+
+/**
+ * 권종명에 따라 #passExpire 기본값을 설정
+ * - 평일무료권: +1개월
+ * - 무료권: +6개월
+ * - 다회권/10회권/20회권(그 외 기본): +1년
+ * - 사용자가 날짜를 직접 고치면 더 이상 덮어쓰지 않도록 data-autoset 플래그 사용
+ */
+function setExpireDefaultByName(name){
+  const el = document.getElementById('passExpire');
+  if (!el) return;
+
+  const today = new Date();
+  el.min = ymdLocal(today);      // 오늘 이전 선택 불가
+
+  if (!el.dataset.autoset && el.value) return; // 사용자 수동값이면 유지
+
+  const n = (name || '').replace(/\s+/g, '');
+  let target;
+  if (n === '평일무료권') {
+    target = addMonths(today, 1);
+  } else if (n === '무료권') {
+    target = addMonths(today, 6);
+  } else if (n === '다회권' || n === '10회권' || n === '20회권') {
+    target = addYears(today, 1);
+  } else {
+    target = addYears(today, 1); // 기본
+  }
+
+  el.value = ymdLocal(target);
+  el.dataset.autoset = '1';
+}
+
+// 사용자가 날짜를 직접 바꾸면 autoset 해제
+document.getElementById('passExpire')?.addEventListener('input', (e)=>{
+  if (e.currentTarget) e.currentTarget.dataset.autoset = '';
+});
 
 // ✅ 만료일 디폴트: 오늘 min, 기본값 = 1년 후
 function initPassExpireDefault(){
