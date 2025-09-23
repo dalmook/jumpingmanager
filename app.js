@@ -836,13 +836,6 @@ btnResetStamp?.addEventListener('click', async()=>{
     const d=(await currentMemberRef.get()).data(); renderMember(d);
   }catch(e){ console.error('resetStamp',e); toast('실패: '+e.message); }
 });
-function ensureExpireDefaultIfEmpty(){
-  const el = document.getElementById('passExpire');
-  if (!el || el.value) return;
-  const d = new Date(); d.setFullYear(d.getFullYear()+1);
-  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
-  el.value = `${y}-${m}-${day}`;
-}
 
 passPresetCustom?.addEventListener('click', ()=>{
   if(passName&&passCount){
