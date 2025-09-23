@@ -1578,6 +1578,10 @@ const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
   if (selfLogList)  selfLogList.innerHTML  = '';
 }
 }
+// [추가] QR 스캔 버튼/닫기 버튼 바인딩
+btnQRScan?.addEventListener('click', openQRScanner);
+qrClose  ?.addEventListener('click', stopQRScanner);
+window.addEventListener('pagehide', stopQRScanner); // 페이지 떠날 때 카메라 정리
 
 console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions + self tabs');
 // === 디버그 패널 토글/복사/지우기 ===
