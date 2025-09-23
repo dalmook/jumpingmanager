@@ -27,19 +27,21 @@
           <span class="logo-dot"></span>
           <span class="brand-text">점핑배틀 화성병점점</span>
         </div>
-        <div class="auth-area">
-          <div id="signedOut" class="auth-row">
-            <!-- 관리자: 이메일, 손님: 휴대폰 01012345678 (문구 그대로 유지) -->
-            <input id="loginEmail" type="text" inputmode="text" placeholder="휴대폰 01012345678" />
-            <input id="loginPass" type="password" placeholder="비밀번호" />
-            <button id="btnLogin" class="btn primary">로그인</button>
-            <button id="btnSignup" class="btn ghost">회원가입</button>
-          </div>
-          <div id="signedIn" class="auth-row hidden">
-            <div id="signedIn" class="auth-row hidden">
-            <!-- 로그인 상태에서만 보이는 로그아웃 버튼 -->
-            <button id="btnLogout" class="btn small ghost logout-top">로그아웃</button>
-              </div>      
+  <div class="auth-area">
+    <div id="signedOut" class="auth-row">
+      <!-- 관리자: 이메일, 손님: 휴대폰 01012345678 (문구 그대로 유지) -->
+      <input id="loginEmail" type="text" inputmode="text" placeholder="휴대폰 01012345678" />
+      <input id="loginPass" type="password" placeholder="비밀번호" />
+      <button id="btnLogin" class="btn primary">로그인</button>
+      <button id="btnSignup" class="btn ghost">회원가입</button>
+    </div>
+  
+    <!-- 로그인 상태에서만 보이는 영역: 중복 없이 단 한 번만! -->
+    <div id="signedIn" class="auth-row hidden">
+      <button id="btnLogout" class="btn small ghost logout-top">로그아웃</button>
+    </div>
+  </div>
+ 
 
           </div>
         </div>
