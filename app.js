@@ -73,10 +73,7 @@ function setPassCount(oldVal, newCount){
   if (typeof oldVal === 'number' || oldVal == null) return { count: newCount };
   return { ...oldVal, count: newCount };
 }
-function setPassExpire(oldVal, expireTs){
-  if (typeof oldVal === 'number' || oldVal == null) return expireTs ? { count:(oldVal||0), expireAt:expireTs } : { count:(oldVal||0) };
-  const next = { ...oldVal }; if (expireTs) next.expireAt = expireTs; else delete next.expireAt; return next;
-}
+
 function fmtDate(d){
   try{ const dd = d?.toDate ? d.toDate() : d; const y=dd.getFullYear(), m=String(dd.getMonth()+1).padStart(2,'0'), day=String(dd.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }catch{return '-';}
 }
@@ -277,7 +274,6 @@ const adminEmails = ["01041668764@phone.local"];
 // 인증/공통
 const signedOut = $('#signedOut');
 const signedIn  = $('#signedIn');
-const whoami    = $('#whoami');
 const btnLogin  = $('#btnLogin');
 const btnSignup = $('#btnSignup');
 const btnLogout = $('#btnLogout');
@@ -305,9 +301,6 @@ const btnRegister = $('#btnRegister');
 // 손님 마이페이지 (요약 카드)
 const memberSelf = $('#memberSelf');
 const selfCard   = $('#selfCard');
-
-const passPresetCustom   = $('#passPresetCustom');
-const passPresetWeekday  = $('#passPresetWeekday');
 
 // 상세/조작 패널 (관리자)
 const memberSection = $('#memberSection');
@@ -354,8 +347,6 @@ passSelect?.addEventListener('change', () => {
   lastSelectedPass = passSelect.value || '';
 });
 
-const btnUsePass = $('#btnUsePass');
-const btnRefundPass = $('#btnRefundPass');
 const passPreset10 = $('#passPreset10');
 const passPreset20 = $('#passPreset20');
 const passPresetFree = document.getElementById('passPresetFree');
@@ -386,14 +377,6 @@ const logList  = $('#logList');
 const stampDelta   = $('#stampDelta');
 const btnAddStampN = $('#btnAddStampN');
 const btnSubStampN = $('#btnSubStampN');
-
-const freeDelta    = $('#freeDelta');
-const btnAddFreeN  = $('#btnAddFreeN');
-const btnSubFreeN  = $('#btnSubFreeN');
-
-const freeWkDelta   = $('#freeWkDelta');     // 추가
-const btnAddFreeWkN = $('#btnAddFreeWkN');   // 추가
-const btnSubFreeWkN = $('#btnSubFreeWkN');   // 추가
 
 const freeSlDelta   = $('#freeSlDelta');     // 추가
 const btnAddFreeSlN = $('#btnAddFreeSlN');   // 추가
@@ -472,7 +455,6 @@ auth.onAuthStateChanged(async(user)=>{
   if(user){
     signedOut?.classList.add('hidden');
     signedIn?.classList.remove('hidden');
-    if(whoami) whoami.textContent = user.email || '';
 
     isAdmin = adminEmails.includes(user.email || '');
     adminPanel?.classList.toggle('hidden', !isAdmin);
@@ -566,7 +548,6 @@ auth.onAuthStateChanged(async(user)=>{
     if (selfPassList) selfPassList.innerHTML = '';
     const selfStageList = document.getElementById('selfStageList');
     if (selfStageList) selfStageList.innerHTML = '';
-    if (whoami) whoami.textContent = '';
 
     hideMemberPanel();
   }
@@ -999,13 +980,6 @@ async function handleScannedText(text){
         const addFree = Math.floor(total / 10);
         const s1 = total % 10;
         const totalVisits = (d.totalVisits || 0) + N;
-        const freeCredits = (d.freeCredits || 0) + addFree;
-        tx.update(currentMemberRef, {
-          stamp: s1,
-          freeCredits,
-          totalVisits,
-          updatedAt: ts()
-        });
       });
       await addLog('stamp_add_n', { n: N, via: 'qr_live' });
       renderMember((await currentMemberRef.get()).data());
@@ -1108,19 +1082,6 @@ btnResetStamp?.addEventListener('click', async()=>{
   }catch(e){ console.error('resetStamp',e); toast('실패: '+e.message); }
 });
 
-passPresetCustom?.addEventListener('click', ()=>{
-  if(passName&&passCount){
-    passName.value='다회권'; passCount.value='1';
-    setExpireDefaultByName('다회권');
-  }
-});
-
-passPresetWeekday?.addEventListener('click', ()=>{
-  if(passName&&passCount){
-    passName.value='평일무료권'; passCount.value='1';
-    setExpireDefaultByName('평일무료권');
-  }
-});
 // 13) 다회권 (기존 +/-1)
 passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='10회권'; passCount.value='10'; setExpireDefaultByName('10회권');}});
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; setExpireDefaultByName('20회권');}});
@@ -1176,85 +1137,6 @@ btnAddPass?.addEventListener('click', async()=>{
     toast('실패: ' + (e?.message || e));
   }
 });
-
-
-
-
-// 다회권 -1
-btnUsePass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용');
-  if(!currentMemberRef) return toast('회원을 먼저 선택');
-
-  const sel = parseSelectedPassKey(); if(!sel) return;
-
-  try{
-    await db.runTransaction(async(tx)=>{
-      const snap = await tx.get(currentMemberRef);
-      const d = snap.data() || {};
-      const nowMs = firebase.firestore.Timestamp.now().toMillis();
-
-      if(sel.kind === 'batch'){
-        const passBatches = { ...(d.passBatches || {}) };
-        const b = passBatches[sel.key];
-        if(!b) throw new Error('선택한 배치를 찾을 수 없습니다.');
-        if (b.expireAt && b.expireAt.toMillis() < nowMs) throw new Error('만료된 배치입니다.');
-        if((b.count || 0) <= 0) throw new Error('잔여 없음');
-
-        passBatches[sel.key] = { ...b, count: (b.count || 0) - 1 };
-        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
-
-      } else { // legacy
-        const passes = { ...(d.passes || {}) };
-        const prev = passes[sel.key];
-        if (prev && typeof prev === 'object' && prev.expireAt && prev.expireAt.toMillis() < nowMs) {
-          throw new Error('만료된 권종입니다.');
-        }
-        const cur = getPassCount(prev);
-        if(cur <= 0) throw new Error('잔여 없음');
-
-        passes[sel.key] = setPassCount(prev, cur - 1);
-        tx.update(currentMemberRef, { passes, updatedAt: ts() });
-      }
-    });
-
-    await addLog('pass_use', { where: sel.kind, key: sel.key, cnt: 1 });
-    renderMember((await currentMemberRef.get()).data());
-  }catch(e){
-    console.error('usePass -1', e);
-    toast('실패: ' + (e?.message || e));
-  }
-});
-
-
-
-btnRefundPass?.addEventListener('click', async()=>{
-  if(!isAdmin) return toast('운영자 전용');
-  if(!currentMemberRef) return toast('회원을 먼저 선택');
-
-  const sel = parseSelectedPassKey(); if(!sel) return;   // ← 파싱 필수
-
-  try{
-    await db.runTransaction(async(tx)=>{
-      const snap=await tx.get(currentMemberRef);
-      const d=snap.data()||{};
-
-      if (sel.kind === 'batch') {
-        const passBatches = { ...(d.passBatches||{}) };
-        const b = passBatches[sel.key];
-        if(!b) throw new Error('배치를 찾을 수 없습니다.');
-        passBatches[sel.key] = { ...b, count:(b.count||0)+1 };
-        tx.update(currentMemberRef, { passBatches, updatedAt: ts() });
-      } else {
-        const passes = { ...(d.passes||{}) };
-        passes[sel.key] = setPassCount(passes[sel.key], getPassCount(passes[sel.key]) + 1);
-        tx.update(currentMemberRef, { passes, updatedAt: ts() });
-      }
-    });
-    await addLog('pass_refund', { where: sel.kind, key: sel.key, cnt:1 });
-    renderMember((await currentMemberRef.get()).data());
-  }catch(e){ console.error('refundPass',e); toast('실패: '+(e?.message||e)); }
-});
-
 
 // 14) === N개 증감 & 권종 삭제 & 회원 삭제 ===
 function parsePosInt(el, def = 1) {
@@ -1329,31 +1211,6 @@ btnSubStampN?.addEventListener('click', async () => {
   } catch (e) { console.error('stamp -N', e); toast('실패: ' + e.message); }
 });
 
-// 무료권 +N / -N
-btnAddFreeN?.addEventListener('click', async () => {
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const N = parsePosInt(freeDelta, 1);
-  try {
-    await currentMemberRef.update({ freeCredits: firebase.firestore.FieldValue.increment(N), updatedAt: ts() });
-    await addLog('free_add_n', { n: N });
-    renderMember((await currentMemberRef.get()).data());
-  } catch (e) { console.error('free +N', e); toast('실패: ' + e.message); }
-});
-btnSubFreeN?.addEventListener('click', async () => {
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const N = parsePosInt(freeDelta, 1);
-  try {
-    await db.runTransaction(async (tx) => {
-      const snap = await tx.get(currentMemberRef);
-      const d = snap.data() || {};
-      const cur = d.freeCredits || 0;
-      const next = Math.max(0, cur - N);
-      tx.update(currentMemberRef, { freeCredits: next, updatedAt: ts() });
-    });
-    await addLog('free_sub_n', { n: N });
-    renderMember((await currentMemberRef.get()).data());
-  } catch (e) { console.error('free -N', e); toast('실패: ' + e.message); }
-});
 
 // 다회권 -N
 btnUsePassN?.addEventListener('click', async () => {
@@ -1502,32 +1359,6 @@ btnDeleteMember?.addEventListener('click', async () => {
     await loadAllMembers();
     toast('회원 삭제 완료');
   } catch (e) { console.error('delete member', e); toast('삭제 실패: ' + e.message); }
-});
-// 평일무료권 +N
-btnAddFreeWkN?.addEventListener('click', async ()=>{
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const N = parsePosInt(freeWkDelta, 1);
-  try{
-    await currentMemberRef.update({ freeWeekday: firebase.firestore.FieldValue.increment(N), updatedAt: ts() });
-    await addLog('free_weekday_add_n', { n:N });
-    renderMember((await currentMemberRef.get()).data());
-  }catch(e){ console.error('freeWeekday +N',e); toast('실패: '+e.message); }
-});
-
-// 평일무료권 -N
-btnSubFreeWkN?.addEventListener('click', async ()=>{
-  if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
-  const N = parsePosInt(freeWkDelta, 1);
-  try{
-    await db.runTransaction(async(tx)=>{
-      const snap = await tx.get(currentMemberRef);
-      const d = snap.data()||{};
-      const next = Math.max(0, (d.freeWeekday||0) - N);
-      tx.update(currentMemberRef, { freeWeekday: next, updatedAt: ts() });
-    });
-    await addLog('free_weekday_sub_n', { n:N });
-    renderMember((await currentMemberRef.get()).data());
-  }catch(e){ console.error('freeWeekday -N',e); toast('실패: '+e.message); }
 });
 
 // 슬러시 무료권 +N
