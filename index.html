@@ -171,19 +171,18 @@
             <div class="section-card">
               <div class="section-row">
                 <h3>다회권</h3>
-                <div class="row gap8">
-                  <button id="passPresetCustom" class="btn ghost small">다회권</button>
-                  <button id="passPreset10" class="btn ghost small">10회권</button>
-                  <button id="passPreset20" class="btn ghost small">20회권</button>
-                  <button id="passPresetWeekday" class="btn ghost small">평일무료권</button>
-                </div>
+              <!-- (다회권 섹션) 프리셋 버튼 줄 -->
+              <div class="row gap8">
+                <button id="passPreset10" class="btn ghost small">10회권</button>
+                <button id="passPreset20" class="btn ghost small">20회권</button>
+                <button id="passPresetFree" class="btn ghost small">무료권</button>
+                <button id="passPresetWk" class="btn ghost small">평일무료권</button>
               </div>
 
               <div class="row wrap gap8">
                 <input id="passName"  placeholder="권종명 (예: 10회권)" />
                 <input id="passCount" type="number" min="1" step="1" value="1" class="w110" />
-                <!-- ✅ 추가: 만료일(선택) -->
-                <input id="passExpire" type="date" class="w110" placeholder="만료일(선택)" />
+                <input id="passExpire" type="date" />  <!-- 이미 있으셨다면 그대로 -->
                 <button id="btnAddPass" class="btn primary">권종 추가</button>
               </div>
 
