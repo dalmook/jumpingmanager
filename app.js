@@ -272,6 +272,7 @@ const adminEmails = ["01041668764@phone.local"];
 
 // 4) DOM 참조
 // 인증/공통
+const whoami = $('#whoami');
 const signedOut = $('#signedOut');
 const signedIn  = $('#signedIn');
 const btnLogin  = $('#btnLogin');
