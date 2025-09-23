@@ -947,7 +947,7 @@ function stopQRScanner(){
   }catch{}
 }
 
-// [추가] 스캔 결과 처리 → 회원 열고 스탬프 N 입력
+// [수정] 스캔 결과 처리 → 회원 열고 스탬프 N 입력
 async function handleScannedText(text){
   try{
     // 1) URL의 ?stamp=핸드폰 추출 시도
@@ -955,16 +955,16 @@ async function handleScannedText(text){
     try{
       const u = new URL(text);
       const sp = u.searchParams.get('stamp');
-      if(sp) phone = canonPhone(sp);
-    }catch{ /* URL 아니면 무시 */ }
+      if (sp) phone = canonPhone(sp);
+    }catch{/* URL이 아니면 무시 */}
 
     // 2) 숫자만 있는 QR이면 그 숫자에서 추출
-    if(!phone){
+    if (!phone) {
       const m = text.match(/(\d{9,12})/);
-      if(m) phone = canonPhone(m[1]);
+      if (m) phone = canonPhone(m[1]);
     }
 
-    if(!phone){
+    if (!phone) {
       toast('QR에서 휴대폰 번호를 찾지 못했습니다.');
       return;
     }
@@ -972,28 +972,50 @@ async function handleScannedText(text){
     // 회원 열기
     await openMember(phone);
 
-    // 스탬프 N 입력 & 적립 (기존 QR 파라미터 로직과 동일)
+    // 스탬프 N 입력 & 적립
     const nRaw = prompt('적립할 스탬프 개수를 입력하세요', '1');
-    const N = parseInt(nRaw||'0', 10);
-    if(Number.isFinite(N) && N>0 && currentMemberRef){
-      await db.runTransaction(async (tx) => {
-        const snap = await tx.get(currentMemberRef);
-        const d = snap.data() || {};
-        const s0 = d.stamp || 0;
-        const total = s0 + N;
-        const addFree = Math.floor(total / 10);
-        const s1 = total % 10;
-        const totalVisits = (d.totalVisits || 0) + N;
+    const N = parseInt(nRaw || '0', 10);
+    if (!Number.isFinite(N) || N <= 0 || !currentMemberRef) return;
+
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(currentMemberRef);
+      const d = snap.data() || {};
+
+      const s0 = d.stamp || 0;
+      const total = s0 + N;
+      const addFree = Math.floor(total / 10); // 10개당 무료권 수
+      const s1 = total % 10;
+      const totalVisits = (d.totalVisits || 0) + N;
+
+      // 무료권(배치) 지급
+      const passBatches = { ...(d.passBatches || {}) };
+      if (addFree > 0) {
+        const id = newBatchId();
+        passBatches[id] = {
+          name: '무료권',
+          count: addFree,
+          expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')),
+        };
+      }
+
+      // ✅ DB 반영 (누락되어 있던 부분)
+      tx.update(currentMemberRef, {
+        stamp: s1,
+        passBatches,
+        totalVisits,
+        updatedAt: ts(),
       });
-      await addLog('stamp_add_n', { n: N, via: 'qr_live' });
-      renderMember((await currentMemberRef.get()).data());
-      toast(`스탬프 ${N}개 적립 완료`);
-    }
-  }catch(e){
+    });
+
+    await addLog('stamp_add_n', { n: N, via: 'qr_live' });
+    renderMember((await currentMemberRef.get()).data());
+    toast(`스탬프 ${N}개 적립 완료`);
+  } catch(e) {
     console.error('scan handle', e);
     toast('처리 실패: ' + (e?.message || e));
   }
 }
+
 
 
 
