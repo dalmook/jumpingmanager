@@ -1165,6 +1165,7 @@ btnAddStampN?.addEventListener('click', async () => {
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const N = parsePosInt(stampDelta, 1);
   try {
+      // (기존) handleScannedText 안의 트랜잭션 부분 교체
       await db.runTransaction(async (tx) => {
         const snap = await tx.get(currentMemberRef);
         const d = snap.data() || {};
@@ -1174,6 +1175,7 @@ btnAddStampN?.addEventListener('click', async () => {
         const s1 = total % 10;
         const totalVisits = (d.totalVisits || 0) + N;
       
+        // 무료권은 배치(passBatches)로 지급
         const passBatches = { ...(d.passBatches || {}) };
         if (addFree > 0) {
           const id = newBatchId();
@@ -1184,6 +1186,7 @@ btnAddStampN?.addEventListener('click', async () => {
           };
         }
       
+        // ✅ 실제로 문서를 업데이트해야 반영됩니다!
         tx.update(currentMemberRef, {
           stamp: s1,
           passBatches,
@@ -1191,6 +1194,7 @@ btnAddStampN?.addEventListener('click', async () => {
           updatedAt: ts()
         });
       });
+
 
     await addLog('stamp_add_n', { n: N });
     renderMember((await currentMemberRef.get()).data());
