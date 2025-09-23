@@ -54,6 +54,19 @@ const sumPass = (passes, passBatches) => {
   return legacy + batches;
 };
 
+function sumNamedValidBatches(passBatches, name){
+  const nowMs = firebase.firestore.Timestamp.now().toMillis();
+  let s = 0;
+  Object.values(passBatches || {}).forEach(b=>{
+    if (!b) return;
+    if ((b.name||'') !== name) return;
+    if (b.expireAt && b.expireAt.toMillis() < nowMs) return; // 만료 제외
+    s += (b.count || 0);
+  });
+  return s;
+}
+
+
 // ✅ 기존 유틸 유지(레거시용)
 function getPassCount(v){ return typeof v==='number' ? (v||0) : (v?.count||0); }
 function setPassCount(oldVal, newCount){
@@ -192,6 +205,32 @@ const btnUsePass = $('#btnUsePass');
 const btnRefundPass = $('#btnRefundPass');
 const passPreset10 = $('#passPreset10');
 const passPreset20 = $('#passPreset20');
+const passPresetFree = document.getElementById('passPresetFree');
+const passPresetWk   = document.getElementById('passPresetWk');
+
+function ensureExpireDefaultIfEmpty(){
+  const el = document.getElementById('passExpire');
+  if (!el || el.value) return;
+  const d = new Date(); d.setFullYear(d.getFullYear()+1);
+  el.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+passPresetFree?.addEventListener('click', ()=>{
+  if(passName&&passCount){
+    passName.value='무료권';
+    passCount.value='1';
+    ensureExpireDefaultIfEmpty();
+  }
+});
+passPresetWk?.addEventListener('click', ()=>{
+  if(passName&&passCount){
+    passName.value='평일무료권';
+    passCount.value='1';
+    ensureExpireDefaultIfEmpty();
+  }
+});
+
+
 
 const passList = $('#passList');
 const logList  = $('#logList');
