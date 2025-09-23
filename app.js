@@ -120,6 +120,57 @@ function defaultExpireMonthsByName(name) {
   return 12;                            // 1년
 }
 
+// === QR 고해상도 PNG 다운로드 유틸 ===
+function downloadHighResQR(text, filename = 'qr.png', size = 1024){
+  // 임시 컨테이너를 만들어 고해상도로 다시 렌더(업스케일 대신 재생성)
+  const tmp = document.createElement('div');
+  tmp.style.position='fixed';
+  tmp.style.left='-9999px';
+  document.body.appendChild(tmp);
+
+  // qrcodejs로 큰 사이즈 생성
+  const qr = new QRCode(tmp, {
+    text,
+    width: size,
+    height: size,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // qrcodejs가 img 또는 canvas를 넣음 → PNG dataURL 추출
+  setTimeout(()=>{  // 렌더 완료 보장용
+    let dataUrl = '';
+    const cvs = tmp.querySelector('canvas');
+    if (cvs) {
+      dataUrl = cvs.toDataURL('image/png');
+    } else {
+      const img = tmp.querySelector('img');
+      if (img) {
+        // img라면 canvas로 옮겨 png 생성(품질 확보)
+        const c = document.createElement('canvas');
+        c.width = size; c.height = size;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
+        ctx.drawImage(img, 0, 0, size, size);
+        dataUrl = c.toDataURL('image/png');
+      }
+    }
+
+    // 다운로드 트리거
+    if (dataUrl) {
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+    // 정리
+    tmp.remove();
+  }, 0);
+}
+
 /**
  * 권종명에 따라 #passExpire 기본값을 설정
  * - 평일무료권: +1개월
@@ -1518,20 +1569,34 @@ const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
     <p class="stamp-note muted">스탬프 10개를 찍으면 무료 1회 제공!</p>
   `;
     // === 여기 뒤에 QR 코드 생성 추가 ===
-    const qrTarget = document.getElementById('selfBigQR');
-    if(qrTarget){
-      qrTarget.innerHTML = '';
-      const stampURL = `${window.location.origin}${window.location.pathname}?stamp=${encodeURIComponent(phone)}`;
-      
-      new QRCode(qrTarget, {
-        text: stampURL,       // ← 절대 URL을 QR에 넣기
-        width: 140,
-        height: 140,
-        colorDark: "#000000",
-        colorLight: "#ffffff"
-      });
+const qrTarget = document.getElementById('selfBigQR');
+if (qrTarget) {
+  qrTarget.innerHTML = '';
+  const stampURL = `${window.location.origin}${window.location.pathname}?stamp=${encodeURIComponent(phone)}`;
 
-    }
+  // QR 생성(화면용 120px)
+  new QRCode(qrTarget, {
+    text: stampURL,
+    width: 120,
+    height: 120,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // 좌상단 다운로드 버튼 생성
+  const dlBtn = document.createElement('button');
+  dlBtn.type = 'button';
+  dlBtn.className = 'qr-dl-btn';
+  dlBtn.textContent = 'QR 저장';
+  dlBtn.title = '고해상도 QR 저장';
+  dlBtn.addEventListener('click', () => {
+    const fname = `점핑배틀-QR-${phone}.png`;
+    downloadHighResQR(stampURL, fname, 1024); // ← 해상도 필요시 2048 등으로 늘리면 됨
+  });
+  qrTarget.appendChild(dlBtn);
+}
+
 
 // 팽귄 도장 격자 (2행×5열)
     const grid = document.getElementById('selfStampGrid');
