@@ -853,6 +853,13 @@ passPresetWeekday?.addEventListener('click', ()=>{
 // 13) 다회권 (기존 +/-1)
 passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='10회권'; passCount.value='10'; setExpireDefaultByName('10회권');}});
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; setExpireDefaultByName('20회권');}});
+// 권종명 수동 입력/변경 시 자동 만료일 채우기 (사용자가 직접 날짜 고치기 전까지만)
+passName?.addEventListener('change', ()=>{
+  setExpireDefaultByName(passName.value || '');
+});
+passName?.addEventListener('input', ()=>{
+  setExpireDefaultByName(passName.value || '');
+});
 
 btnAddPass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); 
