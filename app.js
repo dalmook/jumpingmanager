@@ -192,7 +192,6 @@ const btnUsePass = $('#btnUsePass');
 const btnRefundPass = $('#btnRefundPass');
 const passPreset10 = $('#passPreset10');
 const passPreset20 = $('#passPreset20');
-const passPreset30 = $('#passPreset30');
 
 const passList = $('#passList');
 const logList  = $('#logList');
