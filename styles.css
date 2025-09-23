@@ -633,3 +633,12 @@ input, select{
 @media (max-width:680px){
   #passExpire{ width: 100%; min-width: 0; }
 }
+.p-remain {
+  color: #ff6b81;   /* 파스텔톤 붉은색 */
+  font-weight: 900;
+  font-size: 13px;
+  margin-left: 6px;
+}
+.p-remain.expired {
+  color: #aaa;
+}
