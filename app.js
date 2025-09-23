@@ -1303,6 +1303,8 @@ async function loadSelf(user){
       return;
     }
     const d = snap.data() || {};
+const freeSum   = sumNamedValidBatches(d.passBatches, '무료권');
+const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');    
 
 // 요약 박스 + 도장 격자(2행×5열)
     cardEl.innerHTML = `
