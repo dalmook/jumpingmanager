@@ -706,4 +706,14 @@ input, select{
 .btn.highlight:hover{
   filter: brightness(1.05);
 }
+/* QR 다운로드 버튼 */
+.big-qr{ position: relative; } /* 버튼 절대배치용 */
+.qr-dl-btn{
+  position:absolute; top:6px; left:6px;
+  padding:6px 10px; border:0; border-radius:10px;
+  background:linear-gradient(135deg,#ffb3c1,#ff6b81);
+  color:#fff; font-weight:900; font-size:12px; box-shadow: var(--shadow);
+  opacity:.95; cursor:pointer;
+}
+.qr-dl-btn:hover{ transform: translateY(-1px); }
 
