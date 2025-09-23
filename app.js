@@ -779,7 +779,6 @@ passPresetWeekday?.addEventListener('click', ()=>{
 // 13) 다회권 (기존 +/-1)
 passPreset10?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='10회권'; passCount.value='10'; }});
 passPreset20?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='20회권'; passCount.value='20'; }});
-passPreset30?.addEventListener('click', ()=>{ if(passName&&passCount){ passName.value='30회권'; passCount.value='30'; }});
 
 btnAddPass?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
