@@ -546,7 +546,7 @@ auth.onAuthStateChanged(async(user)=>{
       }
     }catch(e){ console.warn('qr-stamp', e); }
 
-  }else{
+} else {
     signedOut?.classList.remove('hidden');
     signedIn?.classList.add('hidden');
     adminPanel?.classList.add('hidden');
@@ -554,6 +554,19 @@ auth.onAuthStateChanged(async(user)=>{
     // 디버그 버튼/패널 숨김
     dbgToggle?.classList.add('hidden');
     dbgPanel ?.classList.add('hidden');
+
+    // ▼ QR/마이페이지 흔적도 확실히 정리
+    const qrTarget = document.getElementById('selfBigQR');
+    if (qrTarget) qrTarget.innerHTML = '';
+    const dlBtn = document.getElementById('btnQRDownload');
+    if (dlBtn) dlBtn.remove();
+    const selfCardEl = document.getElementById('selfCard');
+    if (selfCardEl) selfCardEl.innerHTML = '';
+    const selfPassList = document.getElementById('selfPassList');
+    if (selfPassList) selfPassList.innerHTML = '';
+    const selfStageList = document.getElementById('selfStageList');
+    if (selfStageList) selfStageList.innerHTML = '';
+    if (whoami) whoami.textContent = '';
 
     hideMemberPanel();
   }
@@ -632,7 +645,22 @@ btnSignup?.addEventListener("click", async () => {
 
 // 8) 로그아웃
 btnLogout?.addEventListener('click', async()=>{
-  try{ await auth.signOut(); toast('로그아웃'); }catch(e){ console.error('logout',e); }
+  try{
+    await auth.signOut();
+    // ▼ QR/마이페이지 흔적 즉시 정리
+    const qrTarget = document.getElementById('selfBigQR');
+    if (qrTarget) qrTarget.innerHTML = '';
+    const dlBtn = document.getElementById('btnQRDownload');
+    if (dlBtn) dlBtn.remove();
+    const selfCardEl = document.getElementById('selfCard');
+    if (selfCardEl) selfCardEl.innerHTML = '';
+    const selfPassList = document.getElementById('selfPassList');
+    if (selfPassList) selfPassList.innerHTML = '';
+    const selfStageList = document.getElementById('selfStageList');
+    if (selfStageList) selfStageList.innerHTML = '';
+    if (whoami) whoami.textContent = '';
+    toast('로그아웃');
+  }catch(e){ console.error('logout',e); }
 });
 
 // 9) 관리자: 전체 목록/검색
