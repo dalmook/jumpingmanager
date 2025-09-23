@@ -277,6 +277,7 @@ const signedIn  = $('#signedIn');
 const btnLogin  = $('#btnLogin');
 const btnSignup = $('#btnSignup');
 const btnLogout = $('#btnLogout');
+const mascot = document.querySelector('.mascot-badge');
 
 // [추가] QR 스캔 UI 참조
 const btnQRScan = document.getElementById('btnQRScan');
@@ -457,6 +458,7 @@ auth.onAuthStateChanged(async(user)=>{
     signedIn?.classList.remove('hidden');
 
     isAdmin = adminEmails.includes(user.email || '');
+    mascot?.classList.toggle('hidden', isAdmin);  // 관리자면 숨김, 손님이면 표시
     adminPanel?.classList.toggle('hidden', !isAdmin);
     memberSelf?.classList.toggle('hidden', isAdmin);
     // 디버그 버튼/패널: 관리자만 표시
@@ -532,6 +534,7 @@ auth.onAuthStateChanged(async(user)=>{
     signedOut?.classList.remove('hidden');
     signedIn?.classList.add('hidden');
     adminPanel?.classList.add('hidden');
+    mascot?.classList.add('hidden');   // ← 추가
     memberSelf?.classList.add('hidden');
     // 디버그 버튼/패널 숨김
     dbgToggle?.classList.add('hidden');
@@ -630,7 +633,7 @@ btnSignup?.addEventListener("click", async () => {
 btnLogout?.addEventListener('click', async()=>{
   try{
     await auth.signOut();
-    // ▼ QR/마이페이지 흔적 즉시 정리
+    mascot?.classList.add('hidden');   // ← 추가: 즉시 숨김
     const qrTarget = document.getElementById('selfBigQR');
     if (qrTarget) qrTarget.innerHTML = '';
     const dlBtn = document.getElementById('btnQRDownload');
