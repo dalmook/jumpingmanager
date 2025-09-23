@@ -1402,7 +1402,7 @@ const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
   if (selfPassList) selfPassList.innerHTML = '';
   if (selfLogList)  selfLogList.innerHTML  = '';
 }
-
+}
 
 console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions + self tabs');
 // === 디버그 패널 토글/복사/지우기 ===
