@@ -492,20 +492,35 @@ input,select{
   justify-content: start;
 }
 
-/* 다회권: 추가 폼 */
+/* 다회권: 추가 폼 — 반응형 안전 버전 */
 .pass-add-grid{
   display: grid;
-  grid-template-columns: minmax(160px,1.6fr) 110px 200px auto;
+  grid-template-columns: minmax(0,1.4fr) 110px minmax(0,1fr) auto; /* 이름 | 수량 | 만료 | 버튼 */
   gap: 8px;
   align-items: center;
 }
-.pass-add-grid #passName{ width:100%; }
-.pass-add-grid #passCount{ width:100%; }
+.pass-add-grid #passName,
+.pass-add-grid #passCount,
 .pass-add-grid #passExpire{
-  width:100%;
-  min-width: 0;               /* 줄어듦 허용 */
-  padding-right: 10px;
+  width: 100%;
+  min-width: 0; /* ← 반드시 필요 (축소 허용) */
 }
+
+/* 태블릿: 2열 */
+@media (max-width: 900px){
+  .pass-add-grid{
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  }
+  /* 이름 + 수량 한 줄, 만료 + 버튼 한 줄 */
+}
+
+/* 스마트폰: 1열 */
+@media (max-width: 680px){
+  .pass-add-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
 
 /* 다회권: 조작 영역 (-1/+1 제거 후 레이아웃) — 모바일 안전 버전 */
 .pass-op-grid{
