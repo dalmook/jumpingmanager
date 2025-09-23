@@ -41,7 +41,6 @@ body{
   border-bottom:1px solid var(--line);
 }
 .safe-pad{ height: calc(var(--safe-top, 0px)); }
-.header-inner{ padding: 10px 16px 12px; }
 .header-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap }
 .brand{ display:flex; align-items:center; gap:8px }
 .logo-dot{ width:12px; height:12px; border-radius:50%; background:linear-gradient(135deg,#7be0ff,#6b8bff) }
@@ -212,24 +211,6 @@ body{
   display:block;
   margin: 2px;
 }
-
-
-  /* 관리자 상세 패널 게이지는 예전처럼 grid */
-#stampDots.dots{
-  display:grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap:6px;
-}
-
-/* 점(게이지 바) 너비 보장 */
-.dot{
-  width:100%;
-  height:14px;
-  border-radius:8px;
-  background:#f2f4ff;        /* 밝은 바탕 */
-  border:1px solid var(--line);
-}
-.dot.on{ background:var(--accent); }
 
 /* Inputs */
 input,select{
@@ -565,16 +546,15 @@ input,select{
 /* 다회권: 조작 영역 (-1/+1 삭제 후) */
 .pass-op-grid{
   display: grid;
-  grid-template-columns: minmax(0,1fr) 110px auto; /* select | N입력 | 버튼들 */
+  grid-template-columns: minmax(0,1fr) 110px auto;
   gap: 8px;
   align-items: center;
 }
-.pass-op-grid select{ width:100%; min-width:0; }   /* ← 중요 */
+.pass-op-grid select{ width:100%; min-width:0; }
 .pass-op-grid input[type="number"]{ width:110px; }
 .pass-op-grid .row{ display:flex; flex-wrap:wrap; gap:8px; }
 .pass-op-grid .wFull{ grid-column:1 / -1; }
 
-/* 태블릿: 2열 */
 @media (max-width: 900px){
   .pass-op-grid{
     grid-template-columns: minmax(0,1fr) minmax(0,1fr);
@@ -583,61 +563,14 @@ input,select{
   .pass-op-grid .wFull{ grid-column: span 2; }
 }
 
-/* 스마트폰: 1열 + 큰 터치 타겟 */
 @media (max-width: 680px){
   .pass-op-grid{ grid-template-columns: 1fr; }
   .pass-op-grid input[type="number"]{ width:100%; }
-  .pass-op-grid .row{ width:100%; }
+  .pass-op-grid .row{ width:100%; justify-content:stretch; }
   .pass-op-grid .row .btn{ flex:1 1 48%; }
+  .pass-op-grid .wFull{ grid-column:1; }
 }
 
-
-/* 숫자 입력 기본은 110px, 모바일에선 100%로 */
-.pass-op-grid input[type="number"]{
-  width: 110px;
-}
-
-/* -N / +N 묶음은 줄바꿈 허용 */
-.pass-op-grid .row{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* 삭제 버튼은 항상 전체 폭 */
-.pass-op-grid .wFull{
-  grid-column: 1 / -1;
-}
-
-/* 태블릿: 2열로 정렬 (넘침 방지) */
-@media (max-width: 900px){
-  .pass-op-grid{
-    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-  }
-  .pass-op-grid select{ grid-column: span 2; }
-  .pass-op-grid .wFull{ grid-column: span 2; }
-}
-
-/* 스마트폰: 완전 1열 */
-@media (max-width: 680px){
-  .pass-op-grid{
-    grid-template-columns: 1fr;
-  }
-  .pass-op-grid select{ grid-column: 1; }
-  .pass-op-grid input[type="number"]{
-    width: 100%;
-  }
-  .pass-op-grid .row{
-    width: 100%;
-    justify-content: stretch;
-  }
-  .pass-op-grid .row .btn{
-    flex: 1 1 48%;   /* -N / +N 반반 */
-  }
-  .pass-op-grid .wFull{
-    grid-column: 1;
-  }
-}
 
 /* 스마트폰에서 완전 1열 + 큰 터치 타겟 */
 @media (max-width: 560px){
@@ -696,19 +629,6 @@ input, select{
   /* 다회권 입력/조작 폼도 태블릿에선 1열로 넓게 */
   .pass-add-grid{
     grid-template-columns: 1fr;       /* 권종명 / 수량 / 만료일 / 버튼 모두 세로 */
-  }
-  .pass-op-grid{
-    grid-template-columns: 1fr;       /* 선택 셀렉트 / N 입력 / -N,+N 버튼 묶음 세로 */
-  }
-  .pass-op-grid input[type="number"]{
-    width: 100%;                       /* 숫자 입력 가로 꽉 차게 */
-  }
-  .pass-op-grid .row{
-    width: 100%;
-    flex-wrap: wrap;
-  }
-  .pass-op-grid .row .btn{
-    flex: 1 1 48%;                     /* -N / +N 반반 배치(줄바꿈 가능) */
   }
 
   /* 섹션 안 버튼/줄들이 너무 붙지 않도록 */
