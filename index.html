@@ -294,6 +294,16 @@
       </div>
     </section>
   </main>
+<!-- QR 스캔 모달 -->
+<div id="qrModal" class="qr-modal hidden" role="dialog" aria-modal="true" aria-label="QR 스캔">
+  <div class="qr-sheet">
+    <video id="qrVideo" autoplay playsinline></video>
+    <div class="row gap8 mt8">
+      <button id="qrClose" class="btn ghost small">닫기</button>
+      <span class="muted" id="qrHint">QR을 화면에 맞춰 주세요</span>
+    </div>
+  </div>
+</div>
 
     <!-- 디버그 패널 -->
   <button id="__dbgToggle" class="dbg-toggle hidden">디버그</button>   <!-- ← hidden 추가 -->
