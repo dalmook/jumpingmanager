@@ -526,30 +526,27 @@ input,select{
 
 /* 다회권: 조작 영역 */
 .pass-op-grid{
+/* 다회권: 조작 영역 (-1/+1 제거 후 레이아웃) */
+.pass-op-grid{
   display: grid;
-  grid-template-columns: 1.6fr auto 110px auto;
+  grid-template-columns: 1.6fr 110px auto; /* select | N입력 | (-N/+N) */
   gap: 8px;
   align-items: center;
 }
 .pass-op-grid select{ width:100%; min-width: 0; }
 .pass-op-grid input[type="number"]{ width:100%; }
-.wFull{ width:100%; }
 
-/* 태블릿/모바일에서 세로 스택 */
+/* 삭제 버튼은 전체폭 */
+.pass-op-grid .wFull{ grid-column: 1 / -1; }
+
+/* 태블릿/모바일에서 2열 → 1열 */
 @media (max-width: 900px){
-  .pass-add-grid{
-    grid-template-columns: 1fr 1fr;
-  }
-  .pass-add-grid #passExpire,
-  .pass-add-grid #btnAddPass{
-    grid-column: span 2;
-  }
   .pass-op-grid{
     grid-template-columns: 1fr 1fr;
   }
   .pass-op-grid select{ grid-column: span 2; }
-  .pass-op-grid .row.gap8:nth-of-type(1){ justify-content: start; }
   .pass-op-grid input#passDelta{ width: 100%; }
+  .pass-op-grid .row.gap8{ justify-content: start; }
   .pass-op-grid .wFull{ grid-column: span 2; }
 }
 
