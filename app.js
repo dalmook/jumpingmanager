@@ -120,7 +120,7 @@ function defaultExpireMonthsByName(name) {
   return 12;                            // 1년
 }
 
-// === QR 고해상도 PNG 다운로드 유틸 (제목 포함) ===
+// === QR 고해상도 PNG 다운로드 유틸 (제목: 점핑배틀[주황] + 화성병점점[검정]) ===
 function downloadHighResQR(text, filename = 'qr.png', size = 1024){
   const tmp = document.createElement('div');
   tmp.style.position='fixed';
@@ -141,8 +141,6 @@ function downloadHighResQR(text, filename = 'qr.png', size = 1024){
     let c = document.createElement('canvas');
     let ctx = c.getContext('2d');
 
-    // 최종 캔버스 크기 = QR 크기 + 상단 제목 영역
-    const title = "점핑배틀 화성병점점";
     const margin = 40;        // QR 주변 여백
     const titleHeight = 100;  // 제목 영역 높이
     c.width  = size + margin*2;
@@ -152,19 +150,34 @@ function downloadHighResQR(text, filename = 'qr.png', size = 1024){
     ctx.fillStyle = '#fff';
     ctx.fillRect(0,0,c.width,c.height);
 
-    // 제목 텍스트
-    ctx.fillStyle = '#000';
+    // === 제목: "점핑배틀 화성병점점" ===
     ctx.font = "bold 48px 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
-    ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText(title, c.width/2, margin/2);
+    ctx.textAlign = "center";
 
-    // QR 코드 원본을 임시 DOM에서 가져오기
+    const centerX = c.width / 2;
+    const title = "점핑배틀 화성병점점";
+    const splitIndex = 4; // "점핑배틀"(4글자) + " 화성병점점"
+
+    const leftText = title.slice(0, splitIndex);  // "점핑배틀"
+    const rightText = title.slice(splitIndex);    // " 화성병점점"
+
+    // 왼쪽 텍스트(주황)
+    const leftWidth = ctx.measureText(leftText).width;
+    ctx.fillStyle = "#ff6600"; // 주황
+    ctx.fillText(leftText, centerX - leftWidth/2, margin/2);
+
+    // 오른쪽 텍스트(검정)
+    ctx.fillStyle = "#000000";
+    ctx.fillText(rightText, centerX + leftWidth/2, margin/2);
+
+    // QR 코드 원본 그리기
     const cvs = tmp.querySelector('canvas');
     const img = tmp.querySelector('img');
 
     if (cvs) {
       ctx.drawImage(cvs, margin, margin+titleHeight, size, size);
+      triggerDownload();
     } else if (img) {
       const qrImg = new Image();
       qrImg.onload = ()=>{
@@ -174,8 +187,6 @@ function downloadHighResQR(text, filename = 'qr.png', size = 1024){
       qrImg.src = img.src;
       return; // load 후 실행
     }
-
-    triggerDownload();
 
     function triggerDownload(){
       const dataUrl = c.toDataURL('image/png');
@@ -189,6 +200,7 @@ function downloadHighResQR(text, filename = 'qr.png', size = 1024){
     }
   }, 200); // qrcodejs 렌더 타이밍 보정
 }
+
 
 
 
