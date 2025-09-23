@@ -1585,12 +1585,12 @@ const passTotal =
         <div class="summary-row mid muted">
           ${fmtPhone(d.phone)} · ${d.team || '-'}
         </div>
-        <div class="summary-row bottom perks">
-  🎫 다회권 <b>${passTotal}</b>　
-  🎁 무료 <b>${freeSum}</b>　
-  🏖️ 평일 <b>${freeWkSum}</b>　
-  🧊 슬러시 <b>${d.freeSlush||0}</b>
-        </div>
+ <div class="summary-row bottom perks">
+   <span class="perk">🎫 다회권 <b>${passTotal}</b></span>
+   <span class="perk">🎁 무료 <b>${freeSum}</b></span>
+   <span class="perk">🏖️ 평일 <b>${freeWkSum}</b></span>
+   <span class="perk">🧊 슬러시 <b>${d.freeSlush||0}</b></span>
+ </div>
       </div>
     
       <div id="selfStampGrid" class="stamp-grid"></div>
