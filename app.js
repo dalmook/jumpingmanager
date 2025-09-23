@@ -593,6 +593,8 @@ btnLogin?.addEventListener("click", async () => {
   try {
     await auth.signInWithEmailAndPassword(emailForAuth, pass);
     toast("로그인 성공");
+    byId("loginEmail").value = "";
+    byId("loginPass").value  = "";
   } catch (e) {
     console.error("login error", e);
     toast("로그인 실패: " + (e?.message || e));
