@@ -522,19 +522,35 @@ input,select{
 }
 
 
-/* 다회권: 조작 영역 (-1/+1 제거 후 레이아웃) — 모바일 안전 버전 */
+/* 다회권: 조작 영역 (-1/+1 삭제 후) */
 .pass-op-grid{
   display: grid;
-  grid-template-columns: minmax(0,1fr) 110px auto; /* select | N입력 | (-N/+N) */
+  grid-template-columns: minmax(0,1fr) 110px auto; /* select | N입력 | 버튼들 */
   gap: 8px;
   align-items: center;
 }
+.pass-op-grid select{ width:100%; min-width:0; }   /* ← 중요 */
+.pass-op-grid input[type="number"]{ width:110px; }
+.pass-op-grid .row{ display:flex; flex-wrap:wrap; gap:8px; }
+.pass-op-grid .wFull{ grid-column:1 / -1; }
 
-/* 폭 넘침 방지: select는 min-width:0 필수 */
-.pass-op-grid select{
-  width: 100%;
-  min-width: 0;
+/* 태블릿: 2열 */
+@media (max-width: 900px){
+  .pass-op-grid{
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  }
+  .pass-op-grid select,
+  .pass-op-grid .wFull{ grid-column: span 2; }
 }
+
+/* 스마트폰: 1열 + 큰 터치 타겟 */
+@media (max-width: 680px){
+  .pass-op-grid{ grid-template-columns: 1fr; }
+  .pass-op-grid input[type="number"]{ width:100%; }
+  .pass-op-grid .row{ width:100%; }
+  .pass-op-grid .row .btn{ flex:1 1 48%; }
+}
+
 
 /* 숫자 입력 기본은 110px, 모바일에선 100%로 */
 .pass-op-grid input[type="number"]{
