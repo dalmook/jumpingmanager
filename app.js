@@ -104,6 +104,22 @@ function addYears(date, n){
   return d;
 }
 
+// ✅ 로컬 타임존 기준 "N개월 뒤, 당일 23:59:59" Timestamp 만들기
+function tsEndOfDayMonthsAhead(nMonths) {
+  const dt = new Date();
+  dt.setMonth(dt.getMonth() + nMonths);
+  dt.setHours(23, 59, 59, 999);
+  return firebase.firestore.Timestamp.fromDate(dt);
+}
+
+// ✅ 권종명에 따른 기본 만료 개월 수
+function defaultExpireMonthsByName(name) {
+  if (name === '평일무료권') return 1;  // 1개월
+  if (name === '무료권') return 6;      // 6개월
+  // 다회권/10회권/20회권 등 일반권
+  return 12;                            // 1년
+}
+
 /**
  * 권종명에 따라 #passExpire 기본값을 설정
  * - 평일무료권: +1개월
@@ -420,14 +436,25 @@ auth.onAuthStateChanged(async(user)=>{
             const addFree = Math.floor(total / 10);
             const s1 = total % 10;
             const totalVisits = (d.totalVisits || 0) + N;
-            const freeCredits = (d.freeCredits || 0) + addFree;
+          
+            const passBatches = { ...(d.passBatches || {}) };
+            if (addFree > 0) {
+              const id = newBatchId();
+              passBatches[id] = {
+                name: '무료권',
+                count: addFree,
+                expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')),
+              };
+            }
+          
             tx.update(currentMemberRef, {
               stamp: s1,
-              freeCredits,
+              passBatches,
               totalVisits,
               updatedAt: ts()
             });
           });
+
           await addLog('stamp_add_n', { n: N, via:'qr' });
           renderMember((await currentMemberRef.get()).data());
           toast(`스탬프 ${N}개 적립 완료`);
@@ -928,15 +955,32 @@ btnSaveProfile?.addEventListener('click', async()=>{
 btnAddVisit?.addEventListener('click', async()=>{
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   try{
-    await db.runTransaction(async(tx)=>{
-      const snap=await tx.get(currentMemberRef);
-      const d=snap.data()||{};
-      let stamp=(d.stamp||0)+1;
-      let free =(d.freeCredits||0);
-      let total=(d.totalVisits||0)+1;
-      if(stamp>=10){ stamp=0; free+=1; }
-      tx.update(currentMemberRef, { stamp, freeCredits:free, totalVisits:total, updatedAt: ts() });
-    });
+await db.runTransaction(async(tx)=>{
+  const snap=await tx.get(currentMemberRef);
+  const d=snap.data()||{};
+
+  let stamp=(d.stamp||0)+1;
+  let total=(d.totalVisits||0)+1;
+
+  // 10개 달성 시: 무료권을 "배치"로 지급
+  const passBatches = { ...(d.passBatches || {}) };
+  if (stamp >= 10) {
+    stamp = 0;
+    const id = newBatchId();
+    passBatches[id] = {
+      name: '무료권',
+      count: 1,
+      expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')),
+    };
+  }
+
+  tx.update(currentMemberRef, {
+    stamp,
+    passBatches,
+    totalVisits: total,
+    updatedAt: ts()
+  });
+});
     await addLog('visit');
     const d=(await currentMemberRef.get()).data(); renderMember(d);
   }catch(e){ console.error('addVisit',e); toast('실패: '+e.message); }
@@ -1136,17 +1180,33 @@ btnAddStampN?.addEventListener('click', async () => {
   if(!isAdmin) return toast('운영자 전용'); if(!currentMemberRef) return toast('회원을 먼저 선택');
   const N = parsePosInt(stampDelta, 1);
   try {
-    await db.runTransaction(async (tx) => {
-      const snap = await tx.get(currentMemberRef);
-      const d = snap.data() || {};
-      const s0 = d.stamp || 0;
-      const total = s0 + N;
-      const addFree = Math.floor(total / 10);
-      const s1 = total % 10;
-      const totalVisits = (d.totalVisits || 0) + N;
-      const freeCredits = (d.freeCredits || 0) + addFree;
-      tx.update(currentMemberRef, { stamp: s1, freeCredits, totalVisits, updatedAt: ts() });
-    });
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(currentMemberRef);
+        const d = snap.data() || {};
+        const s0 = d.stamp || 0;
+        const total = s0 + N;
+        const addFree = Math.floor(total / 10);
+        const s1 = total % 10;
+        const totalVisits = (d.totalVisits || 0) + N;
+      
+        const passBatches = { ...(d.passBatches || {}) };
+        if (addFree > 0) {
+          const id = newBatchId();
+          passBatches[id] = {
+            name: '무료권',
+            count: addFree,
+            expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')),
+          };
+        }
+      
+        tx.update(currentMemberRef, {
+          stamp: s1,
+          passBatches,
+          totalVisits,
+          updatedAt: ts()
+        });
+      });
+
     await addLog('stamp_add_n', { n: N });
     renderMember((await currentMemberRef.get()).data());
   } catch (e) { console.error('stamp +N', e); toast('실패: ' + e.message); }
