@@ -615,8 +615,8 @@ function renderMember(d){
   if(mCar)       mCar.textContent  = d.car  || '-';
   if(mNote)      mNote.textContent = d.note || '-';
   if(mStamp)     mStamp.textContent = d.stamp || 0;
-  if(mFree)      mFree.textContent  = d.freeCredits || 0;
-  if(mFreeWk)    mFreeWk.textContent = d.freeWeekday || 0;
+  if (mFree)   mFree.textContent   = sumNamedValidBatches(d.passBatches, '무료권');
+  if (mFreeWk) mFreeWk.textContent = sumNamedValidBatches(d.passBatches, '평일무료권');
   if(mFreeSl)    mFreeSl.textContent = d.freeSlush || 0;
   if(mPassTotal) mPassTotal.textContent = sumPass(d.passes||{}, d.passBatches||{});
 
