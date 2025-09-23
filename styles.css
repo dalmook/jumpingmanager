@@ -676,4 +676,23 @@ input, select{
     flex-wrap: wrap;
   }
 }
+/* Seg-header: 탭 + QR 버튼 줄 */
+.seg-head{
+  display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;
+}
+
+/* QR 모달 */
+.qr-modal{
+  position:fixed; inset:0; z-index:2000;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(0,0,0,.45);
+}
+.qr-modal.hidden{ display:none; }
+.qr-sheet{
+  width:min(92vw,520px); background:#fff; border-radius:16px; padding:12px;
+  box-shadow: var(--shadow);
+}
+#qrVideo{
+  width:100%; display:block; border-radius:12px; background:#000;
+}
 
