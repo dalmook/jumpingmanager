@@ -512,33 +512,3 @@ input, select{ min-height:42px; }
   margin-top: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; background: #fafafa; cursor: pointer;
 }
 .btn-more:hover { background: #f3f3f3; }
-/* === 관리자: 회원 목록 아이템 강조 === */
-#adminList .item{
-  display:flex; align-items:center; gap:8px;
-  padding:8px 10px; border:1px solid #eee; border-radius:10px; background:#fff;
-}
-#adminList .item:hover{ background:#f9fbff; border-color:#dbe8ff; }
-
-/* 구분자 */
-#adminList .item .sep{
-  color:#c8d1dc; font-weight:700; margin:0 2px;
-}
-
-/* 이름: 굵게 */
-#adminList .item .m-name{
-  font-weight:800; color:#222;
-}
-
-/* 휴대폰: 배지(모노폰트) */
-#adminList .item .m-phone{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  background:#eef6ff; color:#0b6bcb;
-  padding:2px 8px; border-radius:999px; font-weight:700; letter-spacing:0.2px;
-}
-
-/* 팀명: 태그(말줄임 처리) */
-#adminList .item .m-team{
-  background:#f5f6f7; color:#555;
-  padding:2px 8px; border-radius:999px;
-  max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
