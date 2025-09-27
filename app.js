@@ -764,7 +764,13 @@ async function loadAllMembers(){
       const d = doc.data() || {};
       const div = document.createElement('div');
       div.className = 'item';
-      div.textContent = `${d.name || '-'}.${fmtPhone(d.phone || '')}.${d.team || '-'}`;
+      div.innerHTML = `
+  <span class="m-name">${(d.name || '-')}</span>
+  <span class="sep">•</span>
+  <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+  <span class="sep">•</span>
+  <span class="m-team">${(d.team || '-')}</span>
+`;
       div.dataset.id = doc.id;
       div.style.cursor = 'pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
@@ -802,7 +808,13 @@ async function searchMembers(){
       const d = doc.data() || {};
       const div = document.createElement('div');
       div.className='item';
-      div.textContent = `${d.name || '-'}.${fmtPhone(d.phone || '')}.${d.team || '-'}`;
+      div.innerHTML = `
+  <span class="m-name">${(d.name || '-')}</span>
+  <span class="sep">•</span>
+  <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+  <span class="sep">•</span>
+  <span class="m-team">${(d.team || '-')}</span>
+`;
       div.dataset.id = doc.id;
       div.style.cursor='pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
