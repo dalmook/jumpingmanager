@@ -458,3 +458,14 @@ input,select{
 @media (prefers-reduced-motion:reduce){
   *{ transition:none !important; animation:none !important }
 }
+
+/* 다회권 잔여 하이라이트 */
+#mPassTotal {
+  color: #1a3a7e;               /* 글자색 진하게 */
+}
+
+.stat.pill.highlight {
+  border: 2px solid #4CAF50;    /* 초록 테두리 */
+  background: #f6fff6;          /* 살짝 밝은 배경 */
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
+}
