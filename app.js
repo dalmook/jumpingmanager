@@ -766,9 +766,9 @@ async function loadAllMembers(){
       div.className = 'item';
       div.innerHTML = `
   <span class="m-name">${d.name || '-'}</span>
-  <span class="sep"> | </span>
+  <span class="sep"> 🔹 </span>
   <span class="m-phone">${fmtPhone(d.phone || '')}</span>
-  <span class="sep"> | </span>
+  <span class="sep"> 🔹 </span>
   <span class="m-team">${d.team || '-'}</span>
 `;
 
@@ -811,9 +811,9 @@ async function searchMembers(){
       div.className='item';
       div.innerHTML = `
   <span class="m-name">${d.name || '-'}</span>
-  <span class="sep"> | </span>
+  <span class="sep"> 🔹 </span>
   <span class="m-phone">${fmtPhone(d.phone || '')}</span>
-  <span class="sep"> | </span>
+  <span class="sep"> 🔹 </span>
   <span class="m-team">${d.team || '-'}</span>
 `;
 
