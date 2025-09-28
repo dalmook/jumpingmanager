@@ -636,9 +636,11 @@ body { line-height: 1.5; }
   #memberSection .section-card:has(#passList) #passName,
   #memberSection .section-card:has(#passList) #passCount,
   #memberSection .section-card:has(#passList) #passDelta {
-    max-width: none !important;  /* ← 우선순위 상승 */
-    width: 100% !important;  
-}
+    max-width: none !important;
+    width: 100% !important;
+  }
+} /* ← 이 두 줄이 필요 */
+
 
 /* 스크롤바 스타일(웹킷 계열) */
 #passList::-webkit-scrollbar, #stageList::-webkit-scrollbar {
@@ -652,4 +654,29 @@ body { line-height: 1.5; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+  
+/* PC에서 다회권 카드를 가로 전체로 */
+@media (min-width: 1024px) {
+  /* admin-actions는 2열 유지 */
+  .admin-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* 다회권 카드만 두 칸(span 2, = 전체 폭) 차지 */
+  #passCard {
+    grid-column: 1 / -1;   /* ← 한 줄 전체 */
+    width: 100%;
+    max-width: none;
+  }
+
+  /* 다회권 내부 입력/선택 UI 폭 제한 해제 */
+  #passCard input,
+  #passCard select {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  /* 다회권 입력 그리드도 약간 넉넉하게 */
+  #passCard .pass-add-grid {
+    grid-template-columns: minmax(0, 2fr) 140px minmax(0, 1fr) auto;
+  }
 }
