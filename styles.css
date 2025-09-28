@@ -535,3 +535,24 @@ input, select{ min-height:42px; }
 }
 
 
+/* 데스크톱에서만 적용 */
+@media (min-width: 1024px) {
+  /* 회원 상세 카드들이 가로로 배치되는 컨테이너가 flex/grid여도,
+     아래 카드 두 개는 한 줄 전체를 차지하도록 강제 */
+  #memberSection .section-card:has(#btnAddVisit),   /* 스탬프/무료권 카드 내부에 있는 버튼 */
+  #memberSection .section-card:has(#passList),      /* 다회권 카드 내부 리스트 */
+  #memberSection .card:has(#btnAddVisit),
+  #memberSection .card:has(#passList) {
+    flex: 1 0 100%;
+    width: 100%;
+    max-width: none;
+  }
+
+  /* 혹시 부모가 grid라면 한 줄 전체(1~끝) 차지 */
+  #memberSection .section-card:has(#btnAddVisit),
+  #memberSection .section-card:has(#passList),
+  #memberSection .card:has(#btnAddVisit),
+  #memberSection .card:has(#passList) {
+    grid-column: 1 / -1;
+  }
+}
