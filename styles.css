@@ -512,3 +512,24 @@ input, select{ min-height:42px; }
   margin-top: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; background: #fafafa; cursor: pointer;
 }
 .btn-more:hover { background: #f3f3f3; }
+
+
+/* 회원 목록 강조 */
+#adminList .item .m-name {
+  font-weight: 800;
+  color: #222;
+}
+#adminList .item .m-phone {
+  color: #0b6bcb;
+  font-weight: 700;
+}
+#adminList .item .m-team {
+  color: #555;
+  font-style: italic;
+}
+#adminList .item .sep {
+  color: #999;
+  font-weight: 900;
+  margin: 0 4px;
+}
+
