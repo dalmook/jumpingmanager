@@ -516,12 +516,13 @@ input, select{ min-height:42px; }
 
 /* 회원 목록 강조 */
 #adminList .item .m-name {
-  font-weight: 500;
+  font-weight: 800;   /* 굵게만, 폰트 크기는 상속 */
   color: #222;
+  font-size: inherit; /* ← 부모 크기 그대로 */
 }
 #adminList .item .m-phone {
   color: #0b6bcb;
-  font-weight: 500;
+  font-weight: 700;
 }
 #adminList .item .m-team {
   color: #555;
@@ -529,7 +530,8 @@ input, select{ min-height:42px; }
 }
 #adminList .item .sep {
   color: #999;
-  font-weight: 500;
+  font-weight: 900;
   margin: 0 4px;
 }
+
 
