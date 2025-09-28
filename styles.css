@@ -556,3 +556,37 @@ input, select{ min-height:42px; }
     grid-column: 1 / -1;
   }
 }
+
+/* 데스크톱에서 다회권 카드가 한 줄 전체 차지 + 내부 폭 제한 해제 */
+@media (min-width: 1024px) {
+
+  /* 카드 자체를 1열 전체로 */
+  #memberSection .section-card:has(#passList),
+  #memberSection .card:has(#passList) {
+    flex: 1 0 100%;
+    width: 100%;
+    max-width: none;
+    grid-column: 1 / -1; /* 부모가 grid여도 전체 칸 사용 */
+  }
+
+  /* 다회권 카드 내부의 입력/셀렉트 폭 제한(480px)을 해제하여 꽉 차게 */
+  #memberSection .section-card:has(#passList) #passSelect,
+  #memberSection .section-card:has(#passList) #passName,
+  #memberSection .section-card:has(#passList) #passCount,
+  #memberSection .section-card:has(#passList) #passDelta,
+  #memberSection .card:has(#passList) #passSelect,
+  #memberSection .card:has(#passList) #passName,
+  #memberSection .card:has(#passList) #passCount,
+  #memberSection .card:has(#passList) #passDelta {
+    max-width: none;   /* ← 480px 상한 해제 */
+    width: 100%;
+  }
+
+  /* 행이 좁지 않도록 줄바꿈/간격 유지 */
+  #memberSection .section-card:has(#passList) .row,
+  #memberSection .card:has(#passList) .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
