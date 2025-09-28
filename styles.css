@@ -179,7 +179,11 @@ input,select{
 }
 
 /* Danger Zone */
-.danger-zone{ background:#fff2f4; border:1px solid #ffe1e6; border-radius:16px }
+.danger-zone {
+  background: #fff2f4;
+  border: 1px solid #ffe1e6;
+  border-left: 4px solid #ff6b81;   /* 시각적 강조 */
+}
 
 /* FAB */
 .fab-area{ position:fixed; right:16px; bottom: calc(16px + var(--safe-bottom, 0px)); z-index:999 }
@@ -342,6 +346,7 @@ input,select{
 @media (max-width:520px){
   .mascot-badge{ width:70px; height:70px; top:56px; right:10px; }
   .mascot-badge img{ width:60px; height:60px; }
+  .log-right { min-width: auto; white-space: normal; text-align: left; }
 }
 
 /* Responsive */
@@ -502,10 +507,16 @@ input, select{ min-height:42px; }
 }
 .log-left { display: flex; gap: 10px; align-items: center; }
 .log-icon { font-size: 18px; }
-.log-main { display: flex; flex-direction: column; }
+.log-main { display: flex; flex-direction: column; max-width: 100%; }
 .log-title { font-weight: 700; }
-.log-detail { font-size: 12px; }
-.log-right { text-align: right; min-width: 180px; }
+.log-detail {
+  font-size: 12px; color: var(--muted);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.log-right {
+  text-align: right; min-width: 180px; white-space: nowrap;
+}
 .log-when { font-size: 12px; }
 .log-who  { font-size: 12px; }
 .btn-more {
@@ -515,6 +526,7 @@ input, select{ min-height:42px; }
 
 
 /* 회원 목록 강조 */
+#adminList .item { min-height: 44px; }  /* 터치 타겟 확보 */
 #adminList .item .m-name {
   font-weight: 800;   /* 굵게만, 폰트 크기는 상속 */
   color: #222;
@@ -589,4 +601,55 @@ input, select{ min-height:42px; }
     flex-wrap: wrap;
     gap: 8px;
   }
+}
+
+/* 포커스 가시성 */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* 버튼/인풋 포커스 일관화 */
+input:focus-visible, select:focus-visible, .btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255,122,0,.18), var(--shadow);
+  border-color: #ffd9b8;
+}
+
+body { line-height: 1.5; }
+.list.small .item { line-height: 1.4; }
+
+.btn:hover { filter: brightness(1.03); }
+.btn:disabled,
+.btn[disabled] {
+  opacity: .55; cursor: not-allowed; box-shadow: none;
+}
+
+/* 입력 필드 플레이스홀더 대비 */
+::placeholder { color: #b7b2ac; }
+
+/* 데스크톱에서 리스트 높이 상향 */
+@media (min-width:1024px){
+  #passList, #stageList { max-height: 420px; }
+  #memberSection .section-card:has(#passList) #passSelect,
+  #memberSection .section-card:has(#passList) #passName,
+  #memberSection .section-card:has(#passList) #passCount,
+  #memberSection .section-card:has(#passList) #passDelta {
+    max-width: none !important;  /* ← 우선순위 상승 */
+    width: 100% !important;  
+}
+
+/* 스크롤바 스타일(웹킷 계열) */
+#passList::-webkit-scrollbar, #stageList::-webkit-scrollbar {
+  width: 8px; height: 8px;
+}
+#passList::-webkit-scrollbar-thumb, #stageList::-webkit-scrollbar-thumb {
+  background: #ffd9b8; border-radius: 8px;
+}
+#passList::-webkit-scrollbar-track, #stageList::-webkit-scrollbar-track {
+  background: #fff7ef;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
 }
