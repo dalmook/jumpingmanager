@@ -1895,3 +1895,17 @@ qrClose  ?.addEventListener('click', stopQRScanner);
 window.addEventListener('pagehide', stopQRScanner); // 페이지 떠날 때 카메라 정리
 
 console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions + self tabs');
+
+// ✅ 회원목록에서 선택된 항목 하이라이트
+if (adminList) {
+  adminList.addEventListener('click', (e) => {
+    const item = e.target.closest('.item');
+    if (!item || !adminList.contains(item)) return;
+
+    // 기존 선택 해제
+    adminList.querySelectorAll('.item.selected').forEach(el => el.classList.remove('selected'));
+
+    // 새로 선택된 항목 강조
+    item.classList.add('selected');
+  });
+}
