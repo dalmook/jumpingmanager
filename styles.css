@@ -561,3 +561,76 @@ input,select{
   min-width: 72px;   /* 기본 버튼보다 살짝 넓게 */
   text-align: center;
 }
+/* ===== Contrast-first Tokens ===== */
+:root{
+  --text: #111827;       /* 본문 */
+  --text-muted: #4b5563; /* 라벨/보조 */
+  --line: #e5e7eb;       /* 경계선 */
+  --card: #ffffff;       /* 카드 bg */
+  --accent: #d45700;     /* 주황(강조/버튼) */
+  --accent-hover: #a63f00;
+  --accent-soft: #fff7ed;/* 주황 아주 연한 배경 */
+  --danger: #b91c1c;
+  --danger-hover: #991b1b;
+}
+
+/* 기본 색/타이포 정리 */
+html, body { color: var(--text); }
+.muted { color: var(--text-muted); }
+
+.card, .glass, .ios-card { background: var(--card); border-color: var(--line); }
+.section-head, .list .item, hr { border-color: var(--line); }
+
+/* 타이포(가독성) */
+body { line-height: 1.5; letter-spacing: .2px; }
+h2, h3 { letter-spacing: 0; }
+
+/* 버튼 일관화: 텍스트 대비 ↑ */
+.btn.primary { 
+  background: var(--accent); color:#fff; border:1px solid transparent;
+}
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.ghost {
+  background:#fff; color: var(--text); border:1px solid var(--line);
+}
+.btn.ghost:hover { background:#f9fafb; }
+.btn.danger {
+  background: var(--danger); color:#fff; border:1px solid transparent;
+}
+.btn.danger:hover { background: var(--danger-hover); }
+
+/* +N / -N 버튼 폭 살짝 키우기 (요청사항 반영) */
+#memberSection .btn-group .btn { min-width: 84px; }
+
+/* 입력창: 테두리 명확, 포커스 링 가시성 ↑ */
+input, select, textarea {
+  background:#fff; color:var(--text);
+  border:1px solid var(--line);
+}
+input:focus, select:focus, textarea:focus {
+  outline: 3px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-color: var(--accent);
+}
+
+/* 통계 배지/필(스탯 pill) 대비 강화 */
+.stat.pill {
+  background: var(--accent-soft);
+  border: 1px solid #fdba74;       /* 주황 300 */
+  color: #9a3412;                   /* 주황 800 */
+}
+
+/* 구분이 필요한 섹션 카드에 부드러운 배경 */
+.section-card.tidy-card {
+  background:#fff;
+  border:1px solid var(--line);
+}
+
+/* 링크(있다면) 명확한 대비 */
+a { color: #0ea5e9; }
+a:hover { text-decoration: underline; }
+
+/* 위험영역 시각 구분 강화 */
+.tidy-danger { 
+  border-left: 4px solid var(--danger);
+  background: #fff1f2;             /* 연분홍 */
+}
