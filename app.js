@@ -559,9 +559,9 @@ auth.onAuthStateChanged(async(user)=>{
             if (addFree > 0) {
               const id = newBatchId();
               passBatches[id] = {
-                name: '무료권',
+                name: '스탬프적립쿠폰',
                 count: addFree,
-                expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')), // 기본 만료 반영
+                expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('스탬프적립쿠폰')),
               };
             }
             
