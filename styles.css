@@ -465,3 +465,26 @@ input:focus,select:focus,textarea:focus{
   border-bottom:1px solid var(--line);
   margin-bottom:8px;
 }
+/* 스탬프/슬러시 무료권 나란히 배치 */
+.split-fields {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* 구분선 */
+.field-sep {
+  flex: 0 0 1px;
+  background: var(--line);
+  margin: 0 10px;
+}
+
+/* 모바일에서는 다시 세로 배치 */
+@media (max-width:1024px){
+  .split-fields {
+    flex-direction: column;
+  }
+  .field-sep {
+    display: none;
+  }
+}
