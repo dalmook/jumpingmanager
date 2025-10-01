@@ -791,7 +791,7 @@ async function loadAllMembers(reset = true){
   }
 
   try{
-    let q = db.collection('members').orderBy('phone').limit(PAGE_SIZE);
+    let q = db.collection('members').orderBy('name').limit(PAGE_SIZE);
     if (__membersCursor) q = q.startAfter(__membersCursor);
 
     const qs = await q.get();   // ← onSnapshot 사용 안 함(읽기 절약)
