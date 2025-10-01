@@ -807,18 +807,16 @@ async function loadAllMembers(reset = true){
       return;
     }
 
-      const frag = document.createDocumentFragment();
-      qs.forEach(doc=>{
-        const d = doc.data() || {};
-        const div = document.createElement('div');
-        // 👇 3열 고정용 클래스 추가
-        div.className = 'item member-row';
-        // 👇 구분자 span( | ) 제거, 3칸으로 고정
-        div.innerHTML = `
-          <span class="m-name">${d.name || '-'}</span>
-          <span class="m-phone">${fmtPhone(d.phone || '')}</span>
-          <span class="m-team">${d.team || '-'}</span>
-        `;
+      const div = document.createElement('div');
+      div.className = 'item member-row';
+      div.innerHTML = `
+        <span class="m-name">${d.name || '-'}</span>
+        <span class="sep">|</span>
+        <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+        <span class="sep">|</span>
+        <span class="m-team">${d.team || '-'}</span>
+      `;
+
         div.dataset.id = doc.id;
         div.style.cursor = 'pointer';
         div.addEventListener('click', ()=> openMember(doc.id));
@@ -863,16 +861,16 @@ async function searchMembers(){
     }
     
     // 렌더 부분도 동일하게 3열 고정
-    const frag = document.createDocumentFragment();
-    docs.forEach(doc=>{
-      const d = doc.data() || {};
       const div = document.createElement('div');
       div.className='item member-row';
       div.innerHTML = `
         <span class="m-name">${d.name || '-'}</span>
+        <span class="sep">|</span>
         <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+        <span class="sep">|</span>
         <span class="m-team">${d.team || '-'}</span>
       `;
+
       div.dataset.id = doc.id;
       div.style.cursor='pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
