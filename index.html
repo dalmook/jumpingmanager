@@ -115,12 +115,15 @@
     </div>
 
     <!-- 1) 기본 정보 (접기/펼치기 가능) -->
-    <details class="section-card tidy-card" id="profileSection">
-      <summary class="section-row">
-        <h3 class="group-title">기본 정보</h3>
-        <button id="btnSaveProfile" class="btn primary small">프로필 저장</button>
-      </summary>
-      <div class="grid three">
+      <details class="section-card tidy-card" id="profileSection">
+        <summary class="section-row">
+          <div class="group-title-wrap">
+            <span class="toggle-icon">▶</span>
+            <h3 class="group-title">기본 정보</h3>
+          </div>
+          <button id="btnSaveProfile" class="btn primary small">프로필 저장</button>
+        </summary>
+        <div class="grid three">
         <label for="editName">이름</label>
         <input id="editName" placeholder="이름" />
     
