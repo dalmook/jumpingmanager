@@ -446,3 +446,12 @@ input:focus,select:focus,textarea:focus{
   overflow:hidden;
   text-overflow:ellipsis;
 }
+/* 회원 상세 상단 요약 영역 고정 */
+.member-head {
+  position: sticky;
+  top: calc(10px + var(--safe-top, 0px)); /* 상단 안전 패딩 + 약간의 여백 */
+  z-index: 5;
+  background: #fff;                       /* 스크롤 시 카드 배경 유지 */
+  padding-bottom: 8px;                    /* 아래 살짝 여백 */
+  margin-bottom: 12px;                    /* 본문과 간격 */
+}
