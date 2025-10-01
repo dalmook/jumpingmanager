@@ -447,3 +447,33 @@ input:focus,select:focus,textarea:focus{
   text-overflow:ellipsis;
 }
 
+:root{
+  --side: 260px;   /* 사이드바 폭 (데스크탑 기준) */
+  --gap: 20px;     /* 사이드-상세 간격 */
+  --pad: 24px;     /* 앱 좌우 패딩 */
+  --kpi-top: calc(var(--safe-top, 0px) + 60px); /* 헤더 높이만큼 보정 */
+}
+
+/* 데스크탑 이상에서 KPI 고정 */
+@media (min-width:1024px){
+  .member-head.global-kpi{
+    position: fixed;
+    top: var(--kpi-top);
+    left: calc(var(--pad) + var(--side) + var(--gap));
+    right: var(--pad);
+    z-index: 1001;
+    background: rgba(255,255,255,.94);
+    backdrop-filter: saturate(180%) blur(10px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 12px 16px;
+  }
+  .kpi-spacer{ height: 92px; } /* 고정된 박스만큼 여백 */
+}
+
+/* 초와이드 화면에서 사이드바 더 넓히는 경우 보정 */
+@media (min-width:1440px){
+  :root{ --side: 280px; }
+}
+
