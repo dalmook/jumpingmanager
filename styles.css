@@ -407,3 +407,10 @@ input:focus,select:focus,textarea:focus{
 
 /* 위험영역 강조 */
 .tidy-danger{border-left:4px solid var(--danger); background:#fff1f2}
+/* 관리자 조정 버튼(＋／－) 강화 */
+.btn-group .btn {
+  font-size: 20px;      /* 글자 크기 크게 */
+  font-weight: 900;     /* 두껍게 */
+  min-width: 64px;      /* 버튼 폭 확보 */
+  text-align: center;
+}
