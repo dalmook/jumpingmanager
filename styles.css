@@ -414,3 +414,14 @@ input:focus,select:focus,textarea:focus{
   min-width: 64px;      /* 버튼 폭 확보 */
   text-align: center;
 }
+/* 회원목록 5칸 고정: 이름 | 번호 | 팀 (번호칸만 살짝 넓게) */
+.member-row{
+  display:grid;
+  grid-template-columns: 1fr auto 1.3fr auto 1fr;
+  align-items:center;
+  gap:6px;
+}
+.member-row .m-name{ font-weight:800; }
+.member-row .m-phone{ font-weight:800; color:#0b6bcb; }
+.member-row .m-team{ color:#555; }
+.member-row .sep{ color:#999; font-weight:900; text-align:center; }
