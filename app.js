@@ -812,7 +812,7 @@ async function loadAllMembers(reset = true){
       div.innerHTML = `
         <span class="m-name">${d.name || '-'}</span>
         <span class="sep">|</span>
-        <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+        <span class="m-phone">${shortPhone(d.phone || '')}</span>
         <span class="sep">|</span>
         <span class="m-team">${d.team || '-'}</span>
       `;
