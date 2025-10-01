@@ -454,3 +454,14 @@ input:focus,select:focus,textarea:focus{
   --kpi-top: calc(var(--safe-top, 0px) + 60px); /* 헤더 높이만큼 보정 */
 }
 
+/* details summary 클릭 영역 */
+#profileSection summary {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+}
+#profileSection[open] summary {
+  border-bottom:1px solid var(--line);
+  margin-bottom:8px;
+}
