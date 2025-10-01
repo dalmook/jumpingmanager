@@ -28,6 +28,14 @@ if (sessionStorage.getItem('__just_signed_up')) {
   // toast('환영합니다! 초기 설정을 불러왔어요.');
 }
 
+function shortPhone(raw){
+  const p = canonPhone(raw); // 숫자만 추출 (01012345678)
+  if (!p || p.length < 11) return fmtPhone(raw);
+
+  // '010' 제거 후 뒤 8자리 -> 1234-5678 형태
+  const last8 = p.slice(-8);
+  return last8.slice(0,4) + '-' + last8.slice(4);
+}
 
 // 도메인(점 포함 필수)
 const PHONE_DOMAIN = 'phone.local';
