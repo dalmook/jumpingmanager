@@ -114,32 +114,33 @@
       <div id="stampDots" class="dots"></div>
     </div>
 
-    <!-- 1) 기본 정보 -->
-    <section class="section-card tidy-card">
-      <div class="section-row">
+    <!-- 1) 기본 정보 (접기/펼치기 가능) -->
+    <details class="section-card tidy-card" id="profileSection">
+      <summary class="section-row">
         <h3 class="group-title">기본 정보</h3>
         <button id="btnSaveProfile" class="btn primary small">프로필 저장</button>
-      </div>
+      </summary>
       <div class="grid three">
         <label for="editName">이름</label>
         <input id="editName" placeholder="이름" />
-
+    
         <label for="editTeam">팀명</label>
         <input id="editTeam" placeholder="팀명" />
-
+    
         <label for="editEmail">이메일</label>
         <input id="editEmail" placeholder="이메일" />
-
+    
         <label for="editCar">차량번호</label>
         <input id="editCar" placeholder="차량번호 (선택)" />
-
+    
         <label for="editNote">비고</label>
         <input id="editNote" placeholder="비고 (선택)" />
-
+    
         <label>전화번호</label>
         <input disabled value="전화번호는 문서 키 기준" />
       </div>
-    </section>
+    </details>
+
 
     <!-- 2) 방문/스탬프/무료권 -->
     <section class="section-card tidy-card">
