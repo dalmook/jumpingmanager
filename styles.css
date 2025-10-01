@@ -425,3 +425,9 @@ input:focus,select:focus,textarea:focus{
 .member-row .m-phone{ font-weight:800; color:#0b6bcb; }
 .member-row .m-team{ color:#555; }
 .member-row .sep{ color:#999; font-weight:900; text-align:center; }
+.member-row .m-phone {
+  font-size: clamp(11px, 2.5vw, 14px);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
