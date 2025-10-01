@@ -388,18 +388,19 @@ const passPresetWk   = document.getElementById('passPresetWk');
 
 passPresetFree?.addEventListener('click', ()=>{
   if(passName&&passCount){
-    passName.value='무료권';
+    passName.value='스탬프적립쿠폰';
     passCount.value='1';
-    setExpireDefaultByName('무료권');
+    setExpireDefaultByName('스탬프적립쿠폰');
   }
 });
 passPresetWk?.addEventListener('click', ()=>{
   if(passName&&passCount){
-    passName.value='평일무료권';
+    passName.value='평일이용권';
     passCount.value='1';
-    setExpireDefaultByName('평일무료권');
+    setExpireDefaultByName('평일이용권');
   }
 });
+
 
 
 
