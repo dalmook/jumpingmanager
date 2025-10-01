@@ -845,22 +845,35 @@ async function searchMembers(){
   adminList.innerHTML = '<div class="muted">검색 중…</div>';
   try{
     let docs = [];
-    if(q.length>=7){
+    if (q.length >= 7) {
+      // 정확 매칭(문서키=전화번호) 우선
       const snap = await db.collection('members').doc(q).get();
-      if(snap.exists) docs=[snap];
-      else{
-        const qs = await db.collection('members').orderBy('phone').startAt(q).endAt(q+'\uf8ff').limit(50).get();
+      if (snap.exists) {
+        docs = [snap];
+      } else {
+        // 전화번호 prefix 검색
+        const qs = await db.collection('members')
+          .orderBy('phone')
+          .startAt(q).endAt(q+'\uf8ff')
+          .limit(50).get();
         docs = qs.docs;
       }
     } else {
-      // 예전: orderBy('phone') → 변경: orderBy('name') 로 가져와서 endsWith 필터
+      // 끝자리 검색: 이름순으로 받아와서 endsWith 필터
       const qs = await db.collection('members').orderBy('name').limit(500).get();
-      docs = qs.docs.filter(d=>(canonPhone(d.data().phone||'')).endsWith(q));
+      docs = qs.docs.filter(d => (canonPhone(d.data().phone||'')).endsWith(q));
     }
-    
-    // 렌더 부분도 동일하게 3열 고정
+
+    if (!docs.length){
+      adminList.innerHTML = '<div class="muted">검색 결과 없음</div>';
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    docs.forEach(doc => {
+      const d = doc.data() || {};
       const div = document.createElement('div');
-      div.className='item member-row';
+      div.className = 'item member-row';
       div.innerHTML = `
         <span class="m-name">${d.name || '-'}</span>
         <span class="sep">|</span>
@@ -868,15 +881,21 @@ async function searchMembers(){
         <span class="sep">|</span>
         <span class="m-team">${d.team || '-'}</span>
       `;
-
       div.dataset.id = doc.id;
-      div.style.cursor='pointer';
+      div.style.cursor = 'pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
       frag.appendChild(div);
     });
-    adminList.innerHTML=''; adminList.appendChild(frag);
-  }catch(e){ console.error('searchMembers',e); adminList.innerHTML='검색 실패: '+e.message; }
+
+    adminList.innerHTML = '';
+    adminList.appendChild(frag);
+
+  } catch(e) {
+    console.error('searchMembers', e);
+    adminList.innerHTML = '검색 실패: ' + (e?.message || e);
+  }
 }
+
 
 
 function renderStageInputs(stages = {}) {
