@@ -1775,8 +1775,8 @@ async function loadSelf(user){
       return;
     }
     const d = snap.data() || {};
-const freeSum   = sumNamedValidBatches(d.passBatches, '무료권');
-const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
+const freeSum   = sumNamedValidBatches(d.passBatches, '스탬프적립쿠폰');
+const freeWkSum = sumNamedValidBatches(d.passBatches, '평일이용권');
 
 // 🎫 다회권 총 잔여(무료권·평일무료권 제외, 배치+레거시 합산)
 const passTotal = 
