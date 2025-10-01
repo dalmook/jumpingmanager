@@ -136,6 +136,21 @@ input:focus,select:focus,textarea:focus{
 
 /* ========== Layouts ========== */
 .admin-grid{display:grid; grid-template-columns:1fr; gap:16px; align-items:start; margin-top:12px}
+/* 데스크탑에서 사이드바 슬림, 상세 넓게 */
+@media (min-width:1024px){
+  .admin-grid{
+    grid-template-columns: 260px minmax(0,1fr);  /* 좌 260px | 우 나머지 전체 */
+    gap:20px;                                    /* 살짝 여유 */
+  }
+}
+
+/* 초와이드(1440px↑)에서는 사이드바 조금만 키워 가독성 확보(선택) */
+@media (min-width:1440px){
+  .admin-grid{
+    grid-template-columns: 280px minmax(0,1fr);
+  }
+}
+
 .stick-left{position:sticky; top:calc(10px + var(--safe-top,0px))}
 
 .search-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
