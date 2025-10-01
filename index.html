@@ -87,27 +87,31 @@
     <h2>회원 상세</h2>
   </div>
 
-  <div class="member-card" id="memberCard">
-    <!-- KPI 요약 -->
-    <div class="member-head">
-      <div class="stats">
-        <div class="stat pill">
-          <div class="label">스탬프(10)</div><div id="mStamp" class="value">0</div>
-        </div>
-        <div class="stat pill">
-          <div class="label">스탬프적립쿠폰</div><div id="mFree" class="value">0</div>
-        </div>
-        <div class="stat pill">
-          <div class="label">평일이용권</div><div id="mFreeWk" class="value">0</div>
-        </div>
-        <div class="stat pill">
-          <div class="label">슬러시 무료권</div><div id="mFreeSl" class="value">0</div>
-        </div>
-        <div class="stat pill highlight">
-          <div class="label">다회권 잔여</div><div id="mPassTotal" class="value">0</div>
-        </div>
+<div class="member-card" id="memberCard">
+  <!-- KPI 요약 -->
+  <div class="member-head global-kpi">
+    <div class="stats">
+      <div class="stat pill">
+        <div class="label">스탬프(10)</div><div id="mStamp" class="value">0</div>
+      </div>
+      <div class="stat pill">
+        <div class="label">스탬프적립쿠폰</div><div id="mFree" class="value">0</div>
+      </div>
+      <div class="stat pill">
+        <div class="label">평일이용권</div><div id="mFreeWk" class="value">0</div>
+      </div>
+      <div class="stat pill">
+        <div class="label">슬러시 무료권</div><div id="mFreeSl" class="value">0</div>
+      </div>
+      <div class="stat pill highlight">
+        <div class="label">다회권 잔여</div><div id="mPassTotal" class="value">0</div>
       </div>
     </div>
+  </div>
+
+  <!-- 고정된 KPI만큼 아래 내용이 가려지지 않도록 스페이서 -->
+  <div class="kpi-spacer" aria-hidden="true"></div>
+
 
     <!-- 스탬프 진행 막대 -->
     <div class="progress">
