@@ -856,25 +856,23 @@ async function searchMembers(){
         const qs = await db.collection('members').orderBy('phone').startAt(q).endAt(q+'\uf8ff').limit(50).get();
         docs = qs.docs;
       }
-    }else{
-      const qs = await db.collection('members').orderBy('phone').limit(500).get();
+    } else {
+      // 예전: orderBy('phone') → 변경: orderBy('name') 로 가져와서 endsWith 필터
+      const qs = await db.collection('members').orderBy('name').limit(500).get();
       docs = qs.docs.filter(d=>(canonPhone(d.data().phone||'')).endsWith(q));
     }
-
-    if(!docs.length){ adminList.innerHTML = '<div class="muted">검색 결과 없음</div>'; return; }
+    
+    // 렌더 부분도 동일하게 3열 고정
     const frag = document.createDocumentFragment();
     docs.forEach(doc=>{
       const d = doc.data() || {};
       const div = document.createElement('div');
-      div.className='item';
+      div.className='item member-row';
       div.innerHTML = `
-  <span class="m-name">${d.name || '-'}</span>
-  <span class="sep"> | </span>
-  <span class="m-phone">${fmtPhone(d.phone || '')}</span>
-  <span class="sep"> | </span>
-  <span class="m-team">${d.team || '-'}</span>
-`;
-
+        <span class="m-name">${d.name || '-'}</span>
+        <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+        <span class="m-team">${d.team || '-'}</span>
+      `;
       div.dataset.id = doc.id;
       div.style.cursor='pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
