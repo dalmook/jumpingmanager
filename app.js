@@ -786,27 +786,27 @@ async function loadAllMembers(reset = true){
   if (reset) {
     adminList.innerHTML = '<div class="muted">불러오는 중…</div>';
     __membersCursor = null;
-  } else {
-    // 추가 로딩 표시(선택)
   }
 
-  try{
+  try {
     let q = db.collection('members').orderBy('name').limit(PAGE_SIZE);
     if (__membersCursor) q = q.startAfter(__membersCursor);
 
-    const qs = await q.get();   // ← onSnapshot 사용 안 함(읽기 절약)
+    const qs = await q.get();
     if (reset) adminList.innerHTML = '';
 
     if (qs.empty) {
       if (!adminList.children.length) {
         adminList.innerHTML = '<div class="muted">회원 없음</div>';
       }
-      // 더 이상 로드할 게 없으면 버튼 숨김
       const btn = document.getElementById('btnMoreMembers');
       if (btn) btn.classList.add('hidden');
       return;
     }
 
+    const frag = document.createDocumentFragment();
+    qs.forEach(doc=>{
+      const d = doc.data() || {};
       const div = document.createElement('div');
       div.className = 'item member-row';
       div.innerHTML = `
@@ -816,26 +816,24 @@ async function loadAllMembers(reset = true){
         <span class="sep">|</span>
         <span class="m-team">${d.team || '-'}</span>
       `;
+      div.dataset.id = doc.id;
+      div.style.cursor = 'pointer';
+      div.addEventListener('click', ()=> openMember(doc.id));
+      frag.appendChild(div);
+    });
+    adminList.appendChild(frag);
 
-        div.dataset.id = doc.id;
-        div.style.cursor = 'pointer';
-        div.addEventListener('click', ()=> openMember(doc.id));
-        frag.appendChild(div);
-      });
-      adminList.appendChild(frag);
-
-    // 다음 페이지 커서 갱신
     __membersCursor = qs.docs[qs.docs.length - 1];
 
-    // "더 보기" 버튼 노출 보장
     const btn = ensureMoreMembersButton();
     if (btn) btn.classList.remove('hidden');
 
-  }catch(e){
-    console.error('loadAllMembers',e);
+  } catch(e) {
+    console.error('loadAllMembers', e);
     adminList.innerHTML = '로드 실패: '+(e?.message||e);
   }
 }
+
 
 
 async function searchMembers(){
