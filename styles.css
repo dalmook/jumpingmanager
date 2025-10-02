@@ -511,3 +511,16 @@ input:focus,select:focus,textarea:focus{
     display: none;
   }
 }
+/* 그리드(two) 내부에 있어도 스테이지는 전체폭 사용 */
+.grid.two .stage-full { grid-column: 1 / -1; }
+
+/* 스테이지 접기/펼치기 summary */
+#stageSection summary{
+  display:flex; justify-content:space-between; align-items:center; cursor:pointer;
+}
+#stageSection[open] summary{
+  border-bottom:1px solid var(--line); margin-bottom:8px;
+}
+/* ▶ 아이콘 회전 */
+#stageSection .toggle-icon{ display:inline-block; transition:transform .2s ease; }
+#stageSection[open] .toggle-icon{ transform:rotate(90deg); }  /* ▶ → ▼ */
