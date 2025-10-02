@@ -254,6 +254,9 @@ input:focus,select:focus,textarea:focus{
 .dbg-head{display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border-bottom:1px solid var(--line)}
 .dbg-head button{margin-left:6px; padding:6px 10px; border:0; border-radius:10px; background:#ff7a00; color:#fff}
 #__dbgArea{flex:1; width:100%; background:#fff7ef; color:#2c2f42; border:0; padding:10px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; outline:none; resize:none; line-height:1.4}
+/* ✅ 디버그 UI 완전 비표시(코드 보존) */
+.dbg-toggle,
+.dbg-panel { display: none !important; }
 
 /* Tab panes */
 .tabpane{display:none}
