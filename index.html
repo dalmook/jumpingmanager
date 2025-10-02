@@ -229,11 +229,18 @@
         <h3>보유 다회권</h3>
         <div id="passList" class="list small"></div>
       </section>
-      <section class="section-card">
-        <h3>스테이지 기록</h3>
-        <div id="stageList" class="list small"></div>
-        <button id="btnSaveStages" class="btn primary small mt8">스테이지 저장</button>
-      </section>
+    <!-- ✅ 스테이지 기록: 전체폭 + 접기/펼치기 (기본 접힘) -->
+    <details class="section-card tidy-card stage-full" id="stageSection">
+      <summary class="section-row">
+        <div class="group-title-wrap">
+          <span class="toggle-icon">▶</span>
+          <h3 class="group-title">스테이지 기록</h3>
+        </div>
+        <button id="btnSaveStages" class="btn primary small">스테이지 저장</button>
+      </summary>
+    
+      <div id="stageList" class="list small mt8"></div>
+    </details>
     </div>
 
     <!-- 5) 활동 로그 -->
