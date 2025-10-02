@@ -245,15 +245,23 @@
     </details>
     </div>
 
-    <!-- 5) 활동 로그 -->
-    <div class="row between mt8">
-      <h3 style="margin:0;">활동 로그</h3>
-      <div class="btns">
-        <button id="btnReloadLogs" type="button" class="btn ghost small">새로고침</button>
-        <button id="btnMoreLogs"   type="button" class="btn ghost small">더 보기</button>
-      </div>
-    </div>
-    <div id="logList" class="list small mt8"></div>
+    <!-- ✅ 활동로그: 접기/펼치기 (기본 접힘) -->
+    <details class="section-card tidy-card" id="logsSection">
+      <summary class="section-row">
+        <div class="group-title-wrap">
+          <span class="toggle-icon">▶</span>
+          <h3 class="group-title">활동 로그</h3>
+        </div>
+        <!-- 버튼은 그대로 유지 (ID 변경 금지) -->
+        <div class="row">
+          <button id="btnReloadLogs" class="btn small">새로고침</button>
+          <button id="btnMoreLogs"   class="btn ghost small">더 보기</button>
+        </div>
+      </summary>
+    
+      <div id="logList" class="list small"></div>
+    </details>
+
 
     <!-- 6) 위험 작업 (완전히 분리) -->
     <section class="danger-zone section-card tidy-danger">
