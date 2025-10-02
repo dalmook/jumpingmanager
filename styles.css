@@ -465,6 +465,28 @@ input:focus,select:focus,textarea:focus{
   border-bottom:1px solid var(--line);
   margin-bottom:8px;
 }
+
+/* summary 안쪽 아이콘 + 텍스트 정렬 */
+#profileSection summary .group-title-wrap {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:900;
+  font-size:16px;
+}
+
+/* 기본 아이콘 모양 */
+#profileSection summary .toggle-icon {
+  display:inline-block;
+  transition:transform 0.2s ease;
+}
+
+/* 펼쳐졌을 때 아이콘 회전 */
+#profileSection[open] summary .toggle-icon {
+  transform:rotate(90deg); /* ▶ → ▼ */
+}
+
+
 /* 스탬프/슬러시 무료권 나란히 배치 */
 .split-fields {
   display: flex;
