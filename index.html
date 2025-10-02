@@ -148,39 +148,33 @@
 
 
 <!-- 2) 방문/스탬프/스탬프적립쿠폰 -->
-<section class="section-card tidy-card">
+<section class="section-card">
   <h3 class="group-title">방문스탬프·슬러시 관리</h3>
 
-  <div class="row split-fields">
-    <!-- B. 스탬프 조정 -->
-    <div class="field-group">
-      <label class="field-label" for="stampDelta">스탬프 조정</label>
-      <div class="field-row">
-        <input id="stampDelta" type="number" min="1" step="1" value="1" class="w110" />
-        <div class="btn-group">
-          <button id="btnAddStampN" class="btn primary">＋</button>
-          <button id="btnSubStampN" class="btn ghost">－</button>
-        </div>
+  <div class="grid two mt8">
+    <!-- ✅ 왼쪽: 스탬프 조정 -->
+    <div class="panel-sub">
+      <h4 class="sub-title">스탬프 조정</h4>
+      <div class="row gap8 wrap mt8">
+        <input id="stampDelta" type="number" value="1" min="1" class="w110" />
+        <button id="btnAddStampN" class="btn small">+N 스탬프</button>
+        <button id="btnSubStampN" class="btn small danger">-N 스탬프</button>
+        <button id="btnResetStamp" class="btn small warn">스탬프 초기화</button>
       </div>
-      <p class="hint">10개마다 <b>스탬프적립쿠폰 1매 자동 적립</b></p>
     </div>
 
-    <!-- 구분선 -->
-    <div class="field-sep"></div>
-
-    <!-- C. 슬러시 무료권 조정 -->
-    <div class="field-group">
-      <label class="field-label" for="freeSlDelta">슬러시 무료권</label>
-      <div class="field-row">
-        <input id="freeSlDelta" type="number" min="1" step="1" value="1" class="w110" />
-        <div class="btn-group">
-          <button id="btnAddFreeSlN" class="btn primary">＋</button>
-          <button id="btnSubFreeSlN" class="btn ghost">－</button>
-        </div>
+    <!-- ✅ 오른쪽: 슬러시 무료권 -->
+    <div class="panel-sub">
+      <h4 class="sub-title">슬러시 무료권</h4>
+      <div class="row gap8 wrap mt8">
+        <input id="freeSlDelta" type="number" value="1" min="1" class="w110" />
+        <button id="btnAddFreeSlN" class="btn small">+N 슬러시</button>
+        <button id="btnSubFreeSlN" class="btn small danger">-N 슬러시</button>
       </div>
     </div>
   </div>
 </section>
+
 
 
     <!-- 3) 다회권 관리 -->
