@@ -559,3 +559,13 @@ input:focus,select:focus,textarea:focus{
   font-weight:900;
   font-size:16px;
 }
+/* 반반 레이아웃 내부 소제목 */
+.panel-sub h4.sub-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
