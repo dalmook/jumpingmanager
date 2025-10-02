@@ -524,3 +524,8 @@ input:focus,select:focus,textarea:focus{
 /* ▶ 아이콘 회전 */
 #stageSection .toggle-icon{ display:inline-block; transition:transform .2s ease; }
 #stageSection[open] .toggle-icon{ transform:rotate(90deg); }  /* ▶ → ▼ */
+#btnClearSearch {
+  padding: 0 10px;
+  font-size: 16px;
+  line-height: 1;
+}
