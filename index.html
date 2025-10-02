@@ -155,24 +155,30 @@
     <!-- ✅ 왼쪽: 스탬프 조정 -->
     <div class="panel-sub">
       <h4 class="sub-title">스탬프 조정</h4>
-      <div class="row gap8 wrap mt8">
-        <input id="stampDelta" type="number" value="1" min="1" class="w110" />
-        <button id="btnAddStampN" class="btn small">+</button>
-        <button id="btnSubStampN" class="btn small danger">-</button>
+      <div class="field-row">
+        <input id="stampDelta" type="number" min="1" step="1" value="1" class="w110" />
+        <div class="btn-group">
+          <button id="btnAddStampN" class="btn primary">+</button>
+          <button id="btnSubStampN" class="btn ghost">-</button>
+        </div>
       </div>
+      <p class="hint">10개마다 <b>무료권 1매 자동 적립</b></p>
     </div>
 
     <!-- ✅ 오른쪽: 슬러시 무료권 -->
     <div class="panel-sub">
       <h4 class="sub-title">슬러시 무료권</h4>
-      <div class="row gap8 wrap mt8">
-        <input id="freeSlDelta" type="number" value="1" min="1" class="w110" />
-        <button id="btnAddFreeSlN" class="btn small">+</button>
-        <button id="btnSubFreeSlN" class="btn small danger">-</button>
+      <div class="field-row">
+        <input id="freeSlDelta" type="number" min="1" step="1" value="1" class="w110" />
+        <div class="btn-group">
+          <button id="btnAddFreeSlN" class="btn primary">+</button>
+          <button id="btnSubFreeSlN" class="btn ghost">-</button>
+        </div>
       </div>
     </div>
   </div>
 </section>
+
 
 
 
