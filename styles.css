@@ -530,3 +530,32 @@ input:focus,select:focus,textarea:focus{
   line-height: 1;
 }
 #btnClearSearch { padding: 0 10px; font-size: 16px; line-height: 1; }
+/* 활동로그 접기/펼치기 summary */
+#logsSection summary{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+}
+#logsSection[open] summary{
+  border-bottom:1px solid var(--line);
+  margin-bottom:8px;
+}
+
+/* ▶ 아이콘 회전(펼침 표시) */
+#logsSection .toggle-icon{
+  display:inline-block;
+  transition:transform .2s ease;
+}
+#logsSection[open] .toggle-icon{
+  transform:rotate(90deg); /* ▶ → ▼ */
+}
+
+/* 제목+아이콘 정렬 (다른 섹션과 통일) */
+#logsSection .group-title-wrap{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:900;
+  font-size:16px;
+}
