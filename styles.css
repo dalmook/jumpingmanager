@@ -476,8 +476,9 @@ input:focus,select:focus,textarea:focus{
 .field-sep {
   flex: 0 0 1px;
   background: var(--line);
-  margin: 0 10px;
+  align-self: stretch;   /* 높이 자동 채움 */
 }
+
 
 /* 모바일에서는 다시 세로 배치 */
 @media (max-width:1024px){
