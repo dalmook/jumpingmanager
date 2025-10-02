@@ -559,6 +559,11 @@ input:focus,select:focus,textarea:focus{
   font-weight:900;
   font-size:16px;
 }
+/* 여기 추가 */
+h3.group-title {
+  margin: 0;
+  display: inline;
+}
 /* 반반 레이아웃 내부 소제목 */
 .panel-sub h4.sub-title {
   margin: 0;
