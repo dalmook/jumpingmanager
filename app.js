@@ -769,6 +769,13 @@ btnLogout?.addEventListener('click', async()=>{
 btnLoadAll?.addEventListener('click', loadAllMembers);
 btnSearch?.addEventListener('click', searchMembers);
 searchPhone?.addEventListener('keyup', (e)=>{ if(e.key==='Enter') searchMembers(); });
+// ✕(초기화) 버튼: 입력 지우고 전체 목록 로드
+const btnClearSearch = document.getElementById('btnClearSearch');
+btnClearSearch?.addEventListener('click', ()=>{
+  if (searchPhone) searchPhone.value = '';
+  loadAllMembers(true);  // 전체 목록 다시 불러오기
+});
+
 
 // ===== 회원 목록: 단발성 + 페이지네이션 =====
 let __membersCursor = null;
