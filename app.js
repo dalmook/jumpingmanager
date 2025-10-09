@@ -126,7 +126,7 @@ function tsEndOfDayMonthsAhead(nMonths) {
 
 // ✅ 권종명에 따른 기본 만료 개월 수
 function defaultExpireMonthsByName(name) {
-  if (name === '평일무료쿠폰') return 1;      // 1개월
+  if (name === '평일이용권') return 1;      // 1개월
   if (name === '스탬프적립쿠폰') return 6; // 6개월
   // 다회권/10회권/20회권 등 일반권
   return 12;                            // 1년
