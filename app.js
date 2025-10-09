@@ -233,11 +233,11 @@ function setExpireDefaultByName(name){
 
   const n = (name || '').replace(/\s+/g, '');
   let target;
-  if (n === '평일무료권') {
+  if (n === '평일이용권') {
     target = addMonths(today, 1);
-  } else if (n === '무료권') {
+  } else if (n === '스탬프적립쿠폰') {
     target = addMonths(today, 6);
-  } else if (n === '다회권' || n === '10회권' || n === '20회권') {
+  } else if (n === '10회권' || n === '20회권') {
     target = addYears(today, 1);
   } else {
     target = addYears(today, 1); // 기본
