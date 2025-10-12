@@ -2039,3 +2039,42 @@ if (adminList) {
     item.classList.add('selected');
   });
 }
+// ===== 마우스 휠로 숫자 증감 바인딩 =====
+function bindWheelStep(input) {
+  if (!input) return;
+  input.addEventListener('wheel', (e) => {
+    // 페이지 스크롤 방지
+    e.preventDefault();
+
+    const stepAttr = parseFloat(input.getAttribute('step') || '1');
+    const step = Number.isFinite(stepAttr) && stepAttr > 0 ? stepAttr : 1;
+
+    // Shift 키로 x10 가속 (원하면 주석 해제)
+    const delta = (e.deltaY < 0 ? +1 : -1) * (e.shiftKey ? 10 : 1) * step;
+
+    const minAttr = input.getAttribute('min');
+    const maxAttr = input.getAttribute('max');
+    const min = minAttr != null ? parseFloat(minAttr) : -Infinity;
+    const max = maxAttr != null ? parseFloat(maxAttr) : +Infinity;
+
+    const cur = parseFloat(input.value || '0') || 0;
+    let next = cur + delta;
+
+    // 반올림 오차 보정
+    next = Math.round((next + Number.EPSILON) * 1000) / 1000;
+
+    if (next < min) next = min;
+    if (next > max) next = max;
+
+    input.value = String(next);
+    // 입력값 변경 이벤트 발행(필요 시 다른 로직이 듣게 함)
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }, { passive: false });
+}
+
+// 관리자 입력 필드들에 바인딩
+bindWheelStep(document.getElementById('stampDelta'));   // 스탬프 N
+bindWheelStep(document.getElementById('freeSlDelta'));  // 슬러시 N
+bindWheelStep(document.getElementById('passCount'));    // 추가 수량
+bindWheelStep(document.getElementById('passDelta'));    // 증감 N
