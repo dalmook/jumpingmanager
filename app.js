@@ -789,6 +789,18 @@ btnClearSearch?.addEventListener('click', ()=>{
 let __membersCursor = null;
 const PAGE_SIZE = 10;
 
+// --- 전체 회원 수 표시 ---
+async function updateMemberCount(){
+  try{
+    const snap = await db.collection('members').get();
+    const count = snap.size;
+    const label = document.getElementById('memberCount');
+    if(label) label.textContent = `(${count}명)`;
+  }catch(e){ console.warn('회원 수 불러오기 실패', e); }
+}
+
+updateMemberCount();
+
 // "더 보기" 버튼 보장 유틸 (HTML에 없으면 자동 생성)
 function ensureMoreMembersButton() {
   let btn = document.getElementById('btnMoreMembers');
