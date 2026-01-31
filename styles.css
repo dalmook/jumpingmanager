@@ -226,11 +226,11 @@ input:focus,select:focus,textarea:focus{
 }
 .m-name{font-size:22px; font-weight:900}
 .stats{
-  display:grid;
+  display:flex;
   gap:10px;
-  grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+  flex-wrap:wrap;
 }
-.stats .stat{width:100%}
+.stats .stat{width:auto}
 .stat{background:#fff; border:1px solid var(--line); border-radius:999px; padding:10px 14px; min-width:120px; box-shadow:0 10px 20px rgba(15,23,42,.06)}
 .stat.pill{border-radius:999px; background:var(--primary-soft); border:1px solid #cfe0ff; color:#1d4ed8}
 .stat.pill.highlight{border:2px solid #38bdf8; background:#f0f9ff; box-shadow:0 0 10px rgba(56,189,248,.25)}
