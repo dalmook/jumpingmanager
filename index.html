@@ -409,7 +409,7 @@
   // --- Service Worker 등록 (오프라인/설치 가능 조건) ---
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(console.error);
+      navigator.serviceWorker.register('sw.js').catch(console.error);
     });
   }
 
