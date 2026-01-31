@@ -710,7 +710,8 @@ signupForm?.addEventListener('submit', async (e) => {
   // ✅ 필수만 검사: 이름/전화/비번/동의
   if (!name)  return toast('이름을 입력하세요.');
   if (!isPhoneInput(phone)) return toast('핸드폰번호(숫자만)를 정확히 입력하세요.');
-  if (!pass)  return toast('비밀번호를 입력하세요.');
+    if (!pass)  return toast('비밀번호를 입력하세요.');
+    if (pass.length !== 6) return toast('비밀번호는 6자리로 입력하세요.');
   // 이메일은 입력된 경우에만 형식 검사
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('올바른 이메일을 입력하세요.');
   if (!agree) return toast('개인정보 활용에 동의해 주세요.');
