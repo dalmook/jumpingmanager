@@ -1,4 +1,4 @@
-const CACHE = 'jbattle-v1';
+const CACHE = 'jbattle-v2';
 const ASSETS = [
   '/', '/index.html', '/styles.css', '/app.js',
   '/manifest.webmanifest',
