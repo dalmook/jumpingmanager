@@ -654,8 +654,23 @@ input:focus,select:focus,textarea:focus{
   display:flex;
   align-items:center;
   gap:6px;
+  flex-wrap:wrap;
   font-weight:900;
   font-size:16px;
+}
+
+.profile-car-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:26px;
+  padding:4px 10px;
+  border-radius:8px;
+  background:#fff4d8;
+  border:1px solid #f2b94b;
+  color:#7a3f00;
+  font-size:13px;
+  font-weight:900;
+  line-height:1.2;
 }
 
 /* 기본 아이콘 모양 */
