@@ -215,6 +215,47 @@ input:focus,select:focus,textarea:focus{
   text-decoration: line-through;
   opacity: .6;
 }
+#passList .pass-item{
+  gap:10px;
+  align-items:center;
+}
+#passList .pass-main{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+#passList .pass-line{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.pass-type-badge,
+.pass-expire-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:3px 8px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.pass-type-badge.adult{background:#eaf2ff; border:1px solid #9ec5ff; color:#184fb5}
+.pass-type-badge.youth{background:#fff4d8; border:1px solid #f2b94b; color:#7a3f00}
+.pass-type-badge.other{background:#f1f5f9; border:1px solid #cbd5e1; color:#334155}
+#passList .pass-item.expiring-soon{
+  border-color:#f59e0b;
+  background:#fffbeb;
+  box-shadow:0 0 0 2px rgba(245,158,11,.14);
+}
+.pass-expire-badge{
+  margin-left:auto;
+  background:#fee2e2;
+  border:1px solid #fca5a5;
+  color:#991b1b;
+}
 /* Member */
 .member-card{display:flex; flex-direction:column; gap:18px}
 .member-card.compact{gap:12px}
@@ -612,22 +653,36 @@ input:focus,select:focus,textarea:focus{
   min-width: 64px;      /* 버튼 폭 확보 */
   text-align: center;
 }
-/* 회원목록 5칸 고정: 이름 | 번호 | 팀 (번호칸만 살짝 넓게) */
+/* 회원목록: 이름 | 번호 | 팀 | 차량 */
 .member-row{
   display:grid;
-  grid-template-columns: 1fr auto 1.3fr auto 1fr;
+  grid-template-columns: 1fr auto 1.25fr auto 1fr auto .9fr;
   align-items:center;
   gap:6px;
 }
 .member-row .m-name{ font-weight:800; }
 .member-row .m-phone{ font-weight:800; color:#0b6bcb; }
 .member-row .m-team{ color:#555; }
+.member-row .m-car{ color:#7a3f00; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .member-row .sep{ color:#999; font-weight:900; text-align:center; }
-.member-row .m-phone {
+.member-row .m-phone,
+.member-row .m-car {
   font-size: clamp(11px, 2.5vw, 14px);
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+}
+@media (max-width:680px){
+  .member-row{
+    grid-template-columns:1fr auto 1fr;
+  }
+  .member-row .m-team,
+  .member-row .m-car{
+    grid-column:auto;
+  }
+  .member-row .car-sep{
+    display:none;
+  }
 }
 
 :root{
