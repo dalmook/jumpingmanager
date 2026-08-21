@@ -1,0 +1,37 @@
+relative_path,size_bytes,category,included_in_github,notes
+1_main.exe,10381910,binary,no,PyInstaller Windows x64 GUI executable
+assest/render/ffmpeg_render.exe,141697024,binary,no,Third-party FFmpeg binary over GitHub 100 MiB limit
+assest/mosquitto/mosquitto.exe,260608,binary,no,Bundled local MQTT broker
+assest/mosquitto/pwfile,121,credential-material,no,Contains credential verifier and must never be public
+assest/other/service.enc,3256,credential-material,no,Decryptable Firebase service-account material and must never be public
+assest/UI/CLASS/print_dialog.py,6411,python-source,no,Receipt result web and video-folder UI
+assest/UI/CLASS/ui_support.py,2999,python-source,no,Shared UI helpers
+assest/UI/CLASS/widget_device_class.py,979,python-source,no,Device widget behavior
+assest/UI/CLASS/widget_game_class.py,25951,python-source,no,Game start stop QR print score and rank events
+assest/UI/CLASS/widget_setting_class.py,21106,python-source,no,Panel map and display settings
+assest/UI/CLASS/widget_timelapse_class.py,8568,python-source,no,Timelapse list and output behavior
+assest/UI/CLASS/widget_timelapse_viwer_class.py,3433,python-source,no,Timelapse viewer behavior
+assest/UI/CLASS/widget_viwer_class.py,9807,python-source,no,Rank log viewer behavior
+assest/UI/UI_device/ui_device_frame.py,9952,python-source,no,Generated Qt device UI
+assest/UI/UI_game/game_res_rc.py,171590,python-source,no,Generated Qt game resources
+assest/UI/UI_game/ui_game_frame.py,4126,python-source,no,Generated Qt game frame
+assest/UI/UI_game/ui_game_panel_only.py,24819,python-source,no,Generated Qt game panel
+assest/UI/UI_setting/module_setting_game_panel.py,11847,python-source,no,Settings panel module
+assest/UI/UI_setting/widget_setting.py,20551,python-source,no,Generated settings UI
+assest/UI/UI_setting/widget_setting_game_panel.py,5908,python-source,no,Generated game-panel settings UI
+assest/UI/UI_timelapse/ui_timelapse_frame.py,8975,python-source,no,Generated timelapse UI
+assest/UI/UI_timelapse_viwer/ui_timelapse_v_frame.py,7773,python-source,no,Generated timelapse-viewer UI
+assest/UI/UI_viwer/ui_viwer_frame.py,8971,python-source,no,Generated rank-viewer UI
+assest/UI/dashboard_res_rc.py,117111,python-source,no,Generated dashboard resources
+assest/UI/game_res_rc.py,259932,python-source,no,Generated game resources
+assest/UI/icon_res.py,32312,python-source,no,Generated icon resources
+assest/UI/ui_dashboard.py,14938,python-source,no,Generated dashboard UI
+assest/UI/ui_login.py,8440,python-source,no,Generated login UI
+__extracted__/python-bytecode-count,1359,analysis-summary,no,Number of extracted Python bytecode files
+__extracted__/visible-python-source-count,23,analysis-summary,no,All 23 visible source files compiled successfully
+windows-controller-analysis/README.md,,published-analysis,yes,Safe overview and navigation
+windows-controller-analysis/FULL_ANALYSIS_KO.md,,published-analysis,yes,Full static-analysis report without secret values
+windows-controller-analysis/config/controller.example.json,,published-analysis,yes,Secret-free external control configuration example
+windows-controller-analysis/controller_config.py,,published-analysis,yes,Configuration loader and safety validation
+windows-controller-analysis/tests/test_controller_config.py,,published-analysis,yes,Five automated validation tests
+windows-controller-analysis/inventory/checksums.sha256,,published-analysis,yes,Reference hashes only; no original binary redistribution

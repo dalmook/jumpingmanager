@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env*
+secrets/
+credentials/
+service*.json
+service*.enc
+pwfile
+tok.json
+*.exe
+*.dll
+*.pyd
+*.zip

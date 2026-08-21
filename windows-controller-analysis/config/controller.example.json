@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "app": {
+    "store_name": "Jumping Battle - Example",
+    "data_dir": "%PROGRAMDATA%/JumpingBattle/controller",
+    "log_level": "INFO",
+    "offline_mode": false
+  },
+  "game": {
+    "max_panels": 10,
+    "start_countdown_seconds": 10,
+    "default_duration_seconds": 900,
+    "minimum_score": 20,
+    "timelapse_minimum_frames": 150
+  },
+  "mqtt": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 1883,
+    "bind_host": "127.0.0.1",
+    "username_env": "JB_MQTT_USERNAME",
+    "password_env": "JB_MQTT_PASSWORD",
+    "tls": {
+      "enabled": false,
+      "ca_file": null
+    },
+    "allow_insecure_lan": false,
+    "topics": {
+      "app_state": "JP/app",
+      "score_state": "JP/score",
+      "app_command": "JP/app_cmd",
+      "score_command": "JP/score_cmd",
+      "score_rank": "JP/score_rank",
+      "score_display": "JP/score_DSP"
+    }
+  },
+  "udp": {
+    "listen_host": "0.0.0.0",
+    "listen_port": 8200,
+    "device_port": 8201,
+    "device_stale_after_seconds": 30,
+    "allowed_subnets": [
+      "192.168.0.0/24"
+    ],
+    "hmac_key_env": "JB_UDP_HMAC_KEY"
+  },
+  "firebase": {
+    "enabled": false,
+    "project_id_env": "JB_FIREBASE_PROJECT_ID",
+    "storage_bucket_env": "JB_FIREBASE_BUCKET",
+    "service_account_path_env": "JB_FIREBASE_SERVICE_ACCOUNT_PATH",
+    "token_storage": "windows-credential-manager"
+  },
+  "cameras": [
+    {
+      "id": "room-1",
+      "host": "192.168.0.211",
+      "port": 8554,
+      "path": "/Streaming/Channels/101",
+      "username_env": "JB_CAMERA_ROOM1_USERNAME",
+      "password_env": "JB_CAMERA_ROOM1_PASSWORD",
+      "enabled": false
+    }
+  ],
+  "render": {
+    "enabled": false,
+    "ffmpeg_path": "tools/ffmpeg/ffmpeg.exe",
+    "output_dir": "%PROGRAMDATA%/JumpingBattle/timelapse",
+    "width": 1600,
+    "height": 970
+  },
+  "printer": {
+    "enabled": false,
+    "adapter": "preview",
+    "serial_port": null,
+    "baudrate": 9600
+  },
+  "features": {
+    "cloud_rank": false,
+    "timelapse": false,
+    "receipt_print": false,
+    "external_ip_lookup": false
+  }
+}
